@@ -62,9 +62,9 @@ const ImageLoadingModal = ({ isVisible }) => {
 const AddressSelector = ({ value, onChange }) => {
   const { t } = useLanguage();
   const [address, setAddress] = useState({
-    province: "",
+    city: "",
     district: "",
-    ward: "",
+    province: "",
     detailAddress: "",
   });
   const [addressType, setAddressType] = useState({
@@ -166,6 +166,13 @@ const AddressSelector = ({ value, onChange }) => {
         wardOpen: false,
       }));
     }
+
+    setAddress((prev) => ({
+      ...prev,
+      city: selected.province?.name || "",
+      district: selected.district?.name || "",
+      province: selected.ward?.name || "",
+    }));
   };
 
   const renderDropdown = (type, list, placeholder, ref) => (
@@ -250,9 +257,16 @@ const AddressSelector = ({ value, onChange }) => {
           placeholder={t("address.detailAddress") || "상세 주소를 입력하세요"}
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
-            const fullAddress =
-              `${selected.province?.name || ""} ${selected.district?.name || ""} ${selected.ward?.name || ""} ${e.target.value}`.trim();
-            onChange(fullAddress);
+            setAddress((prev) => ({
+              ...prev,
+              detailAddress: e.target.value,
+            }));
+            onChange({
+              city: selected.province?.name || "",
+              district: selected.district?.name || "",
+              province: selected.ward?.name || "",
+              detailAddress: e.target.value,
+            });
           }}
         />
       </div>
@@ -558,7 +572,7 @@ const ImageUploadSection = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => removeImage(index)}
+                      onClick={()={() => removeImage(index)}
                       className="p-2 bg-white rounded-full text-red-600 hover:bg-red-50"
                     >
                       <X className="w-4 h-4" />
@@ -813,16 +827,67 @@ const ContactPersonForm = ({
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {t("contact.birthDate") || "생년월일"}
           </Label>
-          <div className="mt-1">
-            <CustomCalendar
-              value={contact.birthDate || ""}
-              onChange={(date) => updateContact(index, "birthDate", date)}
-              placeholder={
-                t("contact.birthDatePlaceholder") || "생년월일을 선택하세요"
-              }
-              language="ko"
-              t={t}
-            />
+          <div className="mt-1 grid grid-cols-3 gap-2">
+            <select
+              value={contact.birthDate ? new Date(contact.birthDate).getFullYear() : ""}
+              onChange={(e) => {
+                const year = e.target.value;
+                const month = contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : 1;
+                const day = contact.birthDate ? new Date(contact.birthDate).getDate() : 1;
+                if (year) {
+                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  updateContact(index, "birthDate", newDate);
+                }
+              }}
+              className="mt-1 h-12 w-full px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
+            >
+              <option value="">{t("year") || "년"}</option>
+              {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <select
+              value={contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : ""}
+              onChange={(e) => {
+                const month = e.target.value;
+                const year = contact.birthDate ? new Date(contact.birthDate).getFullYear() : new Date().getFullYear();
+                const day = contact.birthDate ? new Date(contact.birthDate).getDate() : 1;
+                if (month) {
+                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  updateContact(index, "birthDate", newDate);
+                }
+              }}
+              className="mt-1 h-12 w-full px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
+            >
+              <option value="">{t("month") || "월"}</option>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <select
+              value={contact.birthDate ? new Date(contact.birthDate).getDate() : ""}
+              onChange={(e) => {
+                const day = e.target.value;
+                const year = contact.birthDate ? new Date(contact.birthDate).getFullYear() : new Date().getFullYear();
+                const month = contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : 1;
+                if (day) {
+                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  updateContact(index, "birthDate", newDate);
+                }
+              }}
+              className="mt-1 h-12 w-full px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
+            >
+              <option value="">{t("day") || "일"}</option>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -885,8 +950,8 @@ export default function AddCustomerPage() {
   const [formData, setFormData] = useState({
     name: "",
     contactName: "",
-    email: "",
     phone: "",
+    email: "",
     industry: "",
     companyType: "",
     grade: "",
@@ -1026,6 +1091,10 @@ export default function AddCustomerPage() {
             ...formData,
             companyType: formData.companyType,
             grade: formData.grade,
+            city: formData.address.city,
+            district: formData.address.district,
+            province: formData.address.province,
+            detailAddress: formData.address.detailAddress,
           },
         },
       });
@@ -1138,7 +1207,33 @@ export default function AddCustomerPage() {
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("company.industry") || "업종"}
+                    전화번호
+                  </Label>
+                  <Input
+                    type="tel"
+                    placeholder={t("customer.phone") || "전화번호를 입력하세요"}
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    이메일
+                  </Label>
+                  <Input
+                    type="email"
+                    placeholder={t("customer.email") || "이메일을 입력하세요"}
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    업종
                   </Label>
                   <Input
                     name="industry"

@@ -95,7 +95,7 @@ const customerResolvers = {
             },
             {
               model: models.CustomerImage,
-              as: "images",
+              as: "facilityImages",
               order: [["sortOrder", "ASC"]],
             },
           ],
