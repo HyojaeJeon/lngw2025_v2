@@ -572,7 +572,7 @@ const ImageUploadSection = ({
                     </button>
                     <button
                       type="button"
-                      onClick={()={() => removeImage(index)}
+                      onClick={() => removeImage(index)}
                       className="p-2 bg-white rounded-full text-red-600 hover:bg-red-50"
                     >
                       <X className="w-4 h-4" />
@@ -829,33 +829,56 @@ const ContactPersonForm = ({
           </Label>
           <div className="mt-1 grid grid-cols-3 gap-2">
             <select
-              value={contact.birthDate ? new Date(contact.birthDate).getFullYear() : ""}
+              value={
+                contact.birthDate
+                  ? new Date(contact.birthDate).getFullYear()
+                  : ""
+              }
               onChange={(e) => {
                 const year = e.target.value;
-                const month = contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : 1;
-                const day = contact.birthDate ? new Date(contact.birthDate).getDate() : 1;
+                const month = contact.birthDate
+                  ? new Date(contact.birthDate).getMonth() + 1
+                  : 1;
+                const day = contact.birthDate
+                  ? new Date(contact.birthDate).getDate()
+                  : 1;
                 if (year) {
-                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  const newDate = new Date(year, month - 1, day)
+                    .toISOString()
+                    .split("T")[0];
                   updateContact(index, "birthDate", newDate);
                 }
               }}
               className="mt-1 h-12 w-full px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
             >
               <option value="">{t("year") || "년"}</option>
-              {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+              {Array.from(
+                { length: 100 },
+                (_, i) => new Date().getFullYear() - i,
+              ).map((year) => (
                 <option key={year} value={year}>
                   {year}
                 </option>
               ))}
             </select>
             <select
-              value={contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : ""}
+              value={
+                contact.birthDate
+                  ? new Date(contact.birthDate).getMonth() + 1
+                  : ""
+              }
               onChange={(e) => {
                 const month = e.target.value;
-                const year = contact.birthDate ? new Date(contact.birthDate).getFullYear() : new Date().getFullYear();
-                const day = contact.birthDate ? new Date(contact.birthDate).getDate() : 1;
+                const year = contact.birthDate
+                  ? new Date(contact.birthDate).getFullYear()
+                  : new Date().getFullYear();
+                const day = contact.birthDate
+                  ? new Date(contact.birthDate).getDate()
+                  : 1;
                 if (month) {
-                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  const newDate = new Date(year, month - 1, day)
+                    .toISOString()
+                    .split("T")[0];
                   updateContact(index, "birthDate", newDate);
                 }
               }}
@@ -869,13 +892,21 @@ const ContactPersonForm = ({
               ))}
             </select>
             <select
-              value={contact.birthDate ? new Date(contact.birthDate).getDate() : ""}
+              value={
+                contact.birthDate ? new Date(contact.birthDate).getDate() : ""
+              }
               onChange={(e) => {
                 const day = e.target.value;
-                const year = contact.birthDate ? new Date(contact.birthDate).getFullYear() : new Date().getFullYear();
-                const month = contact.birthDate ? new Date(contact.birthDate).getMonth() + 1 : 1;
+                const year = contact.birthDate
+                  ? new Date(contact.birthDate).getFullYear()
+                  : new Date().getFullYear();
+                const month = contact.birthDate
+                  ? new Date(contact.birthDate).getMonth() + 1
+                  : 1;
                 if (day) {
-                  const newDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                  const newDate = new Date(year, month - 1, day)
+                    .toISOString()
+                    .split("T")[0];
                   updateContact(index, "birthDate", newDate);
                 }
               }}
@@ -1151,7 +1182,7 @@ export default function AddCustomerPage() {
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 mt-1">
                   {t("customer.add.description") ||
-                    "고객사 정보와 담당자 정보를 입력해 주세요"}
+                    "고객사 정보와 담당자  ��보를 입력해 주세요"}
                 </p>
               </div>
             </div>
