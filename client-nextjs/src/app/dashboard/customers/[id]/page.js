@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -17,17 +16,18 @@ import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
 import { useLanguage } from "@/contexts/languageContext.js";
 import { GET_CUSTOMER, GET_USERS } from "@/lib/graphql/queries.js";
-import { 
+import {
   UPDATE_CUSTOMER,
   ADD_CONTACT_PERSON,
   UPDATE_CONTACT_PERSON,
   DELETE_CONTACT_PERSON,
   ADD_CUSTOMER_IMAGE,
-  DELETE_CUSTOMER_IMAGE
+  DELETE_CUSTOMER_IMAGE,
 } from "@/lib/graphql/mutations.js";
 import {
   Building2,
   User,
+  Search,
   Phone,
   Mail,
   MapPin,
@@ -87,16 +87,17 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
 
   // 기존 주소 파싱 및 설정
   useEffect(() => {
-    if (value && typeof value === 'string') {
-      const addressParts = value.split(' ').filter(part => part.trim());
+    if (value && typeof value === "string") {
+      const addressParts = value.split(" ").filter((part) => part.trim());
       if (addressParts.length >= 3) {
-        const [provinceName, districtName, wardName, ...detailParts] = addressParts;
-        setAddress(prev => ({
+        const [provinceName, districtName, wardName, ...detailParts] =
+          addressParts;
+        setAddress((prev) => ({
           ...prev,
           province: provinceName,
           district: districtName,
           ward: wardName,
-          detailAddress: detailParts.join(' ')
+          detailAddress: detailParts.join(" "),
         }));
       }
     }
@@ -252,9 +253,11 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   );
 
   if (!isEditing) {
-    const addressParts = value ? value.split(' ').filter(part => part.trim()) : [];
+    const addressParts = value
+      ? value.split(" ").filter((part) => part.trim())
+      : [];
     const [provinceName, districtName, wardName, ...detailParts] = addressParts;
-    
+
     return (
       <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
         {addressParts.length > 0 ? (
@@ -276,7 +279,7 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
             {detailParts.length > 0 && (
               <div className="text-sm">
                 <span className="font-medium text-gray-500">상세주소:</span>
-                <div className="mt-1">{detailParts.join(' ')}</div>
+                <div className="mt-1">{detailParts.join(" ")}</div>
               </div>
             )}
           </div>
@@ -316,7 +319,7 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
           placeholder={t("address.detailAddress") || "상세 주소를 입력하세요"}
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
-            setAddress(prev => ({ ...prev, detailAddress: e.target.value }));
+            setAddress((prev) => ({ ...prev, detailAddress: e.target.value }));
             const fullAddress =
               `${selected.province?.name || ""} ${selected.district?.name || ""} ${selected.ward?.name || ""} ${e.target.value}`.trim();
             onChange(fullAddress);
@@ -327,7 +330,14 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   );
 };
 
-const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onDeleteImage, canEdit = false }) => {
+const ImageGallerySection = ({
+  title,
+  images,
+  isProfile = false,
+  onAddImage,
+  onDeleteImage,
+  canEdit = false,
+}) => {
   const [showGallery, setShowGallery] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const fileInputRef = useRef();
@@ -360,13 +370,13 @@ const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onD
     if (!files || files.length === 0) return;
 
     const formData = new FormData();
-    Array.from(files).forEach(file => {
-      formData.append('files', file);
+    Array.from(files).forEach((file) => {
+      formData.append("files", file);
     });
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload", {
+        method: "POST",
         body: formData,
       });
 
@@ -376,7 +386,7 @@ const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onD
           result.urls.forEach((url, index) => {
             onAddImage({
               imageUrl: url,
-              imageType: isProfile ? 'profile' : 'facility',
+              imageType: isProfile ? "profile" : "facility",
               description: `${title} ${galleryImages.length + index + 1}`,
               sortOrder: galleryImages.length + index,
             });
@@ -384,7 +394,7 @@ const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onD
         }
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
     }
   };
 
@@ -483,10 +493,7 @@ const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onD
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {galleryImages.map((image, index) => (
-            <div
-              key={index}
-              className="relative group cursor-pointer"
-            >
+            <div key={index} className="relative group cursor-pointer">
               <div
                 className="aspect-square rounded-xl overflow-hidden"
                 onClick={() => openGallery(index)}
@@ -551,7 +558,11 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
-  const { data: usersData, loading, error } = useQuery(GET_USERS, {
+  const {
+    data: usersData,
+    loading,
+    error,
+  } = useQuery(GET_USERS, {
     variables: { limit: 100, offset: 0, search: searchTerm },
     onError: (error) => console.error("Users query error:", error),
     fetchPolicy: "cache-and-network",
@@ -670,10 +681,18 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
   );
 };
 
-const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세요" }) => {
+const CustomCalendar = ({
+  value,
+  onChange,
+  placeholder = "날짜를 선택하세요",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
-  const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    value ? new Date(value) : null,
+  );
+  const [currentMonth, setCurrentMonth] = useState(
+    value ? new Date(value) : new Date(),
+  );
   const calendarRef = useRef(null);
 
   useEffect(() => {
@@ -695,31 +714,31 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
     const startDate = firstDay.getDay();
 
     const days = [];
-    
+
     // 이전 달의 날들
     for (let i = 0; i < startDate; i++) {
       const prevDate = new Date(year, month, -startDate + i + 1);
       days.push({ date: prevDate, isCurrentMonth: false });
     }
-    
+
     // 현재 달의 날들
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({ date: new Date(year, month, i), isCurrentMonth: true });
     }
-    
+
     // 다음 달의 날들 (6주 표시를 위해)
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       const nextDate = new Date(year, month + 1, i);
       days.push({ date: nextDate, isCurrentMonth: false });
     }
-    
+
     return days;
   };
 
   const formatDate = (date) => {
     if (!date) return "";
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   const handleDateSelect = (date) => {
@@ -729,16 +748,30 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
   };
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
+    );
   };
 
   const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
+    );
   };
 
   const monthNames = [
-    "1월", "2월", "3월", "4월", "5월", "6월",
-    "7월", "8월", "9월", "10월", "11월", "12월"
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "7월",
+    "8월",
+    "9월",
+    "10월",
+    "11월",
+    "12월",
   ];
 
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -756,8 +789,12 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
       >
         <div className="flex items-center space-x-3 flex-1">
           <Calendar className="w-4 h-4 text-gray-500" />
-          <span className={`text-sm ${selectedDate ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-            {selectedDate ? selectedDate.toLocaleDateString("ko-KR") : placeholder}
+          <span
+            className={`text-sm ${selectedDate ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
+          >
+            {selectedDate
+              ? selectedDate.toLocaleDateString("ko-KR")
+              : placeholder}
           </span>
         </div>
         <ChevronDown
@@ -779,7 +816,8 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
               <ChevronDown className="w-4 h-4 rotate-90" />
             </button>
             <span className="font-medium text-gray-900 dark:text-white">
-              {currentMonth.getFullYear()}년 {monthNames[currentMonth.getMonth()]}
+              {currentMonth.getFullYear()}년{" "}
+              {monthNames[currentMonth.getMonth()]}
             </span>
             <button
               type="button"
@@ -793,7 +831,10 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
           {/* 요일 헤더 */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {dayNames.map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 p-2">
+              <div
+                key={day}
+                className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 p-2"
+              >
                 {day}
               </div>
             ))}
@@ -802,13 +843,15 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
           {/* 날짜 그리드 */}
           <div className="grid grid-cols-7 gap-1">
             {getDaysInMonth(currentMonth).map((day, index) => {
-              const isSelected = selectedDate && 
+              const isSelected =
+                selectedDate &&
                 day.date.getDate() === selectedDate.getDate() &&
                 day.date.getMonth() === selectedDate.getMonth() &&
                 day.date.getFullYear() === selectedDate.getFullYear();
-              
-              const isToday = new Date().toDateString() === day.date.toDateString();
-              
+
+              const isToday =
+                new Date().toDateString() === day.date.toDateString();
+
               return (
                 <button
                   key={index}
@@ -816,17 +859,20 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
                   onClick={() => handleDateSelect(day.date)}
                   className={`
                     p-2 text-sm rounded-lg transition-colors
-                    ${day.isCurrentMonth 
-                      ? "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700" 
-                      : "text-gray-400 dark:text-gray-600"
+                    ${
+                      day.isCurrentMonth
+                        ? "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-gray-400 dark:text-gray-600"
                     }
-                    ${isSelected 
-                      ? "bg-blue-500 text-white hover:bg-blue-600" 
-                      : ""
+                    ${
+                      isSelected
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : ""
                     }
-                    ${isToday && !isSelected 
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400" 
-                      : ""
+                    ${
+                      isToday && !isSelected
+                        ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
+                        : ""
                     }
                   `}
                 >
@@ -841,7 +887,12 @@ const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세
   );
 };
 
-const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => {
+const ContactPersonForm = ({
+  contact,
+  onSave,
+  onCancel,
+  isEditing = false,
+}) => {
   const [formData, setFormData] = useState({
     name: contact?.name || "",
     department: contact?.department || "",
@@ -861,7 +912,7 @@ const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => 
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -977,7 +1028,13 @@ const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => 
   );
 };
 
-const ContactPersonCard = ({ contact, index, onEdit, onDelete, canEdit = false }) => {
+const ContactPersonCard = ({
+  contact,
+  index,
+  onEdit,
+  onDelete,
+  canEdit = false,
+}) => {
   const { t } = useLanguage();
 
   return (
@@ -1123,14 +1180,16 @@ export default function CustomerDetailPage() {
         // 주소 정보 파싱
         const customer = data.customer;
         if (customer.address) {
-          const addressParts = customer.address.split(' ').filter(part => part.trim());
+          const addressParts = customer.address
+            .split(" ")
+            .filter((part) => part.trim());
           if (addressParts.length >= 3) {
             const [city, district, province, ...detailParts] = addressParts;
             customer.parsedAddress = {
               city,
               district,
               province,
-              detailAddress: detailParts.join(' ')
+              detailAddress: detailParts.join(" "),
             };
           }
         }
@@ -1492,7 +1551,9 @@ export default function CustomerDetailPage() {
                       <div className="mt-1">
                         <SearchableUserSelect
                           value={displayData.assignedUserId || ""}
-                          onChange={(userId) => handleInputChange("assignedUserId", userId)}
+                          onChange={(userId) =>
+                            handleInputChange("assignedUserId", userId)
+                          }
                           placeholder="담당자를 선택하세요"
                         />
                       </div>
@@ -1536,7 +1597,11 @@ export default function CustomerDetailPage() {
                       >
                         <option value="">선택하세요</option>
                         {Object.entries(companyTypes).map(([value, label]) => (
-                          <option key={value} value={value} selected={value === displayData.companyType}>
+                          <option
+                            key={value}
+                            value={value}
+                            selected={value === displayData.companyType}
+                          >
                             {label}
                           </option>
                         ))}
@@ -1692,7 +1757,8 @@ export default function CustomerDetailPage() {
                   이미지 갤러리
                 </CardTitle>
                 <CardDescription className="text-purple-100">
-                  고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다
+                  고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수
+                  있습니다
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1751,7 +1817,9 @@ export default function CustomerDetailPage() {
               <CardContent className="p-6">
                 {showAddContact && (
                   <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <h4 className="text-lg font-semibold mb-4">새 담당자 추가</h4>
+                    <h4 className="text-lg font-semibold mb-4">
+                      새 담당자 추가
+                    </h4>
                     <ContactPersonForm
                       onSave={handleAddContact}
                       onCancel={() => setShowAddContact(false)}
@@ -1761,7 +1829,9 @@ export default function CustomerDetailPage() {
 
                 {editingContact && (
                   <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <h4 className="text-lg font-semibold mb-4">담당자 정보 수정</h4>
+                    <h4 className="text-lg font-semibold mb-4">
+                      담당자 정보 수정
+                    </h4>
                     <ContactPersonForm
                       contact={editingContact}
                       onSave={handleUpdateContact}
@@ -1793,8 +1863,7 @@ export default function CustomerDetailPage() {
                         variant="outline"
                         onClick={() => setShowAddContact(true)}
                       >
-                        <Plus className="w-4 h-4 mr-2" />
-                        첫 번째 담당자 추가
+                        <Plus className="w-4 h-4 mr-2" />첫 번째 담당자 추가
                       </Button>
                     </div>
                   )}
