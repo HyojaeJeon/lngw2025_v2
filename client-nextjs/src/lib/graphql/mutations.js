@@ -99,36 +99,6 @@ export const CREATE_CUSTOMER_MUTATION = gql`
   }
 `;
 
-export const CREATE_CUSTOMER = gql`
-  mutation CreateCustomer($input: CustomerInput!) {
-    createCustomer(input: $input) {
-      id
-      name
-      contactName
-      email
-      phone
-      industry
-      companyType
-      grade
-      address
-      assignedUserId
-      assignedUser {
-        id
-        name
-        email
-      }
-      status
-      contactDepartment
-      contactBirthDate
-      profileImage
-      facebook
-      tiktok
-      instagram
-      createdAt
-      updatedAt
-    }
-  }
-`;
 
 export const UPDATE_CUSTOMER = gql`
   mutation UpdateCustomer($id: ID!, $input: CustomerInput!) {
@@ -164,6 +134,7 @@ export const CREATE_SERVICE = gql`
   }
 `;
 
+
 export const CREATE_CUSTOMER = gql`
   mutation CreateCustomer($input: CustomerInput!) {
     createCustomer(input: $input) {
@@ -176,9 +147,13 @@ export const CREATE_CUSTOMER = gql`
       companyType
       grade
       address
-      profileImage
-      facilityImages
       assignedUserId
+      assignedUser {
+        id
+        name
+        email
+      }
+      status
       contacts {
         id
         name
@@ -192,10 +167,17 @@ export const CREATE_CUSTOMER = gql`
         instagram
         profileImage
       }
+      contactDepartment
+      contactBirthDate
+      profileImage
+      facebook
+      tiktok
+      instagram
+      createdAt
+      updatedAt
     }
   }
 `;
-
 export const CREATE_ADDRESS = gql`
   mutation CreateAddress($input: AddressInput!) {
     createAddress(input: $input) {
