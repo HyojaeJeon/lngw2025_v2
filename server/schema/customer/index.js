@@ -7,7 +7,7 @@ const customerTypeDefs = gql`
     customer(id: ID!): Customer
     addresses(limit: Int, offset: Int): [Address!]!
     services(limit: Int, offset: Int): [Service!]!
-    users(limit: Int, offset: Int): [User!]!
+    users(limit: Int, offset: Int, search: String): [User!]!
   }
 
   extend type Mutation {
@@ -104,6 +104,20 @@ const customerTypeDefs = gql`
     facebook: String
     tiktok: String
     instagram: String
+    contacts: [ContactPersonInput!]
+  }
+
+  input ContactPersonInput {
+    name: String!
+    department: String
+    position: String
+    phone: String
+    email: String
+    birthDate: Date
+    facebook: String
+    tiktok: String
+    instagram: String
+    profileImage: String
   }
 
   input AddressInput {

@@ -63,9 +63,21 @@ const customerResolvers = {
       });
     },
 
-    users: async (_, { limit = 10, offset = 0 }) => {
+    users: async (_, { limit = 10, offset = 0, search }) => {
+      const whereClause = search
+        ? {
+            [Op.or]: [
+              { name: { [Op.like]: `%${search}%` } },
+              { email: { [Op.like]: `%${search}%` } },
+              { department: { [Op.like]: `%${search}%` } },
+              { position: { [Op.like]: `%${search}%` } },
+            ],
+          }
+        : {};
+
       return await models.User.findAll({
-        attributes: ["id", "name", "email", "department", "position"],
+        where: whereClause,
+        attributes: ["id", "name", "email", "department", "position", "phone"],
         limit,
         offset,
         order: [["createdAt", "DESC"]],

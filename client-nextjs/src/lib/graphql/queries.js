@@ -29,13 +29,14 @@ export const GET_ME = gql`
 `;
 
 export const GET_USERS = gql`
-  query GetUsers($limit: Int, $offset: Int) {
-    users(limit: $limit, offset: $offset) {
+  query GetUsers($limit: Int, $offset: Int, $search: String) {
+    users(limit: $limit, offset: $offset, search: $search) {
       id
       name
       email
       department
       position
+      phone
     }
   }
 `;
