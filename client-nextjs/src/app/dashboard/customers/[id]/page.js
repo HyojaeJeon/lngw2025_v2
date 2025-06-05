@@ -1194,9 +1194,11 @@ export default function CustomerDetailPage() {
           }
         }
         
-        // 기본값 설정
+        // 기본값 설정 (모든 필드를 안전하게 처리)
         const processedCustomer = {
           ...customer,
+          name: customer.name || "",
+          contactName: customer.contactName || "",
           assignedUserId: customer.assignedUserId || customer.assignedUser?.id || "",
           industry: customer.industry || "",
           companyType: customer.companyType || "",
@@ -1204,6 +1206,21 @@ export default function CustomerDetailPage() {
           email: customer.email || "",
           phone: customer.phone || "",
           address: customer.address || "",
+          status: customer.status || "active",
+          contactDepartment: customer.contactDepartment || "",
+          contactBirthDate: customer.contactBirthDate || "",
+          profileImage: customer.profileImage || "",
+          facebook: customer.facebook || "",
+          tiktok: customer.tiktok || "",
+          instagram: customer.instagram || "",
+          // 연관 데이터도 안전하게 처리
+          assignedUser: customer.assignedUser || null,
+          contacts: customer.contacts || [],
+          facilityImages: customer.facilityImages || [],
+          images: customer.images || [],
+          opportunities: customer.opportunities || [],
+          createdAt: customer.createdAt || null,
+          updatedAt: customer.updatedAt || null,
         };
         
         setOriginalData(processedCustomer);
@@ -1227,24 +1244,39 @@ export default function CustomerDetailPage() {
   const users = usersData?.users || [];
 
   const companyTypes = {
-    SME: t("company.type.small") || "중소기업",
-    LARGE: t("company.type.large") || "대기업",
-    STARTUP: t("company.type.startup") || "스타트업",
-    PUBLIC: t("company.type.public") || "공공기관",
-    NONPROFIT: t("company.type.nonprofit") || "비영리단체",
+    SME: t("customer.companyType.sme") || t("company.type.small") || "중소기업",
+    LARGE: t("customer.companyType.large") || t("company.type.large") || "대기업",
+    STARTUP: t("customer.companyType.startup") || t("company.type.startup") || "스타트업",
+    PUBLIC: t("customer.companyType.public") || t("company.type.public") || "공공기관",
+    NONPROFIT: t("customer.companyType.nonprofit") || t("company.type.nonprofit") || "비영리단체",
   };
 
   const gradeLabels = {
-    A: t("customer.grade.vip") || "A급 (VIP)",
-    B: t("customer.grade.excellent") || "B급 (우수)",
-    C: t("customer.grade.normal") || "C급 (일반)",
-    D: t("customer.grade.standard") || "D급 (표준)",
-    E: t("customer.grade.basic") || "E급 (기본)",
+    A: t("customer.grade.a") || t("customer.grade.vip") || "A급 (VIP)",
+    B: t("customer.grade.b") || t("customer.grade.excellent") || "B급 (우수)",
+    C: t("customer.grade.c") || t("customer.grade.normal") || "C급 (일반)",
+    D: t("customer.grade.d") || t("customer.grade.standard") || "D급 (표준)",
+    E: t("customer.grade.e") || t("customer.grade.basic") || "E급 (기본)",
   };
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditData({ ...originalData });
+    // 현재 데이터를 기반으로 수정 데이터 설정 (기본값 보존)
+    const currentData = customer || originalData;
+    const editDataToSet = {
+      ...currentData,
+      assignedUserId: currentData.assignedUserId || currentData.assignedUser?.id || "",
+      industry: currentData.industry || "",
+      companyType: currentData.companyType || "",
+      grade: currentData.grade || "",
+      email: currentData.email || "",
+      phone: currentData.phone || "",
+      address: currentData.address || "",
+      name: currentData.name || "",
+      contactName: currentData.contactName || "",
+      status: currentData.status || "active",
+    };
+    setEditData(editDataToSet);
   };
 
   const handleCancel = () => {
@@ -1529,10 +1561,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Building2 className="w-5 h-5 mr-2" />
-                  {t("customer.basicInfo") || "기본 회사 정보"}
+                  {t("customer.basicInfo") || t("customer.companyInfo") || "기본 회사 정보"}
                 </CardTitle>
                 <CardDescription className="text-blue-100">
-                  {t("customer.basicInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
+                  {t("customer.basicInfoDescription") || t("customer.companyInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1558,7 +1590,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.assignedUser") || "담당자"}
+                      {t("customer.assignedUser") || t("customer.manager") || "담당자"}
                     </Label>
                     {isEditing ? (
                       <div className="mt-1">
@@ -1579,7 +1611,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.industry") || "업종"}
+                      {t("customer.industry") || t("customer.businessType") || "업종"}
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1598,7 +1630,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.companyType") || "회사 유형"}
+                      {t("customer.companyType") || t("customer.organizationType") || "회사 유형"}
                     </Label>
                     {isEditing ? (
                       <select
@@ -1709,10 +1741,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
-                  연락처 정보
+                  {t("customer.contactInfo") || t("contact.information") || "연락처 정보"}
                 </CardTitle>
                 <CardDescription className="text-green-100">
-                  고객사의 연락처 정보를 관리합니다
+                  {t("customer.contactInfoDescription") || t("contact.informationDescription") || "고객사의 연락처 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1763,11 +1795,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <ImageIcon className="w-5 h-5 mr-2" />
-                  이미지 갤러리
+                  {t("customer.imageGallery") || t("image.gallery") || "이미지 갤러리"}
                 </CardTitle>
                 <CardDescription className="text-purple-100">
-                  고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수
-                  있습니다
+                  {t("customer.imageGalleryDescription") || t("image.galleryDescription") || "고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1807,7 +1838,7 @@ export default function CustomerDetailPage() {
                 <CardTitle className="text-xl font-semibold flex items-center justify-between">
                   <div className="flex items-center">
                     <Users className="w-5 h-5 mr-2" />
-                    담당자 정보
+                    {t("customer.contactPersons") || t("contact.persons") || "담당자 정보"}
                   </div>
                   <Button
                     variant="outline"
@@ -1816,11 +1847,11 @@ export default function CustomerDetailPage() {
                     className="text-white border-white hover:bg-white hover:text-orange-600"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    담당자 추가
+                    {t("customer.addContactPerson") || t("contact.addPerson") || "담당자 추가"}
                   </Button>
                 </CardTitle>
                 <CardDescription className="text-orange-100">
-                  고객사의 담당자들의 상세 정보를 관리합니다
+                  {t("customer.contactPersonsDescription") || t("contact.personsDescription") || "고객사의 담당자들의 상세 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1888,7 +1919,7 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Activity className="w-5 h-5 mr-2" />
-                  요약 정보
+                  {t("customer.summary") || t("customer.summaryInfo") || "요약 정보"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -2023,7 +2054,7 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-gray-500 to-gray-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Star className="w-5 h-5 mr-2" />
-                  빠른 액션
+                  {t("customer.quickActions") || t("common.quickActions") || "빠른 액션"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-3">

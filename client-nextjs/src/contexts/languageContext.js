@@ -406,6 +406,60 @@ const translations = {
     // common
     'previousMonth': '전월 대비',
 
+    // 고객 관련 번역
+    'customers.title': '고객 관리',
+    'customers.description': '고객 정보를 효율적으로 관리하고 분석하세요',
+    'customers.addNew': '새 고객 추가',
+    'customers.total': '전체 고객',
+    'customers.gradeA': 'A급 고객',
+    'customers.gradeB': 'B급 고객',
+    'customers.gradeC': 'C급 고객',
+    'customers.allGrades': '모든 등급',
+    'customers.searchPlaceholder': '고객명 또는 담당자명으로 검색...',
+
+    // 고객 상세페이지 번역
+    'customer.basicInfo': '기본 회사 정보',
+    'customer.basicInfoDescription': '고객사의 기본적인 정보를 확인하고 수정할 수 있습니다',
+    'customer.companyInfo': '회사 정보',
+    'customer.companyInfoDescription': '고객사의 기본 정보',
+    'customer.name': '회사명',
+    'customer.assignedUser': '담당자',
+    'customer.manager': '담당자',
+    'customer.industry': '업종',
+    'customer.businessType': '업종',
+    'customer.companyType': '회사 유형',
+    'customer.organizationType': '조직 유형',
+    'customer.grade': '고객 등급',
+    'customer.address': '주소',
+    'customer.email': '이메일',
+    'customer.phone': '전화번호',
+    'customer.contactInfo': '연락처 정보',
+    'customer.contactInfoDescription': '고객사의 연락처 정보를 관리합니다',
+    'customer.imageGallery': '이미지 갤러리',
+    'customer.imageGalleryDescription': '고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다',
+    'customer.contactPersons': '담당자 정보',
+    'customer.contactPersonsDescription': '고객사의 담당자들의 상세 정보를 관리합니다',
+    'customer.addContactPerson': '담당자 추가',
+    'customer.summary': '요약 정보',
+    'customer.summaryInfo': '요약 정보',
+    'customer.quickActions': '빠른 액션',
+    'customer.createdAt': '등록일',
+    'customer.updatedAt': '마지막 수정',
+    'customer.selectAssignedUser': '담당자를 선택하세요',
+
+    // 회사 유형 번역
+    'customer.companyType.sme': '중소기업',
+    'customer.companyType.large': '대기업',
+    'customer.companyType.startup': '스타트업',
+    'customer.companyType.public': '공공기관',
+    'customer.companyType.nonprofit': '비영리단체',
+
+    // 고객 등급 번역
+    'customer.grade.a': 'A급 (VIP)',
+    'customer.grade.b': 'B급 (우수)',
+    'customer.grade.c': 'C급 (일반)',
+    'customer.grade.d': 'D급 (표준)',
+    'customer.grade.e': 'E급 (기본)',
   },
   vi: {
     // 공통
@@ -808,6 +862,60 @@ const translations = {
     // common
     'previousMonth': 'So với tháng trước',
 
+    // 고객 관련 번역
+    'customers.title': 'Quản lý khách hàng',
+    'customers.description': 'Quản lý và phân tích thông tin khách hàng hiệu quả',
+    'customers.addNew': 'Thêm khách hàng mới',
+    'customers.total': 'Tổng khách hàng',
+    'customers.gradeA': 'Khách hàng hạng A',
+    'customers.gradeB': 'Khách hàng hạng B',
+    'customers.gradeC': 'Khách hàng hạng C',
+    'customers.allGrades': 'Tất cả hạng',
+    'customers.searchPlaceholder': 'Tìm kiếm theo tên công ty hoặc người phụ trách...',
+
+    // 고객 상세페이지 번역
+    'customer.basicInfo': 'Thông tin công ty cơ bản',
+    'customer.basicInfoDescription': 'Xem và chỉnh sửa thông tin cơ bản của khách hàng',
+    'customer.companyInfo': 'Thông tin công ty',
+    'customer.companyInfoDescription': 'Thông tin cơ bản của công ty',
+    'customer.name': 'Tên công ty',
+    'customer.assignedUser': 'Người phụ trách',
+    'customer.manager': 'Người quản lý',
+    'customer.industry': 'Ngành nghề',
+    'customer.businessType': 'Loại hình kinh doanh',
+    'customer.companyType': 'Loại công ty',
+    'customer.organizationType': 'Loại tổ chức',
+    'customer.grade': 'Hạng khách hàng',
+    'customer.address': 'Địa chỉ',
+    'customer.email': 'Email',
+    'customer.phone': 'Số điện thoại',
+    'customer.contactInfo': 'Thông tin liên hệ',
+    'customer.contactInfoDescription': 'Quản lý thông tin liên hệ của khách hàng',
+    'customer.imageGallery': 'Thư viện hình ảnh',
+    'customer.imageGalleryDescription': 'Xem và quản lý hình ảnh hồ sơ và cơ sở vật chất của khách hàng',
+    'customer.contactPersons': 'Thông tin người liên hệ',
+    'customer.contactPersonsDescription': 'Quản lý thông tin chi tiết của các người liên hệ',
+    'customer.addContactPerson': 'Thêm người liên hệ',
+    'customer.summary': 'Thông tin tóm tắt',
+    'customer.summaryInfo': 'Tóm tắt',
+    'customer.quickActions': 'Hành động nhanh',
+    'customer.createdAt': 'Ngày đăng ký',
+    'customer.updatedAt': 'Lần sửa đổi cuối',
+    'customer.selectAssignedUser': 'Chọn người phụ trách',
+
+    // 회사 유형 번역
+    'customer.companyType.sme': 'Doanh nghiệp vừa và nhỏ',
+    'customer.companyType.large': 'Tập đoàn lớn',
+    'customer.companyType.startup': 'Startup',
+    'customer.companyType.public': 'Cơ quan công',
+    'customer.companyType.nonprofit': 'Tổ chức phi lợi nhuận',
+
+    // 고객 등급 번역
+    'customer.grade.a': 'Hạng A (VIP)',
+    'customer.grade.b': 'Hạng B (Xuất sắc)',
+    'customer.grade.c': 'Hạng C (Bình thường)',
+    'customer.grade.d': 'Hạng D (Tiêu chuẩn)',
+    'customer.grade.e': 'Hạng E (Cơ bản)',
   },
   en: {
     // 공통
@@ -1198,6 +1306,60 @@ const translations = {
     // common
     'previousMonth': 'vs previous month',
 
+    // 고객 관련 번역
+    'customers.title': 'Customer Management',
+    'customers.description': 'Efficiently manage and analyze customer information',
+    'customers.addNew': 'Add New Customer',
+    'customers.total': 'Total Customers',
+    'customers.gradeA': 'Grade A Customers',
+    'customers.gradeB': 'Grade B Customers',
+    'customers.gradeC': 'Grade C Customers',
+    'customers.allGrades': 'All Grades',
+    'customers.searchPlaceholder': 'Search by customer name or contact name...',
+
+    // 고객 상세페이지 번역
+    'customer.basicInfo': 'Basic Company Information',
+    'customer.basicInfoDescription': 'You can check and modify the customer\'s basic information',
+    'customer.companyInfo': 'Company Information',
+    'customer.companyInfoDescription': 'Basic information of the customer',
+    'customer.name': 'Company Name',
+    'customer.assignedUser': 'Assigned User',
+    'customer.manager': 'Manager',
+    'customer.industry': 'Industry',
+    'customer.businessType': 'Industry',
+    'customer.companyType': 'Company Type',
+    'customer.organizationType': 'Organization Type',
+    'customer.grade': 'Customer Grade',
+    'customer.address': 'Address',
+    'customer.email': 'Email',
+    'customer.phone': 'Phone Number',
+    'customer.contactInfo': 'Contact Information',
+    'customer.contactInfoDescription': 'Manage the customer\'s contact information',
+    'customer.imageGallery': 'Image Gallery',
+    'customer.imageGalleryDescription': 'You can check and manage the customer\'s profile image and facility photos',
+    'customer.contactPersons': 'Contact Persons Information',
+    'customer.contactPersonsDescription': 'Manage the detailed information of the customer\'s contact persons',
+    'customer.addContactPerson': 'Add Contact Person',
+    'customer.summary': 'Summary Information',
+    'customer.summaryInfo': 'Summary Information',
+    'customer.quickActions': 'Quick Actions',
+    'customer.createdAt': 'Registration Date',
+    'customer.updatedAt': 'Last Modified',
+    'customer.selectAssignedUser': 'Select Assigned User',
+
+    // 회사 유형 번역
+    'customer.companyType.sme': 'SME',
+    'customer.companyType.large': 'Large Enterprise',
+    'customer.companyType.startup': 'Startup',
+    'customer.companyType.public': 'Public Institution',
+    'customer.companyType.nonprofit': 'Nonprofit Organization',
+
+    // 고객 등급 번역
+    'customer.grade.a': 'Grade A (VIP)',
+    'customer.grade.b': 'Grade B (Excellent)',
+    'customer.grade.c': 'Grade C (Normal)',
+    'customer.grade.d': 'Grade D (Standard)',
+    'customer.grade.e': 'Grade E (Basic)',
   }
 }
 
