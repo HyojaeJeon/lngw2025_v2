@@ -157,11 +157,19 @@ const customerResolvers = {
       const transaction = await models.sequelize.transaction();
 
       try {
-        // 2) customer 생성
-        const { contacts, facilityImages, ...customerData } = input;
+        // 2) customer 생성 (주소 매핑 처리)
+        const { contacts, facilityImages, city, district, province, detailAddress, ...customerData } = input;
+        
+        // 주소 정보를 address 필드로 통합
+        let fullAddress = "";
+        if (city || district || province || detailAddress) {
+          fullAddress = [city, district, province, detailAddress].filter(Boolean).join(" ");
+        }
+        
         const customer = await models.Customer.create(
           {
             ...customerData,
+            address: fullAddress || customerData.address,
             createdBy: user.id,
           },
           { transaction },

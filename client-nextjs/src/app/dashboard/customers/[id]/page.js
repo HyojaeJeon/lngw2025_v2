@@ -85,6 +85,23 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   const districtRef = useRef();
   const wardRef = useRef();
 
+  // 기존 주소 파싱 및 설정
+  useEffect(() => {
+    if (value && typeof value === 'string') {
+      const addressParts = value.split(' ').filter(part => part.trim());
+      if (addressParts.length >= 3) {
+        const [provinceName, districtName, wardName, ...detailParts] = addressParts;
+        setAddress(prev => ({
+          ...prev,
+          province: provinceName,
+          district: districtName,
+          ward: wardName,
+          detailAddress: detailParts.join(' ')
+        }));
+      }
+    }
+  }, [value]);
+
   const fetchAddressData = async (level, id = 0) => {
     const url = `https://esgoo.net/api-tinhthanh/${level}/${id}.htm`;
     try {
@@ -235,10 +252,38 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   );
 
   if (!isEditing) {
+    const addressParts = value ? value.split(' ').filter(part => part.trim()) : [];
+    const [provinceName, districtName, wardName, ...detailParts] = addressParts;
+    
     return (
-      <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-        {value || "주소 정보 없음"}
-      </p>
+      <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
+        {addressParts.length > 0 ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-sm">
+                <span className="font-medium text-gray-500">도/시:</span>
+                <div className="mt-1">{provinceName || "-"}</div>
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-gray-500">구/군:</span>
+                <div className="mt-1">{districtName || "-"}</div>
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-gray-500">동/읍/면:</span>
+                <div className="mt-1">{wardName || "-"}</div>
+              </div>
+            </div>
+            {detailParts.length > 0 && (
+              <div className="text-sm">
+                <span className="font-medium text-gray-500">상세주소:</span>
+                <div className="mt-1">{detailParts.join(' ')}</div>
+              </div>
+            )}
+          </div>
+        ) : (
+          "주소 정보 없음"
+        )}
+      </div>
     );
   }
 
@@ -267,9 +312,11 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
       <div>
         <Input
           type="text"
+          value={address.detailAddress}
           placeholder={t("address.detailAddress") || "상세 주소를 입력하세요"}
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
+            setAddress(prev => ({ ...prev, detailAddress: e.target.value }));
             const fullAddress =
               `${selected.province?.name || ""} ${selected.district?.name || ""} ${selected.ward?.name || ""} ${e.target.value}`.trim();
             onChange(fullAddress);
@@ -498,6 +545,302 @@ const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onD
   );
 };
 
+const SearchableUserSelect = ({ value, onChange, placeholder }) => {
+  const { t } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
+
+  const { data: usersData, loading, error } = useQuery(GET_USERS, {
+    variables: { limit: 100, offset: 0, search: searchTerm },
+    onError: (error) => console.error("Users query error:", error),
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
+  });
+
+  const users = usersData?.users || [];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedUser = users.find((user) => user.id === value);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div
+        className={`relative flex items-center justify-between p-3 border-2 rounded-xl cursor-pointer transition-all duration-200
+                   ${
+                     isOpen
+                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg"
+                       : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                   }`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center space-x-3 flex-1">
+          {selectedUser ? (
+            <>
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                {selectedUser.name?.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {selectedUser.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {selectedUser.department} • {selectedUser.position}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-gray-500" />
+              </div>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                {placeholder}
+              </span>
+            </div>
+          )}
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-80 overflow-hidden">
+          <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="담당자 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 text-sm"
+              />
+            </div>
+          </div>
+          <div className="max-h-60 overflow-y-auto">
+            {loading ? (
+              <div className="p-4 text-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+              </div>
+            ) : users.length > 0 ? (
+              users.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  onClick={() => {
+                    onChange(user.id);
+                    setIsOpen(false);
+                  }}
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {user.department} • {user.position}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                담당자를 찾을 수 없습니다
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CustomCalendar = ({ value, onChange, placeholder = "날짜를 선택하세요" }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
+  const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date());
+  const calendarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDate = firstDay.getDay();
+
+    const days = [];
+    
+    // 이전 달의 날들
+    for (let i = 0; i < startDate; i++) {
+      const prevDate = new Date(year, month, -startDate + i + 1);
+      days.push({ date: prevDate, isCurrentMonth: false });
+    }
+    
+    // 현재 달의 날들
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ date: new Date(year, month, i), isCurrentMonth: true });
+    }
+    
+    // 다음 달의 날들 (6주 표시를 위해)
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const nextDate = new Date(year, month + 1, i);
+      days.push({ date: nextDate, isCurrentMonth: false });
+    }
+    
+    return days;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    onChange(formatDate(date));
+    setIsOpen(false);
+  };
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+  };
+
+  const monthNames = [
+    "1월", "2월", "3월", "4월", "5월", "6월",
+    "7월", "8월", "9월", "10월", "11월", "12월"
+  ];
+
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+
+  return (
+    <div className="relative" ref={calendarRef}>
+      <div
+        className={`relative flex items-center justify-between p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 h-12
+                   ${
+                     isOpen
+                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg"
+                       : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                   }`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center space-x-3 flex-1">
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <span className={`text-sm ${selectedDate ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+            {selectedDate ? selectedDate.toLocaleDateString("ko-KR") : placeholder}
+          </span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 p-4 min-w-80">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onClick={goToPreviousMonth}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              <ChevronDown className="w-4 h-4 rotate-90" />
+            </button>
+            <span className="font-medium text-gray-900 dark:text-white">
+              {currentMonth.getFullYear()}년 {monthNames[currentMonth.getMonth()]}
+            </span>
+            <button
+              type="button"
+              onClick={goToNextMonth}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              <ChevronDown className="w-4 h-4 -rotate-90" />
+            </button>
+          </div>
+
+          {/* 요일 헤더 */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {dayNames.map((day) => (
+              <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 p-2">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* 날짜 그리드 */}
+          <div className="grid grid-cols-7 gap-1">
+            {getDaysInMonth(currentMonth).map((day, index) => {
+              const isSelected = selectedDate && 
+                day.date.getDate() === selectedDate.getDate() &&
+                day.date.getMonth() === selectedDate.getMonth() &&
+                day.date.getFullYear() === selectedDate.getFullYear();
+              
+              const isToday = new Date().toDateString() === day.date.toDateString();
+              
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleDateSelect(day.date)}
+                  className={`
+                    p-2 text-sm rounded-lg transition-colors
+                    ${day.isCurrentMonth 
+                      ? "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700" 
+                      : "text-gray-400 dark:text-gray-600"
+                    }
+                    ${isSelected 
+                      ? "bg-blue-500 text-white hover:bg-blue-600" 
+                      : ""
+                    }
+                    ${isToday && !isSelected 
+                      ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400" 
+                      : ""
+                    }
+                  `}
+                >
+                  {day.date.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => {
   const [formData, setFormData] = useState({
     name: contact?.name || "",
@@ -580,12 +923,13 @@ const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => 
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             생년월일
           </Label>
-          <Input
-            type="date"
-            value={formData.birthDate}
-            onChange={(e) => handleInputChange("birthDate", e.target.value)}
-            className="mt-1 h-12 text-sm"
-          />
+          <div className="mt-1">
+            <CustomCalendar
+              value={formData.birthDate}
+              onChange={(date) => handleInputChange("birthDate", date)}
+              placeholder="생년월일을 선택하세요"
+            />
+          </div>
         </div>
         <div>
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -776,8 +1120,22 @@ export default function CustomerDetailPage() {
     variables: { id: customerId },
     onCompleted: (data) => {
       if (data?.customer) {
-        setOriginalData(data.customer);
-        setEditData(data.customer);
+        // 주소 정보 파싱
+        const customer = data.customer;
+        if (customer.address) {
+          const addressParts = customer.address.split(' ').filter(part => part.trim());
+          if (addressParts.length >= 3) {
+            const [city, district, province, ...detailParts] = addressParts;
+            customer.parsedAddress = {
+              city,
+              district,
+              province,
+              detailAddress: detailParts.join(' ')
+            };
+          }
+        }
+        setOriginalData(customer);
+        setEditData(customer);
       }
     },
   });
@@ -1128,19 +1486,19 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      담당자명
+                      담당자
                     </Label>
                     {isEditing ? (
-                      <Input
-                        value={displayData.contactName || ""}
-                        onChange={(e) =>
-                          handleInputChange("contactName", e.target.value)
-                        }
-                        className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
-                      />
+                      <div className="mt-1">
+                        <SearchableUserSelect
+                          value={displayData.assignedUserId || ""}
+                          onChange={(userId) => handleInputChange("assignedUserId", userId)}
+                          placeholder="담당자를 선택하세요"
+                        />
+                      </div>
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.contactName || "정보 없음"}
+                        {displayData.assignedUser?.name || "미배정"}
                       </p>
                     )}
                   </div>
@@ -1178,7 +1536,7 @@ export default function CustomerDetailPage() {
                       >
                         <option value="">선택하세요</option>
                         {Object.entries(companyTypes).map(([value, label]) => (
-                          <option key={value} value={value}>
+                          <option key={value} value={value} selected={value === displayData.companyType}>
                             {label}
                           </option>
                         ))}
