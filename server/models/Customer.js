@@ -37,10 +37,20 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: "회사 유형",
       },
+      customCompanyType: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "사용자 정의 회사 유형",
+      },
       grade: {
         type: DataTypes.STRING,
         allowNull: true,
         comment: "고객 등급",
+      },
+      customGrade: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "사용자 정의 고객 등급",
       },
       address: {
         type: DataTypes.TEXT,
