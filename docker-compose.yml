@@ -1,12 +1,20 @@
+version: "3.8"
+
 services:
+  # ───────────────────────────────────────────────────────────────
+  # 1) nginx-proxy: 리버스 프록시 (80/443 포트 오픈 → 내부 서비스로 분기)
+  # ───────────────────────────────────────────────────────────────
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"      # HTTP (포트 80) → nginx-proxy
+      - "443:443"    # HTTPS (포트 443) → nginx-proxy
     volumes:
+      # Docker 소켓을 읽어서, 컨테이너 라벨(VIRTUAL_HOST)에 따라 자동 프록시 구성
       - /var/run/docker.sock:/tmp/docker.sock:ro
+
+      # 각종 디렉터리 경로는 로컬 프로젝트 기준 상대 경로
       - ./nginx/certs:/etc/nginx/certs
       - ./nginx/vhost.d:/etc/nginx/vhost.d
       - ./nginx/html:/usr/share/nginx/html
@@ -14,11 +22,16 @@ services:
     networks:
       - proxy
 
+  # ───────────────────────────────────────────────────────────────
+  # 2) letsencrypt: nginx-proxy companion (SSL 자동 발급 및 갱신)
+  # ───────────────────────────────────────────────────────────────
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: nginx-ssl
     environment:
+      # “nginx-proxy” 컨테이너에서 SSL 발급 대상을 감지하기 위해
       - NGINX_PROXY_CONTAINER=nginx-proxy
+      # 발급 실패 시/만료 알림을 받을 이메일
       - DEFAULT_EMAIL=admin@lnpartners.biz
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -30,13 +43,19 @@ services:
     networks:
       - proxy
 
+  # ───────────────────────────────────────────────────────────────
+  # 3) app: Next.js(클라이언트) + Node.js(서버) 애플리케이션 컨테이너
+  # ───────────────────────────────────────────────────────────────
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: lngw2025_v2_server
     environment:
+      # Node 환경 설정
       - NODE_ENV=production
+
+      # MySQL 연결 정보 (Windows 호스트 MySQL 사용 시)
       - DB_HOST=host.docker.internal
       - DB_PORT=3306
       - DB_NAME=lngw2025_db
@@ -44,12 +63,12 @@ services:
       - DB_PASSWORD=gywo9988!@
       - PORT=4000
 
-      # 여기부터 추가
+      # nginx-proxy + Let’s Encrypt Companion를 위한 환경 변수
       - VIRTUAL_HOST=gw.lnpartners.biz
       - LETSENCRYPT_HOST=gw.lnpartners.biz
       - LETSENCRYPT_EMAIL=admin@lnpartners.biz
     expose:
-      - "4000"
+      - "4000"    # 컨테이너 내부 포트만 오픈해 두면, nginx-proxy가 접근합니다.
     networks:
       - proxy
     restart: always
