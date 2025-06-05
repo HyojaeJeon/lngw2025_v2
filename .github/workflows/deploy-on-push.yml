@@ -1,3 +1,5 @@
+# deploy-on-push.yml
+
 name: Replit-AI → Windows-Docker 자동 배포
 
 on:
