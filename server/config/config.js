@@ -4,13 +4,8 @@ dotenv.config();
 
 module.exports = {
   development: {
-    username: process.env.DB_USER || "appuser",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "marketing_dashboard",
-    host: process.env.DB_HOST || "127.0.0.1",
-    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-    dialect: "mysql",
-    timezone: "+09:00",
+    use_env_variable: 'DATABASE_URL',
+    dialect: "postgres",
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     pool: {
       max: 10,
@@ -21,13 +16,8 @@ module.exports = {
   },
 
   test: {
-    username: process.env.DB_USER || "appuser",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "marketing_dashboard",
-    host: process.env.DB_HOST || "127.0.0.1",
-    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-    dialect: "mysql",
-    timezone: "+09:00",
+    use_env_variable: 'DATABASE_URL',
+    dialect: "postgres",
     logging: false,
     pool: {
       max: 10,
@@ -38,13 +28,8 @@ module.exports = {
   },
 
   production: {
-    username: process.env.DB_USER || "admin",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "marketing_dashboard",
-    host: process.env.DB_HOST || "127.0.0.1",
-    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-    dialect: "mysql",
-    timezone: "+09:00",
+    use_env_variable: 'DATABASE_URL',
+    dialect: "postgres",
     logging: false,
     pool: {
       max: 10,

@@ -62,13 +62,16 @@ async function startServer() {
     playground: process.env.APOLLO_PLAYGROUND === "true",
     context: async ({ req }) => {
       let user = null;
-      
+
       try {
         const authHeader = req.headers.authorization;
         if (authHeader) {
-          const token = authHeader.replace('Bearer ', '');
+          const token = authHeader.replace("Bearer ", "");
           if (token) {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+            const decoded = jwt.verify(
+              token,
+              process.env.JWT_SECRET || "your-secret-key",
+            );
             // JWT에서 userId로 실제 사용자 정보 조회
             user = await models.User.findByPk(decoded.userId);
             if (user) {
@@ -77,17 +80,17 @@ async function startServer() {
                 id: user.id,
                 userId: user.id, // resolvers에서 context.user.userId로 접근할 수 있도록
                 email: user.email,
-                role: user.role
+                role: user.role,
               };
             }
           }
         }
       } catch (error) {
-        console.log('JWT verification failed:', error.message);
+        console.log("JWT verification failed:", error.message);
         // 토큰이 유효하지 않아도 에러를 던지지 않고 user를 null로 설정
         user = null;
       }
-      
+
       return { user };
     },
   });
@@ -119,9 +122,9 @@ async function startServer() {
     console.log("Database connection established successfully.");
 
     if (process.env.NODE_ENV === "development") {
-      // 데이터베이스 동기화
+      // 데이터베이스 동기화 - alter 모드로 변경하여 기존 인덱스 충돌 방지
       console.log("Syncing database...");
-      await models.sequelize.sync({ force: false }); // 테이블을 완전히 재생성
+      await models.sequelize.sync({ alter: true }); // 기존 테이블 구조를 유지하면서 변경사항만 적용
       console.log("Database synced successfully.");
       const userCount = await models.User.count();
       if (userCount === 0) {

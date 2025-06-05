@@ -15,7 +15,7 @@ const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 
        (process.env.NODE_ENV === "production" 
          ? "https://your-domain.com/graphql"
-         : CURSOR_URL), // 기본값으로 Replit URL 사용
+         : REPLIT_URL), // 기본값으로 Replit URL 사용
 });
 
 const authLink = setContext((_, { headers }) => {

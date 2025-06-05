@@ -49,9 +49,12 @@ module.exports = (sequelize, DataTypes) => {
       underscored: false, // snake_case 컬럼명이 필요할 경우 활성화
       indexes: [
         {
+          name: "trending_keywords_keyword_period_unique",
           fields: ["keyword", "period"],
+          unique: false
         },
         {
+          name: "trending_keywords_mentions_idx",
           fields: ["mentions"],
         },
       ],

@@ -1,0 +1,51 @@
+Executing (default): SHOW INDEX FROM `customers`
+Unable to start server: Error
+    at Query.run (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/mysql/query.js:52:25)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async MySQLQueryInterface.showIndex (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/abstract/query-interface.js:254:12)
+    at async Customer.sync (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:988:29)
+    at async Sequelize.sync (/home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:377:9)
+    at async startServer (/home/runner/workspace/server/index.js:124:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Table 'marketing_dashboard.customers' doesn't exist in engine
+      at Packet.asError (/home/runner/workspace/server/node_modules/mysql2/lib/packets/packet.js:740:17)
+      at Query.execute (/home/runner/workspace/server/node_modules/mysql2/lib/commands/command.js:29:26)
+      at Connection.handlePacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:475:34)
+      at PacketParser.onPacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:93:12)
+      at PacketParser.executeStart (/home/runner/workspace/server/node_modules/mysql2/lib/packet_parser.js:75:16)
+      at Socket.<anonymous> (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: undefined,
+    errno: 1932,
+    sqlState: '42S02',
+    sqlMessage: "Table 'marketing_dashboard.customers' doesn't exist in engine",
+    sql: 'SHOW INDEX FROM `customers`',
+    parameters: undefined
+  },
+  original: Error: Table 'marketing_dashboard.customers' doesn't exist in engine
+      at Packet.asError (/home/runner/workspace/server/node_modules/mysql2/lib/packets/packet.js:740:17)
+      at Query.execute (/home/runner/workspace/server/node_modules/mysql2/lib/commands/command.js:29:26)
+      at Connection.handlePacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:475:34)
+      at PacketParser.onPacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:93:12)
+      at PacketParser.executeStart (/home/runner/workspace/server/node_modules/mysql2/lib/packet_parser.js:75:16)
+      at Socket.<anonymous> (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: undefined,
+    errno: 1932,
+    sqlState: '42S02',
+    sqlMessage: "Table 'marketing_dashboard.customers' doesn't exist in engine",
+    sql: 'SHOW INDEX FROM `customers`',
+    parameters: undefined
+  },
+  sql: 'SHOW INDEX FROM `customers`',
+  parameters: {}
+}
+2025-06-05  0:47:33 8 [Warning] Aborted connection 8 to db: 'marketing_dashboard' user: 'appuser' host: 'localhost' (Got an error reading communication packets)
+[nodemon] app crashed - waiting for file changes before starting...
