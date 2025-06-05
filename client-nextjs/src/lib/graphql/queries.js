@@ -84,19 +84,30 @@ export const GET_CUSTOMERS = gql`
       companyType
       grade
       address
+      status
       assignedUserId
       assignedUser {
         id
         name
         email
+        department
+        position
       }
-      status
-      contactDepartment
-      contactBirthDate
-      profileImage
-      facebook
-      tiktok
-      instagram
+      contacts {
+        id
+        name
+        department
+        position
+        phone
+        email
+      }
+      images {
+        id
+        imageUrl
+        imageType
+        description
+        sortOrder
+      }
       createdAt
       updatedAt
     }
