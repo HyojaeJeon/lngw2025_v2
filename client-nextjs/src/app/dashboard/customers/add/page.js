@@ -18,11 +18,7 @@ import {
   GET_SERVICES,
   CHECK_COMPANY_NAME,
 } from "@/lib/graphql/queries.js";
-import {
-  CREATE_ADDRESS,
-  CREATE_SERVICE,
-  CREATE_CUSTOMER,
-} from "@/lib/graphql/mutations.js";
+import { CREATE_CUSTOMER } from "@/lib/graphql/mutations.js";
 import {
   Building2,
   MapPin,
@@ -203,12 +199,14 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="fixed left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[50000] max-h-60 overflow-y-auto"
-             style={{
-               top: `${ref.current?.getBoundingClientRect().bottom + window.scrollY + 4}px`,
-               left: `${ref.current?.getBoundingClientRect().left}px`,
-               width: `${ref.current?.getBoundingClientRect().width}px`
-             }}>
+        <div
+          className="fixed left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[50000] max-h-60 overflow-y-auto"
+          style={{
+            top: `${ref.current?.getBoundingClientRect().bottom + window.scrollY + 4}px`,
+            left: `${ref.current?.getBoundingClientRect().left}px`,
+            width: `${ref.current?.getBoundingClientRect().width}px`,
+          }}
+        >
           {list.map((item) => (
             <button
               key={item.id}
@@ -273,12 +271,12 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
     data: usersData,
     loading,
     fetchMore,
-    error
+    error,
   } = useQuery(GET_USERS, {
     variables: { limit: 10, offset: 0, search: searchTerm },
     onError: (error) => console.error("Users query error:", error),
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   const users = usersData?.users || [];
@@ -362,12 +360,14 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="fixed left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[50000] max-h-80 overflow-hidden"
-             style={{
-               top: `${containerRef.current?.getBoundingClientRect().bottom + window.scrollY + 8}px`,
-               left: `${containerRef.current?.getBoundingClientRect().left}px`,
-               width: `${containerRef.current?.getBoundingClientRect().width}px`
-             }}>
+        <div
+          className="fixed left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[50000] max-h-80 overflow-hidden"
+          style={{
+            top: `${containerRef.current?.getBoundingClientRect().bottom + window.scrollY + 8}px`,
+            left: `${containerRef.current?.getBoundingClientRect().left}px`,
+            width: `${containerRef.current?.getBoundingClientRect().width}px`,
+          }}
+        >
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -817,7 +817,9 @@ const ContactPersonForm = ({
             <CustomCalendar
               value={contact.birthDate || ""}
               onChange={(date) => updateContact(index, "birthDate", date)}
-              placeholder={t("contact.birthDatePlaceholder") || "생년월일을 선택하세요"}
+              placeholder={
+                t("contact.birthDatePlaceholder") || "생년월일을 선택하세요"
+              }
               language="ko"
               t={t}
             />
@@ -887,9 +889,7 @@ export default function AddCustomerPage() {
     phone: "",
     industry: "",
     companyType: "",
-    customCompanyType: "",
     grade: "",
-    customGrade: "",
     address: "",
     assignedUserId: "",
     profileImage: "",
@@ -1024,14 +1024,8 @@ export default function AddCustomerPage() {
         variables: {
           input: {
             ...formData,
-            companyType:
-              formData.companyType === "직접입력"
-                ? formData.customCompanyType
-                : formData.companyType,
-            grade:
-              formData.grade === "직접입력"
-                ? formData.customGrade
-                : formData.grade,
+            companyType: formData.companyType,
+            grade: formData.grade,
           },
         },
       });
@@ -1069,7 +1063,10 @@ export default function AddCustomerPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4" style={{ overflow: 'visible' }}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4"
+      style={{ overflow: "visible" }}
+    >
       <ImageLoadingModal isVisible={imageLoading} />
 
       <div className="container mx-auto max-w-6xl">
@@ -1177,9 +1174,9 @@ export default function AddCustomerPage() {
                   </select>
                   {formData.companyType === "직접입력" && (
                     <Input
-                      name="customCompanyType"
+                      name="companyType"
                       type="text"
-                      value={formData.customCompanyType}
+                      value={formData.companyType}
                       onChange={handleInputChange}
                       placeholder={
                         t("company.typeCustomPlaceholder") ||
@@ -1211,9 +1208,9 @@ export default function AddCustomerPage() {
                   </select>
                   {formData.grade === "직접입력" && (
                     <Input
-                      name="customGrade"
+                      name="grade"
                       type="text"
-                      value={formData.customGrade}
+                      value={formData.grade}
                       onChange={handleInputChange}
                       placeholder={
                         t("customer.gradeCustomPlaceholder") ||
