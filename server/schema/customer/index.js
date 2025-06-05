@@ -30,6 +30,7 @@ const customerTypeDefs = gql`
     assignedUserId: ID
     assignedUser: User
     status: String!
+    contacts: [ContactPerson!]
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
@@ -37,6 +38,22 @@ const customerTypeDefs = gql`
     tiktok: String
     instagram: String
     opportunities: [SalesOpportunity!]
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  type ContactPerson {
+    id: ID!
+    name: String!
+    department: String
+    position: String
+    phone: String
+    email: String
+    birthDate: Date
+    facebook: String
+    tiktok: String
+    instagram: String
+    profileImage: String
     createdAt: Date!
     updatedAt: Date!
   }

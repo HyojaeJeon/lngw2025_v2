@@ -1,3 +1,4 @@
+
 import { gql } from "@apollo/client";
 
 export const LOGIN_MUTATION = gql`
@@ -83,58 +84,6 @@ export const REGISTER_MUTATION = gql`
   }
 `;
 
-export const CREATE_CUSTOMER_MUTATION = gql`
-  mutation CreateCustomer($input: CustomerInput!) {
-    createCustomer(input: $input) {
-      id
-      companyName
-      contactName
-      email
-      phone
-      address
-      grade
-      industry
-      createdAt
-    }
-  }
-`;
-
-
-export const UPDATE_CUSTOMER = gql`
-  mutation UpdateCustomer($id: ID!, $input: CustomerInput!) {
-    updateCustomer(id: $id, input: $input) {
-      id
-      name
-      email
-      phone
-      company
-      status
-      notes
-      updatedAt
-    }
-  }
-`;
-
-export const DELETE_CUSTOMER = gql`
-  mutation DeleteCustomer($id: ID!) {
-    deleteCustomer(id: $id)
-  }
-`;
-
-export const CREATE_SERVICE = gql`
-  mutation CreateService($input: ServiceInput!) {
-    createService(input: $input) {
-      id
-      name
-      description
-      price
-      category
-      status
-    }
-  }
-`;
-
-
 export const CREATE_CUSTOMER = gql`
   mutation CreateCustomer($input: CustomerInput!) {
     createCustomer(input: $input) {
@@ -178,6 +127,41 @@ export const CREATE_CUSTOMER = gql`
     }
   }
 `;
+
+export const UPDATE_CUSTOMER = gql`
+  mutation UpdateCustomer($id: ID!, $input: CustomerInput!) {
+    updateCustomer(id: $id, input: $input) {
+      id
+      name
+      email
+      phone
+      company
+      status
+      notes
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_CUSTOMER = gql`
+  mutation DeleteCustomer($id: ID!) {
+    deleteCustomer(id: $id)
+  }
+`;
+
+export const CREATE_SERVICE = gql`
+  mutation CreateService($input: ServiceInput!) {
+    createService(input: $input) {
+      id
+      name
+      description
+      price
+      category
+      status
+    }
+  }
+`;
+
 export const CREATE_ADDRESS = gql`
   mutation CreateAddress($input: AddressInput!) {
     createAddress(input: $input) {
