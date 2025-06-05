@@ -26,9 +26,9 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
-    customCompanyType: String
+
     grade: String
-    customGrade: String
+
     address: String
     assignedUserId: ID
     assignedUser: User
@@ -131,9 +131,9 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
-    customCompanyType: String
+
     grade: String
-    customGrade: String
+
     address: String
     assignedUserId: ID
     status: String

@@ -93,9 +93,7 @@ export const CREATE_CUSTOMER = gql`
       phone
       industry
       companyType
-      customCompanyType
       grade
-      customGrade
       address
       profileImage
       assignedUserId

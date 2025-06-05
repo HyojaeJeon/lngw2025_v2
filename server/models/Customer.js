@@ -37,20 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: "회사 유형",
       },
-      customCompanyType: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        comment: "사용자 정의 회사 유형",
-      },
       grade: {
         type: DataTypes.STRING,
         allowNull: true,
         comment: "고객 등급",
-      },
-      customGrade: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        comment: "사용자 정의 고객 등급",
       },
       address: {
         type: DataTypes.TEXT,
@@ -66,24 +56,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("active", "inactive", "prospect"),
         defaultValue: "prospect",
         comment: "고객 상태",
-      },
-      // 담당자 추가 정보
-      contactDepartment: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        comment: "담당자 부서",
-      },
-      contactBirthDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-        comment: "담당자 생일",
-      },
+      },  
       profileImage: {
         type: DataTypes.STRING,
         allowNull: true,
         comment: "프로필 이미지 URL",
       },
-      
+
       facebook: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -104,10 +83,8 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "customers",
       timestamps: true,
       underscored: false,
-    }
+    },
   );
-
-  
 
   return Customer;
 };

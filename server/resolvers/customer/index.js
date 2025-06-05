@@ -140,11 +140,23 @@ const customerResolvers = {
         );
 
         // 3) contacts가 있으면 bulkInsert
-        if (contacts && contacts.length > 0) {
-          const contactsData = contacts.map((contact) => ({
-            ...contact,
-            customerId: customer.id,
-          }));
+        if (Array.isArray(contacts) && contacts.length > 0) {
+          const contactsData = contacts.map((contact) => {
+            // contact.birthDate: "2025-06-25" (문자열) 혹은 이미 Date 객체일 수 있음
+            let parsedBirthDate = null;
+            if (contact.birthDate) {
+              parsedBirthDate =
+                contact.birthDate instanceof Date
+                  ? contact.birthDate
+                  : new Date(contact.birthDate);
+            }
+            return {
+              ...contact,
+              birthDate: parsedBirthDate, // ← 키 이름은 반드시 모델 컬럼명(birthDate)과 동일
+              customerId: customer.id,
+            };
+          });
+
           await models.ContactPerson.bulkCreate(contactsData, {
             transaction,
           });
@@ -232,7 +244,17 @@ const customerResolvers = {
       return true;
     },
   },
-
+  ContactPerson: {
+    birthDate(contact) {
+      if (!contact.birthDate) {
+        return null;
+      }
+      // 이미 JS Date이면 그대로, 문자열이면 new Date()로 변환
+      return contact.birthDate instanceof Date
+        ? contact.birthDate
+        : new Date(contact.birthDate);
+    },
+  },
   Customer: {
     contacts: async (customer) => {
       return await models.ContactPerson.findAll({
