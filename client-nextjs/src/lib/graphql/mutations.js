@@ -1,4 +1,3 @@
-
 import { gql } from "@apollo/client";
 
 export const LOGIN_MUTATION = gql`
@@ -94,9 +93,7 @@ export const CREATE_CUSTOMER = gql`
       phone
       industry
       companyType
-      customCompanyType
       grade
-      customGrade
       address
       profileImage
       facilityImages
