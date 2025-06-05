@@ -1,181 +1,146 @@
-
 const models = require("../../models");
 const { Op } = require("sequelize");
 
 const customerResolvers = {
   Query: {
-    customers: async (_, { limit = 10, offset = 0, search }) => {
-      const whereClause = search
-        ? {
-            [Op.or]: [
-              { name: { [Op.like]: `%${search}%` } },
-              { contactName: { [Op.like]: `%${search}%` } },
-              { email: { [Op.like]: `%${search}%` } },
-            ],
-          }
-        : {};
+    customers: async (parent, { limit = 10, offset = 0, search }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
+      const whereCondition = search ? {
+        [Op.or]: [
+          { name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { industry: { [Op.like]: `%${search}%` } }
+        ]
+      } : {};
 
       return await models.Customer.findAll({
-        where: whereClause,
+        where: whereCondition,
         limit,
         offset,
         include: [
           {
             model: models.User,
-            as: "assignedUser",
-            attributes: ["id", "name", "email"],
-          },
+            as: 'assignedUser',
+            attributes: ['id', 'name', 'email', 'department', 'position']
+          }
         ],
-        order: [["createdAt", "DESC"]],
+        order: [['createdAt', 'DESC']]
       });
     },
 
-    customer: async (_, { id }) => {
+    customer: async (parent, { id }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
       return await models.Customer.findByPk(id, {
         include: [
           {
             model: models.User,
-            as: "assignedUser",
-            attributes: ["id", "name", "email"],
-          },
-          {
-            model: models.SalesOpportunity,
-            as: "opportunities",
-          },
-        ],
-      });
-    },
-
-    addresses: async (_, { limit = 10, offset = 0 }) => {
-      return await models.Address.findAll({
-        limit,
-        offset,
-        order: [["createdAt", "DESC"]],
-      });
-    },
-
-    services: async (_, { limit = 10, offset = 0 }) => {
-      return await models.Service.findAll({
-        where: { status: "active" },
-        limit,
-        offset,
-        order: [["createdAt", "DESC"]],
-      });
-    },
-
-    users: async (_, { limit = 10, offset = 0, search }) => {
-      const whereClause = search
-        ? {
-            [Op.or]: [
-              { name: { [Op.like]: `%${search}%` } },
-              { email: { [Op.like]: `%${search}%` } },
-              { department: { [Op.like]: `%${search}%` } },
-              { position: { [Op.like]: `%${search}%` } },
-            ],
+            as: 'assignedUser',
+            attributes: ['id', 'name', 'email', 'department', 'position']
           }
-        : {};
-
-      return await models.User.findAll({
-        where: whereClause,
-        attributes: ["id", "name", "email", "department", "position", "phone"],
-        limit,
-        offset,
-        order: [["createdAt", "DESC"]],
+        ]
       });
-    },
+    }
   },
 
   Mutation: {
-    createCustomer: async (_, { input }) => {
+    createCustomer: async (parent, { input }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
       try {
-        const customer = await models.Customer.create(input);
-        return await models.Customer.findByPk(customer.id, {
-          include: [
-            {
-              model: models.User,
-              as: "assignedUser",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-        });
+        // Start transaction
+        const transaction = await models.sequelize.transaction();
+
+        try {
+          // Create customer
+          const { contacts, ...customerData } = input;
+          const customer = await models.Customer.create({
+            ...customerData,
+            createdBy: user.id
+          }, { transaction });
+
+          // Create contacts if provided
+          if (contacts && contacts.length > 0) {
+            const contactsData = contacts.map(contact => ({
+              ...contact,
+              customerId: customer.id
+            }));
+            await models.ContactPerson.bulkCreate(contactsData, { transaction });
+          }
+
+          // Commit transaction
+          await transaction.commit();
+
+          // Return customer with contacts
+          const createdCustomer = await models.Customer.findByPk(customer.id, {
+            include: [
+              {
+                model: models.User,
+                as: 'assignedUser',
+                attributes: ['id', 'name', 'email', 'department', 'position']
+              },
+              {
+                model: models.ContactPerson,
+                as: 'contacts'
+              }
+            ]
+          });
+
+          return createdCustomer;
+        } catch (error) {
+          await transaction.rollback();
+          throw error;
+        }
       } catch (error) {
-        throw new Error(`Failed to create customer: ${error.message}`);
+        console.error('Create customer error:', error);
+        throw new Error('Failed to create customer: ' + error.message);
       }
     },
 
-    updateCustomer: async (_, { id, input }) => {
-      try {
-        await models.Customer.update(input, { where: { id } });
-        return await models.Customer.findByPk(id, {
-          include: [
-            {
-              model: models.User,
-              as: "assignedUser",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-        });
-      } catch (error) {
-        throw new Error(`Failed to update customer: ${error.message}`);
+    updateCustomer: async (parent, { id, input }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
       }
+
+      const customer = await models.Customer.findByPk(id);
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      await customer.update(input);
+      return customer;
     },
 
-    deleteCustomer: async (_, { id }) => {
-      try {
-        const deleted = await models.Customer.destroy({ where: { id } });
-        return {
-          success: deleted > 0,
-          message: deleted > 0 ? "Customer deleted successfully" : "Customer not found",
-        };
-      } catch (error) {
-        throw new Error(`Failed to delete customer: ${error.message}`);
+    deleteCustomer: async (parent, { id }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
       }
-    },
 
-    createAddress: async (_, { input }) => {
-      try {
-        return await models.Address.create(input);
-      } catch (error) {
-        throw new Error(`Failed to create address: ${error.message}`);
+      const customer = await models.Customer.findByPk(id);
+      if (!customer) {
+        throw new Error('Customer not found');
       }
-    },
 
-    createService: async (_, { input }) => {
-      try {
-        return await models.Service.create(input);
-      } catch (error) {
-        throw new Error(`Failed to create service: ${error.message}`);
-      }
-    },
+      await customer.destroy();
+      return true;
+    }
   },
 
   Customer: {
-    assignedUser: async (parent) => {
-      if (parent.assignedUserId) {
-        return await models.User.findByPk(parent.assignedUserId, {
-          attributes: ["id", "name", "email", "department", "position"],
-        });
-      }
-      return null;
-    },
-    opportunities: async (parent) => {
-      return await models.SalesOpportunity.findAll({
-        where: { customerId: parent.id },
-        order: [["createdAt", "DESC"]],
+    contacts: async (customer) => {
+      return await models.ContactPerson.findAll({
+        where: { customerId: customer.id },
+        order: [['createdAt', 'ASC']]
       });
-    },
-  },
-
-  SalesOpportunity: {
-    assignedUser: async (parent) => {
-      if (parent.assignedUserId) {
-        return await models.User.findByPk(parent.assignedUserId, {
-          attributes: ["id", "name", "email", "department", "position"],
-        });
-      }
-      return null;
-    },
-  },
+    }
+  }
 };
 
 module.exports = customerResolvers;

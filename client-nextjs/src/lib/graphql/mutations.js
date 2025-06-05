@@ -156,10 +156,42 @@ export const CREATE_SERVICE = gql`
     createService(input: $input) {
       id
       name
-      price
       description
+      price
       category
       status
+    }
+  }
+`;
+
+export const CREATE_CUSTOMER = gql`
+  mutation CreateCustomer($input: CustomerInput!) {
+    createCustomer(input: $input) {
+      id
+      name
+      contactName
+      email
+      phone
+      industry
+      companyType
+      grade
+      address
+      profileImage
+      facilityImages
+      assignedUserId
+      contacts {
+        id
+        name
+        department
+        position
+        phone
+        email
+        birthDate
+        facebook
+        tiktok
+        instagram
+        profileImage
+      }
     }
   }
 `;

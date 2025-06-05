@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const Customer = sequelize.define(
     "Customer",
@@ -97,14 +96,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Customer.associate = (models) => {
+  Customer.associate = function(models) {
     Customer.belongsTo(models.User, {
-      foreignKey: "assignedUserId",
-      as: "assignedUser",
+      foreignKey: 'assignedUserId',
+      as: 'assignedUser'
     });
-    Customer.hasMany(models.SalesOpportunity, {
-      foreignKey: "customerId",
-      as: "opportunities",
+    Customer.hasMany(models.ContactPerson, {
+      foreignKey: 'customerId',
+      as: 'contacts',
+      onDelete: 'CASCADE'
     });
   };
 

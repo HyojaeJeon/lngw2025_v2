@@ -36,7 +36,7 @@ export const GET_USERS = gql`
       email
       department
       position
-      phone
+      role
     }
   }
 `;

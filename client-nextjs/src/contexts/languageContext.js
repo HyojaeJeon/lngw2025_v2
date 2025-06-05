@@ -193,17 +193,83 @@ const translations = {
     'accounting.pendingApproval': '승인 대기',
     'accounting.overduePayments': '연체된 결제',
 
-    // 회계 설정 추가 번역
-    'accounting.setupDescription': '베트남 회계기준에 맞는 기초 회계 정보를 설정하세요',
-    'accounting.coaDescription': '베트남 회계기준(VAS)에 따른 계정과목을 설정하세요',
-    'accounting.addAccount': '계정과목 추가',
-    'accounting.taxSettingsDescription': 'VAT 및 기타 세금 설정을 관리하세요',
-    'accounting.vatSettingsTitle': 'VAT 설정',
-    'accounting.addNewTaxType': '새 세금 유형 추가',
-    'accounting.securitySettingsDescription': '접근 제어 및 보안 정책을 설정하세요',
-    'accounting.integrationsDescription': 'ERP, 은행, 전자세금계산서 시스템과 연동하세요',
-    'accounting.apiKeyDescription': '외부 서비스 API 키를 관리하세요',
-    'accounting.enterApiKey': 'API 키를 입력하세요',
+    // 고객사 관련 번역
+    'customer.add.title': '새로운 고객사 추가',
+    'customer.add.description': '고객사 정보와 담당자 정보를 입력해 주세요',
+    'customer.createSuccess': '고객사가 성공적으로 등록되었습니다.',
+    'customer.createError': '고객사 등록 중 오류가 발생했습니다.',
+    'customer.grade': '고객 등급',
+    'customer.gradeSelect': '고객 등급 선택',
+    'customer.gradeCustomPlaceholder': '고객 등급을 입력하세요',
+    'customer.grade.vip': 'A급 (VIP)',
+    'customer.grade.excellent': 'B급 (우수)',
+    'customer.grade.normal': 'C급 (일반)',
+    'customer.grade.custom': '직접입력',
+
+    // 회사 정보 관련 번역
+    'company.info.basic': '기본 회사 정보',
+    'company.info.description': '고객사의 기본적인 정보를 입력해 주세요',
+    'company.name': '회사명',
+    'company.namePlaceholder': '회사명을 입력하세요',
+    'company.industry': '업종',
+    'company.industryPlaceholder': '업종을 입력하세요',
+    'company.type': '회사 유형',
+    'company.typeSelect': '회사 유형 선택',
+    'company.typeCustomPlaceholder': '회사 유형을 입력하세요',
+    'company.type.small': '중소기업',
+    'company.type.large': '대기업',
+    'company.type.startup': '스타트업',
+    'company.type.public': '공공기관',
+    'company.type.nonprofit': '비영리단체',
+    'company.type.custom': '직접입력',
+
+    // 주소 관련 번역
+    'address.title': '주소',
+    'address.selectProvince': '도/시 선택',
+    'address.selectDistrict': '구/군 선택',
+    'address.selectWard': '동/읍/면 선택',
+    'address.detailAddress': '상세 주소를 입력하세요',
+
+    // 영업사원 관련 번역
+    'sales.person.assigned': '담당 영업사원',
+    'sales.person.description': '이 고객사를 담당할 영업사원을 선택해 주세요',
+    'sales.person.placeholder': '담당 영업사원을 검색하여 선택하세요',
+
+    // 이미지 관련 번역
+    'image.registration': '이미지 등록',
+    'image.description': '고객사의 프로필 이미지와 시설 사진을 등록해 주세요',
+    'image.profile': '고객사 프로필 이미지',
+    'image.facility': '시설 사진',
+    'image.add': '이미지 추가',
+
+    // 담당자 관련 번역
+    'contact.info': '담당자 정보',
+    'contact.description': '고객사의 담당자들을 추가해 주세요',
+    'contact.person': '담당자',
+    'contact.add': '담당자 추가',
+    'contact.profileImage': '프로필 이미지',
+    'contact.name': '이름',
+    'contact.namePlaceholder': '담당자 이름',
+    'contact.department': '부서',
+    'contact.departmentPlaceholder': '부서명',
+    'contact.position': '직책',
+    'contact.positionPlaceholder': '직책',
+    'contact.phone': '전화번호',
+    'contact.phonePlaceholder': '전화번호',
+    'contact.email': '이메일',
+    'contact.emailPlaceholder': '이메일',
+    'contact.birthDate': '생년월일',
+
+    // 검색 관련 번역
+    'search.salesPerson': '담당자 검색...',
+
+    // 버튼 관련 번역
+    'button.cancel': '취소',
+    'button.register': '고객사 등록',
+    'button.submitting': '등록 중...',
+
+    // 공통 번역
+    'loading': '로딩 중...',
 
     employees: '직원 관리',
     'employees.dashboard': '직원 대시보드',
@@ -529,17 +595,83 @@ const translations = {
     'accounting.pendingApproval': 'Chờ phê duyệt',
     'accounting.overduePayments': 'Thanh toán quá hạn',
 
-    // 회계 설정 추가 번역
-    'accounting.setupDescription': 'Thiết lập thông tin kế toán cơ bản theo chuẩn kế toán Việt Nam',
-    'accounting.coaDescription': 'Thiết lập tài khoản kế toán theo chuẩn kế toán Việt Nam (VAS)',
-    'accounting.addAccount': 'Thêm tài khoản',
-    'accounting.taxSettingsDescription': 'Quản lý thiết lập VAT và các loại thuế khác',
-    'accounting.vatSettingsTitle': 'Thiết lập VAT',
-    'accounting.addNewTaxType': 'Thêm loại thuế mới',
-    'accounting.securitySettingsDescription': 'Thiết lập kiểm soát truy cập và chính sách bảo mật',
-    'accounting.integrationsDescription': 'Tích hợp với hệ thống ERP, ngân hàng, hóa đơn điện tử',
-    'accounting.apiKeyDescription': 'Quản lý API Key của các dịch vụ bên ngoài',
-    'accounting.enterApiKey': 'Nhập API Key',
+    // 고객사 관련 번역
+    'customer.add.title': 'Thêm khách hàng mới',
+    'customer.add.description': 'Nhập thông tin khách hàng và người liên hệ',
+    'customer.createSuccess': 'Khách hàng đã được đăng ký thành công.',
+    'customer.createError': 'Có lỗi xảy ra khi đăng ký khách hàng.',
+    'customer.grade': 'Cấp độ khách hàng',
+    'customer.gradeSelect': 'Chọn cấp độ khách hàng',
+    'customer.gradeCustomPlaceholder': 'Nhập cấp độ khách hàng',
+    'customer.grade.vip': 'Cấp A (VIP)',
+    'customer.grade.excellent': 'Cấp B (Xuất sắc)',
+    'customer.grade.normal': 'Cấp C (Thông thường)',
+    'customer.grade.custom': 'Nhập trực tiếp',
+
+    // 회사 정보 관련 번역
+    'company.info.basic': 'Thông tin công ty cơ bản',
+    'company.info.description': 'Nhập thông tin cơ bản của khách hàng',
+    'company.name': 'Tên công ty',
+    'company.namePlaceholder': 'Nhập tên công ty',
+    'company.industry': 'Ngành nghề',
+    'company.industryPlaceholder': 'Nhập ngành nghề',
+    'company.type': 'Loại công ty',
+    'company.typeSelect': 'Chọn loại công ty',
+    'company.typeCustomPlaceholder': 'Nhập loại công ty',
+    'company.type.small': 'Doanh nghiệp nhỏ',
+    'company.type.large': 'Tập đoàn lớn',
+    'company.type.startup': 'Công ty khởi nghiệp',
+    'company.type.public': 'Cơ quan công',
+    'company.type.nonprofit': 'Tổ chức phi lợi nhuận',
+    'company.type.custom': 'Nhập trực tiếp',
+
+    // 주소 관련 번역
+    'address.title': 'Địa chỉ',
+    'address.selectProvince': 'Chọn tỉnh/thành phố',
+    'address.selectDistrict': 'Chọn quận/huyện',
+    'address.selectWard': 'Chọn phường/xã',
+    'address.detailAddress': 'Nhập địa chỉ chi tiết',
+
+    // 영업사원 관련 번역
+    'sales.person.assigned': 'Nhân viên kinh doanh phụ trách',
+    'sales.person.description': 'Chọn nhân viên kinh doanh phụ trách khách hàng này',
+    'sales.person.placeholder': 'Tìm kiếm và chọn nhân viên kinh doanh',
+
+    // 이미지 관련 번역
+    'image.registration': 'Đăng ký hình ảnh',
+    'image.description': 'Đăng ký ảnh đại diện và ảnh cơ sở vật chất của khách hàng',
+    'image.profile': 'Ảnh đại diện khách hàng',
+    'image.facility': 'Ảnh cơ sở vật chất',
+    'image.add': 'Thêm ảnh',
+
+    // 담당자 관련 번역
+    'contact.info': 'Thông tin người liên hệ',
+    'contact.description': 'Thêm người liên hệ của khách hàng',
+    'contact.person': 'Người liên hệ',
+    'contact.add': 'Thêm người liên hệ',
+    'contact.profileImage': 'Ảnh đại diện',
+    'contact.name': 'Tên',
+    'contact.namePlaceholder': 'Tên người liên hệ',
+    'contact.department': 'Phòng ban',
+    'contact.departmentPlaceholder': 'Tên phòng ban',
+    'contact.position': 'Chức vụ',
+    'contact.positionPlaceholder': 'Chức vụ',
+    'contact.phone': 'Số điện thoại',
+    'contact.phonePlaceholder': 'Số điện thoại',
+    'contact.email': 'Email',
+    'contact.emailPlaceholder': 'Email',
+    'contact.birthDate': 'Ngày sinh',
+
+    // 검색 관련 번역
+    'search.salesPerson': 'Tìm kiếm người liên hệ...',
+
+    // 버튼 관련 번역
+    'button.cancel': 'Hủy',
+    'button.register': 'Đăng ký khách hàng',
+    'button.submitting': 'Đang đăng ký...',
+
+    // 공통 번역
+    'loading': 'Đang tải...',
 
     employees: 'Quản lý nhân viên',
     'employees.dashboard': 'Bảng điều khiển nhân viên',
@@ -854,18 +986,83 @@ const translations = {
     'accounting.pendingApproval': 'Pending Approval',
     'accounting.overduePayments': 'Overdue Payments',
 
-    // 회계 설정 추가 번역
-    'accounting.setupDescription': 'Set up basic accounting information according to Vietnamese accounting standards',
-    'accounting.coaDescription': 'Set up chart of accounts according to Vietnamese Accounting Standards (VAS)',
-    'accounting.addAccount': 'Add Account',
-    'accounting.taxSettingsDescription': 'Manage VAT and other tax settings',
-    'accounting.vatSettingsTitle': 'VAT Settings',
-    'accounting.addNewTaxType': 'Add New Tax Type',
-    'accounting.securitySettingsDescription': 'Set up access control and security policies',
-    'accounting.integrationsDescription': 'Integrate with ERP, banking, and e-invoice systems',
-    'accounting.apiKeyDescription': 'Manage API keys for external services',
-    'accounting.enterApiKey': 'Enter API Key',
+    // 고객사 관련 번역
+    'customer.add.title': 'Add New Customer',
+    'customer.add.description': 'Enter customer information and contact information',
+    'customer.createSuccess': 'Customer registered successfully.',
+    'customer.createError': 'An error occurred while registering the customer.',
+    'customer.grade': 'Customer Grade',
+    'customer.gradeSelect': 'Select customer grade',
+    'customer.gradeCustomPlaceholder': 'Enter customer grade',
+    'customer.grade.vip': 'Grade A (VIP)',
+    'customer.grade.excellent': 'Grade B (Excellent)',
+    'customer.grade.normal': 'Grade C (Normal)',
+    'customer.grade.custom': 'Custom input',
 
+    // 회사 정보 관련 번역
+    'company.info.basic': 'Basic Company Information',
+    'company.info.description': 'Enter basic information of the customer',
+    'company.name': 'Company Name',
+    'company.namePlaceholder': 'Enter company name',
+    'company.industry': 'Industry',
+    'company.industryPlaceholder': 'Enter industry',
+    'company.type': 'Company Type',
+    'company.typeSelect': 'Select company type',
+    'company.typeCustomPlaceholder': 'Enter company type',
+    'company.type.small': 'Small Business',
+    'company.type.large': 'Large Corporation',
+    'company.type.startup': 'Startup',
+    'company.type.public': 'Public Institution',
+    'company.type.nonprofit': 'Nonprofit Organization',
+    'company.type.custom': 'Custom input',
+
+    // 주소 관련 번역
+    'address.title': 'Address',
+    'address.selectProvince': 'Select Province/City',
+    'address.selectDistrict': 'Select District/County',
+    'address.selectWard': 'Select Ward/Township',
+    'address.detailAddress': 'Enter detailed address',
+
+    // 영업사원 관련 번역
+    'sales.person.assigned': 'Sales Representative',
+    'sales.person.description': 'Select the sales representative for this customer',
+    'sales.person.placeholder': 'Search and select a sales representative',
+
+    // 이미지 관련 번역
+    'image.registration': 'Image Registration',
+    'image.description': 'Register the customer profile image and facility photos',
+    'image.profile': 'Customer Profile Image',
+    'image.facility': 'Facility Photos',
+    'image.add': 'Add Image',
+
+    // 담당자 관련 번역
+    'contact.info': 'Contact Information',
+    'contact.description': 'Add customer contacts',
+    'contact.person': 'Contact Person',
+    'contact.add': 'Add Contact',
+    'contact.profileImage': 'Profile Image',
+    'contact.name': 'Name',
+    'contact.namePlaceholder': 'Contact Name',
+    'contact.department': 'Department',
+    'contact.departmentPlaceholder': 'Department Name',
+    'contact.position': 'Position',
+    'contact.positionPlaceholder': 'Position',
+    'contact.phone': 'Phone Number',
+    'contact.phonePlaceholder': 'Phone Number',
+    'contact.email': 'Email',
+    'contact.emailPlaceholder': 'Email',
+    'contact.birthDate': 'Birth Date',
+
+    // 검색 관련 번역
+    'search.salesPerson': 'Search Contact...',
+
+    // 버튼 관련 번역
+    'button.cancel': 'Cancel',
+    'button.register': 'Register Customer',
+    'button.submitting': 'Submitting...',
+
+    // 공통 번역
+    'loading': 'Loading...',
     employees: 'Employee Management',
     'employees.dashboard': 'Employee Dashboard',
     'employees.leave': 'Leave Management',

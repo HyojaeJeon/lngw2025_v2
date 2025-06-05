@@ -33,6 +33,7 @@ const ContentRecommendation = require("./ContentRecommendation")(sequelize, Sequ
 const Skill = require("./Skill")(sequelize, Sequelize.DataTypes);
 const EmergencyContact = require("./EmergencyContact")(sequelize, Sequelize.DataTypes);
 const Customer = require("./Customer")(sequelize, Sequelize.DataTypes);
+const ContactPerson = require('./ContactPerson')(sequelize, Sequelize.DataTypes);
 const SalesOpportunity = require("./SalesOpportunity")(sequelize, Sequelize.DataTypes);
 const Address = require("./Address")(sequelize, Sequelize.DataTypes);
 const Service = require("./Service")(sequelize, Sequelize.DataTypes);
@@ -131,6 +132,7 @@ const models = {
   Skill,
   EmergencyContact,
   Customer,
+  ContactPerson,
   SalesOpportunity, 
   Address,
   Service,

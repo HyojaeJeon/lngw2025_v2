@@ -13,6 +13,7 @@ import { Building2, MapPin, ChevronDown, User, Phone, Mail, FileText, Calendar, 
 import { useLanguage } from "@/contexts/languageContext.js";
 import Image from "next/image";
 import imageCompression from 'browser-image-compression';
+import { useRouter } from "next/navigation";
 
 // 이미지 로딩 모달 컴포넌트
 const ImageLoadingModal = ({ isVisible }) => {
@@ -29,6 +30,7 @@ const ImageLoadingModal = ({ isVisible }) => {
 };
 
 const AddressSelector = ({ value, onChange }) => {
+  const { t } = useLanguage();
   const [address, setAddress] = useState({
     province: "",
     district: "",
@@ -45,6 +47,9 @@ const AddressSelector = ({ value, onChange }) => {
   });
   const [selected, setSelected] = useState({ province: {}, district: {}, ward: {} });
   const containerRef = useRef();
+  const provinceRef = useRef();
+  const districtRef = useRef();
+  const wardRef = useRef();
 
   const fetchAddressData = async (level, id = 0) => {
     const url = `https://esgoo.net/api-tinhthanh/${level}/${id}.htm`;
@@ -127,19 +132,22 @@ const AddressSelector = ({ value, onChange }) => {
     }
   };
 
-  const renderDropdown = (type, list, placeholder) => (
-    <div className="relative w-full">
+  const renderDropdown = (type, list, placeholder, ref) => (
+    <div className="relative w-full" ref={ref}>
       <button
         type="button"
         className={`w-full h-12 px-3 text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white flex items-center justify-between
-                   ${selected[type]?.name ? 'font-medium' : 'text-gray-500 dark:text-gray-400'}`}
+                   ${selected[type]?.name ? 'font-medium' : 'text-gray-500 dark:text-gray-400'}
+                   ${(type === 'district' && !selected?.province?.id) || (type === 'ward' && !selected?.district?.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
+          if ((type === 'district' && !selected?.province?.id) || (type === 'ward' && !selected?.district?.id)) return;
           setAddressType(prev => ({
             ...prev,
             [`${type}Open`]: !prev[`${type}Open`]
           }));
         }}
+        disabled={(type === 'district' && !selected?.province?.id) || (type === 'ward' && !selected?.district?.id)}
       >
         <span className="text-sm">
           {selected[type]?.name || placeholder}
@@ -148,7 +156,7 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
+        <div className="absolute bottom-full left-0 w-full mb-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
           {list.map((item) => (
             <button
               key={item.id}
@@ -167,14 +175,14 @@ const AddressSelector = ({ value, onChange }) => {
   return (
     <div ref={containerRef} className="space-y-4 relative">
       <div className="grid grid-cols-3 gap-4">
-        {renderDropdown("province", addressType.provinces, "도/시 선택")}
-        {renderDropdown("district", addressType.districts, "구/군 선택")}
-        {renderDropdown("ward", addressType.wards, "동/읍/면 선택")}
+        {renderDropdown("province", addressType.provinces, t("address.selectProvince") || "도/시 선택", provinceRef)}
+        {renderDropdown("district", addressType.districts, t("address.selectDistrict") || "구/군 선택", districtRef)}
+        {renderDropdown("ward", addressType.wards, t("address.selectWard") || "동/읍/면 선택", wardRef)}
       </div>
       <div>
         <Input
           type="text"
-          placeholder="상세 주소를 입력하세요"
+          placeholder={t("address.detailAddress") || "상세 주소를 입력하세요"}
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
             const fullAddress = `${selected.province?.name || ''} ${selected.district?.name || ''} ${selected.ward?.name || ''} ${e.target.value}`.trim();
@@ -187,9 +195,11 @@ const AddressSelector = ({ value, onChange }) => {
 };
 
 const SearchableUserSelect = ({ value, onChange, placeholder }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
+  const containerRef = useRef(null);
 
   const { data: usersData, loading, fetchMore } = useQuery(GET_USERS, {
     variables: { limit: 10, offset: 0, search: searchTerm },
@@ -242,6 +252,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                    } bg-white dark:bg-gray-700`}
         onClick={() => setIsOpen(!isOpen)}
+        ref={containerRef}
       >
         <div className="flex items-center space-x-3">
           {selectedUser ? (
@@ -262,13 +273,13 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl">
+        <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999]">
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="담당자 검색..."
+                placeholder={t("search.salesPerson") || "담당자 검색..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 text-sm border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200"
@@ -305,7 +316,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
               <div className="p-3 text-center text-gray-500">
                 <div className="inline-flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span>로딩 중...</span>
+                  <span>{t("loading") || "로딩 중..."}</span>
                 </div>
               </div>
             )}
@@ -317,6 +328,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
 };
 
 const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false, setImageLoading }) => {
+  const { t } = useLanguage();
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -384,7 +396,7 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false,
           className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
         >
           <Upload className="w-8 h-8 text-gray-400 mb-2" />
-          <span className="text-sm text-gray-500">이미지 추가</span>
+          <span className="text-sm text-gray-500">{t("image.add") || "이미지 추가"}</span>
         </button>
 
         {/* 이미지 미리보기 */}
@@ -485,6 +497,7 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false,
 };
 
 const ContactPersonForm = ({ contact, index, updateContact, removeContact, setImageLoading }) => {
+  const { t } = useLanguage();
   const [profileImagePreview, setProfileImagePreview] = useState(contact.profileImage || null);
   const fileInputRef = useRef(null);
 
@@ -528,7 +541,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact, setIm
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
           <User className="w-5 h-5 mr-2" />
-          담당자 {index + 1}
+          {t("contact.person") || "담당자"} {index + 1}
         </h4>
         <Button
           type="button"
@@ -544,7 +557,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact, setIm
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* 프로필 이미지 */}
         <div className="col-span-full">
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">프로필 이미지</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">{t("contact.profileImage") || "프로필 이미지"}</Label>
           <div className="flex items-center space-x-4">
             <div className="relative">
               {profileImagePreview ? (
@@ -582,64 +595,64 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact, setIm
 
         {/* 기본 정보 */}
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">이름 *</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.name") || "이름"} *</Label>
           <Input
             type="text"
             value={contact.name || ""}
             onChange={(e) => updateContact(index, 'name', e.target.value)}
-            placeholder="담당자 이름"
+            placeholder={t("contact.namePlaceholder") || "담당자 이름"}
             className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
             required
           />
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">부서</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.department") || "부서"}</Label>
           <Input
             type="text"
             value={contact.department || ""}
             onChange={(e) => updateContact(index, 'department', e.target.value)}
-            placeholder="부서명"
+            placeholder={t("contact.departmentPlaceholder") || "부서명"}
             className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">직책</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.position") || "직책"}</Label>
           <Input
             type="text"
             value={contact.position || ""}
             onChange={(e) => updateContact(index, 'position', e.target.value)}
-            placeholder="직책"
+            placeholder={t("contact.positionPlaceholder") || "직책"}
             className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
         {/* 연락처 정보 */}
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">전화번호</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.phone") || "전화번호"}</Label>
           <Input
             type="tel"
             value={contact.phone || ""}
             onChange={(e) => updateContact(index, 'phone', e.target.value)}
-            placeholder="전화번호"
+            placeholder={t("contact.phonePlaceholder") || "전화번호"}
             className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">이메일</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.email") || "이메일"}</Label>
           <Input
             type="email"
             value={contact.email || ""}
             onChange={(e) => updateContact(index, 'email', e.target.value)}
-            placeholder="이메일"
+            placeholder={t("contact.emailPlaceholder") || "이메일"}
             className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">생년월일</Label>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("contact.birthDate") || "생년월일"}</Label>
           <Input
             type="date"
             value={contact.birthDate || ""}
@@ -688,7 +701,9 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact, setIm
 
 export default function AddCustomerPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [imageLoading, setImageLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -753,6 +768,8 @@ export default function AddCustomerPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
       const { data } = await createCustomer({
         variables: {
@@ -763,28 +780,32 @@ export default function AddCustomerPage() {
           }
         }
       });
+      
       console.log("Customer created:", data);
-      // 성공 처리 로직
+      alert(t("customer.createSuccess") || "고객사가 성공적으로 등록되었습니다.");
+      router.push("/dashboard/customers");
     } catch (error) {
       console.error("Customer creation error:", error);
-      // 에러 처리 로직
+      alert(t("customer.createError") || "고객사 등록 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const companyTypes = [
-    { value: "중소기업", label: "중소기업" },
-    { value: "대기업", label: "대기업" },
-    { value: "스타트업", label: "스타트업" },
-    { value: "공공기관", label: "공공기관" },
-    { value: "비영리단체", label: "비영리단체" },
-    { value: "직접입력", label: "직접입력" }
+    { value: "중소기업", label: t("company.type.small") || "중소기업" },
+    { value: "대기업", label: t("company.type.large") || "대기업" },
+    { value: "스타트업", label: t("company.type.startup") || "스타트업" },
+    { value: "공공기관", label: t("company.type.public") || "공공기관" },
+    { value: "비영리단체", label: t("company.type.nonprofit") || "비영리단체" },
+    { value: "직접입력", label: t("company.type.custom") || "직접입력" }
   ];
 
   const grades = [
-    { value: "A급 (VIP)", label: "A급 (VIP)" },
-    { value: "B급 (우수)", label: "B급 (우수)" },
-    { value: "C급 (일반)", label: "C급 (일반)" },
-    { value: "직접입력", label: "직접입력" }
+    { value: "A급 (VIP)", label: t("customer.grade.vip") || "A급 (VIP)" },
+    { value: "B급 (우수)", label: t("customer.grade.excellent") || "B급 (우수)" },
+    { value: "C급 (일반)", label: t("customer.grade.normal") || "C급 (일반)" },
+    { value: "직접입력", label: t("customer.grade.custom") || "직접입력" }
   ];
 
   return (
@@ -800,8 +821,8 @@ export default function AddCustomerPage() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">새로운 고객사 추가</h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">고객사 정보와 담당자 정보를 입력해 주세요</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t("customer.add.title") || "새로운 고객사 추가"}</h1>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">{t("customer.add.description") || "고객사 정보와 담당자 정보를 입력해 주세요"}</p>
               </div>
             </div>
           </div>
@@ -813,48 +834,48 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <Building2 className="w-5 h-5 mr-2" />
-                기본 회사 정보
+                {t("company.info.basic") || "기본 회사 정보"}
               </CardTitle>
               <CardDescription className="text-blue-100">
-                고객사의 기본적인 정보를 입력해 주세요
+                {t("company.info.description") || "고객사의 기본적인 정보를 입력해 주세요"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-3">
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">회사명 *</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("company.name") || "회사명"} *</Label>
                   <Input
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="회사명을 입력하세요"
+                    placeholder={t("company.namePlaceholder") || "회사명을 입력하세요"}
                     className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                     required
                   />
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">업종</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("company.industry") || "업종"}</Label>
                   <Input
                     name="industry"
                     type="text"
                     value={formData.industry}
                     onChange={handleInputChange}
-                    placeholder="업종을 입력하세요"
+                    placeholder={t("company.industryPlaceholder") || "업종을 입력하세요"}
                     className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">회사 유형</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("company.type") || "회사 유형"}</Label>
                   <select
                     name="companyType"
                     value={formData.companyType}
                     onChange={handleInputChange}
                     className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                   >
-                    <option value="">회사 유형 선택</option>
+                    <option value="">{t("company.typeSelect") || "회사 유형 선택"}</option>
                     {companyTypes.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
@@ -865,21 +886,21 @@ export default function AddCustomerPage() {
                       type="text"
                       value={formData.customCompanyType}
                       onChange={handleInputChange}
-                      placeholder="회사 유형을 입력하세요"
+                      placeholder={t("company.typeCustomPlaceholder") || "회사 유형을 입력하세요"}
                       className="mt-2 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                     />
                   )}
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">고객 등급</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("customer.grade") || "고객 등급"}</Label>
                   <select
                     name="grade"
                     value={formData.grade}
                     onChange={handleInputChange}
                     className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                   >
-                    <option value="">고객 등급 선택</option>
+                    <option value="">{t("customer.gradeSelect") || "고객 등급 선택"}</option>
                     {grades.map(grade => (
                       <option key={grade.value} value={grade.value}>{grade.label}</option>
                     ))}
@@ -890,14 +911,14 @@ export default function AddCustomerPage() {
                       type="text"
                       value={formData.customGrade}
                       onChange={handleInputChange}
-                      placeholder="고객 등급을 입력하세요"
+                      placeholder={t("customer.gradeCustomPlaceholder") || "고객 등급을 입력하세요"}
                       className="mt-2 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                     />
                   )}
                 </div>
 
                 <div className="lg:col-span-3">
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">주소</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("address.title") || "주소"}</Label>
                   <div className="mt-1">
                     <AddressSelector
                       value={formData.address}
@@ -914,17 +935,17 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <User className="w-5 h-5 mr-2" />
-                담당 영업사원
+                {t("sales.person.assigned") || "담당 영업사원"}
               </CardTitle>
               <CardDescription className="text-green-100">
-                이 고객사를 담당할 영업사원을 선택해 주세요
+                {t("sales.person.description") || "이 고객사를 담당할 영업사원을 선택해 주세요"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <SearchableUserSelect
                 value={formData.assignedUserId}
                 onChange={(userId) => setFormData(prev => ({...prev, assignedUserId: userId}))}
-                placeholder="담당 영업사원을 검색하여 선택하세요"
+                placeholder={t("sales.person.placeholder") || "담당 영업사원을 검색하여 선택하세요"}
               />
             </CardContent>
           </Card>
@@ -934,10 +955,10 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <ImageIcon className="w-5 h-5 mr-2" />
-                이미지 등록
+                {t("image.registration") || "이미지 등록"}
               </CardTitle>
               <CardDescription className="text-purple-100">
-                고객사의 프로필 이미지와 시설 사진을 등록해 주세요
+                {t("image.description") || "고객사의 프로필 이미지와 시설 사진을 등록해 주세요"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -945,7 +966,7 @@ export default function AddCustomerPage() {
                 {/* 프로필 이미지 - 상단 */}
                 <div>
                   <ImageUploadSection
-                    title="고객사 프로필 이미지"
+                    title={t("image.profile") || "고객사 프로필 이미지"}
                     images={formData.profileImage}
                     onImagesChange={(image) => setFormData(prev => ({...prev, profileImage: image}))}
                     isMultiple={false}
@@ -959,7 +980,7 @@ export default function AddCustomerPage() {
                 {/* 시설 사진 - 하단 */}
                 <div>
                   <ImageUploadSection
-                    title="시설 사진"
+                    title={t("image.facility") || "시설 사진"}
                     images={formData.facilityImages}
                     onImagesChange={(images) => setFormData(prev => ({...prev, facilityImages: images}))}
                     isMultiple={true}
@@ -975,10 +996,10 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <UserPlus className="w-5 h-5 mr-2" />
-                담당자 정보
+                {t("contact.info") || "담당자 정보"}
               </CardTitle>
               <CardDescription className="text-orange-100">
-                고객사의 담당자들을 추가해 주세요
+                {t("contact.description") || "고객사의 담당자들을 추가해 주세요"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -1001,7 +1022,7 @@ export default function AddCustomerPage() {
                   className="w-full h-16 border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-600 hover:text-blue-600 rounded-xl transition-all duration-200"
                 >
                   <UserPlus className="w-5 h-5 mr-2" />
-                  담당자 추가
+                  {t("contact.add") || "담당자 추가"}
                 </Button>
               </div>
             </CardContent>
@@ -1013,14 +1034,16 @@ export default function AddCustomerPage() {
               type="button"
               variant="outline"
               className="px-8 py-3 h-12 rounded-xl border-2"
+              onClick={() => router.back()}
             >
-              취소
+              {t("button.cancel") || "취소"}
             </Button>
             <Button
               type="submit"
-              className="px-8 py-3 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg"
+              disabled={isSubmitting}
+              className="px-8 py-3 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg disabled:opacity-50"
             >
-              고객사 등록
+              {isSubmitting ? (t("button.submitting") || "등록 중...") : (t("button.register") || "고객사 등록")}
             </Button>
           </div>
         </form>
