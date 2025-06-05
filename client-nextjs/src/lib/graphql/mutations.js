@@ -93,10 +93,11 @@ export const CREATE_CUSTOMER = gql`
       phone
       industry
       companyType
+      customCompanyType
       grade
+      customGrade
       address
       profileImage
-      facilityImages
       assignedUserId
       assignedUser {
         id
@@ -116,6 +117,13 @@ export const CREATE_CUSTOMER = gql`
         tiktok
         instagram
         profileImage
+      }
+      images {
+        id
+        imageUrl
+        imageType
+        description
+        sortOrder
       }
       createdAt
       updatedAt

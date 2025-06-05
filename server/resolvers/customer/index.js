@@ -87,6 +87,11 @@ const customerResolvers = {
             as: "assignedUser",
             attributes: ["id", "name", "email", "department", "position"],
           },
+          {
+            model: models.CustomerImage,
+            as: "images",
+            order: [['sortOrder', 'ASC']],
+          },
         ],
         order: [["createdAt", "DESC"]],
       });
@@ -103,6 +108,11 @@ const customerResolvers = {
             model: models.User,
             as: "assignedUser",
             attributes: ["id", "name", "email", "department", "position"],
+          },
+          {
+            model: models.CustomerImage,
+            as: "images",
+            order: [['sortOrder', 'ASC']],
           },
         ],
       });
@@ -121,7 +131,7 @@ const customerResolvers = {
 
         try {
           // Create customer
-          const { contacts, ...customerData } = input;
+          const { contacts, images, ...customerData } = input;
           const customer = await models.Customer.create(
             {
               ...customerData,
@@ -141,10 +151,23 @@ const customerResolvers = {
             });
           }
 
+          // Create images if provided
+          if (images && images.length > 0) {
+            const imagesData = images.map((image, index) => ({
+              ...image,
+              customerId: customer.id,
+              sortOrder: image.sortOrder || index,
+              imageType: image.imageType || 'facility',
+            }));
+            await models.CustomerImage.bulkCreate(imagesData, {
+              transaction,
+            });
+          }
+
           // Commit transaction
           await transaction.commit();
 
-          // Return customer with contacts
+          // Return customer with contacts and images
           const createdCustomer = await models.Customer.findByPk(customer.id, {
             include: [
               {
@@ -155,6 +178,11 @@ const customerResolvers = {
               {
                 model: models.ContactPerson,
                 as: "contacts",
+              },
+              {
+                model: models.CustomerImage,
+                as: "images",
+                order: [['sortOrder', 'ASC']],
               },
             ],
           });
@@ -204,6 +232,12 @@ const customerResolvers = {
       return await models.ContactPerson.findAll({
         where: { customerId: customer.id },
         order: [["createdAt", "ASC"]],
+      });
+    },
+    images: async (customer) => {
+      return await models.CustomerImage.findAll({
+        where: { customerId: customer.id },
+        order: [["sortOrder", "ASC"], ["createdAt", "ASC"]],
       });
     },
   },

@@ -83,11 +83,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: "프로필 이미지 URL",
       },
-      facilityImages: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        comment: "시설 이미지 URLs (배열)",
-      },
+      
       facebook: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -119,6 +115,11 @@ module.exports = (sequelize, DataTypes) => {
     Customer.hasMany(models.ContactPerson, {
       foreignKey: 'customerId',
       as: 'contacts',
+      onDelete: 'CASCADE'
+    });
+    Customer.hasMany(models.CustomerImage, {
+      foreignKey: 'customerId',
+      as: 'images',
       onDelete: 'CASCADE'
     });
   };

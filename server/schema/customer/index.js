@@ -26,22 +26,33 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
-
+    customCompanyType: String
     grade: String
-
+    customGrade: String
     address: String
     assignedUserId: ID
     assignedUser: User
     status: String!
     contacts: [ContactPerson!]
+    images: [CustomerImage!]
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
-    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
     opportunities: [SalesOpportunity!]
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  type CustomerImage {
+    id: ID!
+    customerId: ID!
+    imageUrl: String!
+    imageType: String!
+    description: String
+    sortOrder: Int
     createdAt: Date!
     updatedAt: Date!
   }
@@ -119,18 +130,27 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
+    customCompanyType: String
     grade: String
+    customGrade: String
     address: String
     assignedUserId: ID
     status: String
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
-    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
     contacts: [ContactPersonInput!]
+    images: [CustomerImageInput!]
+  }
+
+  input CustomerImageInput {
+    imageUrl: String!
+    imageType: String
+    description: String
+    sortOrder: Int
   }
 
   input ContactPersonInput {
