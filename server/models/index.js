@@ -116,6 +116,39 @@ TrendingKeyword.belongsTo(TrendAnalysis, {
   as: "trend",
 });
 
+Customer.hasMany(ContactPerson, {
+  foreignKey: 'customerId',
+  as: 'contacts',
+  onDelete: 'CASCADE'
+});
+Customer.hasMany(CustomerImage, {
+  foreignKey: 'customerId',
+  as: 'images',
+  onDelete: 'CASCADE'
+});
+
+// Call associate functions
+Customer.associate = (models) => {
+    Customer.belongsTo(models.User, {
+        foreignKey: 'assignedUserId',
+        as: 'assignedUser'
+    });
+    models.User.hasMany(Customer, {
+        foreignKey: 'assignedUserId',
+        as: 'assignedCustomers'
+    });
+    Customer.hasMany(models.ContactPerson, {
+        foreignKey: 'customerId',
+        as: 'contacts',
+        onDelete: 'CASCADE'
+    });
+    Customer.hasMany(models.CustomerImage, {
+        foreignKey: 'customerId',
+        as: 'images',
+        onDelete: 'CASCADE'
+    });
+};
+
 const models = {
   sequelize,
   Sequelize,
