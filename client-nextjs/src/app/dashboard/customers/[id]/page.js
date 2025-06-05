@@ -1193,8 +1193,21 @@ export default function CustomerDetailPage() {
             };
           }
         }
-        setOriginalData(customer);
-        setEditData(customer);
+        
+        // 기본값 설정
+        const processedCustomer = {
+          ...customer,
+          assignedUserId: customer.assignedUserId || customer.assignedUser?.id || "",
+          industry: customer.industry || "",
+          companyType: customer.companyType || "",
+          grade: customer.grade || "",
+          email: customer.email || "",
+          phone: customer.phone || "",
+          address: customer.address || "",
+        };
+        
+        setOriginalData(processedCustomer);
+        setEditData(processedCustomer);
       }
     },
   });
@@ -1449,7 +1462,7 @@ export default function CustomerDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="container mx-auto max-w-6xl space-y-8">
+      <div className="w-full space-y-8">
         {/* 헤더 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -1516,17 +1529,17 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Building2 className="w-5 h-5 mr-2" />
-                  기본 회사 정보
+                  {t("customer.basicInfo") || "기본 회사 정보"}
                 </CardTitle>
                 <CardDescription className="text-blue-100">
-                  고객사의 기본적인 정보를 확인하고 수정할 수 있습니다
+                  {t("customer.basicInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-3">
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      회사명 *
+                      {t("customer.name") || "회사명"} *
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1545,7 +1558,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      담당자
+                      {t("customer.assignedUser") || "담당자"}
                     </Label>
                     {isEditing ? (
                       <div className="mt-1">
@@ -1554,19 +1567,19 @@ export default function CustomerDetailPage() {
                           onChange={(userId) =>
                             handleInputChange("assignedUserId", userId)
                           }
-                          placeholder="담당자를 선택하세요"
+                          placeholder={t("customer.selectAssignedUser") || "담당자를 선택하세요"}
                         />
                       </div>
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.assignedUser?.name || "미배정"}
+                        {displayData.assignedUser?.name || t("common.unassigned") || "미배정"}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      업종
+                      {t("customer.industry") || "업종"}
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1578,14 +1591,14 @@ export default function CustomerDetailPage() {
                       />
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.industry || "정보 없음"}
+                        {displayData.industry || t("common.noData") || "정보 없음"}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      회사 유형
+                      {t("customer.companyType") || "회사 유형"}
                     </Label>
                     {isEditing ? (
                       <select
@@ -1595,13 +1608,9 @@ export default function CustomerDetailPage() {
                         }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
-                        <option value="">선택하세요</option>
+                        <option value="">{t("common.selectOption") || "선택하세요"}</option>
                         {Object.entries(companyTypes).map(([value, label]) => (
-                          <option
-                            key={value}
-                            value={value}
-                            selected={value === displayData.companyType}
-                          >
+                          <option key={value} value={value}>
                             {label}
                           </option>
                         ))}
@@ -1610,14 +1619,14 @@ export default function CustomerDetailPage() {
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
                         {companyTypes[displayData.companyType] ||
                           displayData.companyType ||
-                          "정보 없음"}
+                          t("common.noData") || "정보 없음"}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      고객 등급
+                      {t("customer.grade") || "고객 등급"}
                     </Label>
                     {isEditing ? (
                       <select
@@ -1627,7 +1636,7 @@ export default function CustomerDetailPage() {
                         }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
-                        <option value="">선택하세요</option>
+                        <option value="">{t("common.selectOption") || "선택하세요"}</option>
                         {Object.entries(gradeLabels).map(([value, label]) => (
                           <option key={value} value={value}>
                             {label}
@@ -1635,9 +1644,9 @@ export default function CustomerDetailPage() {
                         ))}
                       </select>
                     ) : (
-                      <div className="mt-1">
+                      <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl h-12 flex items-center">
                         <span
-                          className={`inline-block px-3 py-2 rounded-xl text-sm font-medium ${
+                          className={`inline-block px-3 py-1 rounded-xl text-sm font-medium ${
                             displayData.grade === "A"
                               ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
                               : displayData.grade === "B"
@@ -1647,7 +1656,7 @@ export default function CustomerDetailPage() {
                         >
                           {gradeLabels[displayData.grade] ||
                             displayData.grade ||
-                            "미분류"}
+                            t("common.unclassified") || "미분류"}
                         </span>
                       </div>
                     )}
@@ -1681,7 +1690,7 @@ export default function CustomerDetailPage() {
 
                   <div className="lg:col-span-3">
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      주소
+                      {t("customer.address") || "주소"}
                     </Label>
                     <AddressSelector
                       value={displayData.address || ""}
@@ -1710,7 +1719,7 @@ export default function CustomerDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      이메일
+                      {t("customer.email") || "이메일"}
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1723,13 +1732,13 @@ export default function CustomerDetailPage() {
                       />
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.email || "정보 없음"}
+                        {displayData.email || t("common.noData") || "정보 없음"}
                       </p>
                     )}
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      전화번호
+                      {t("customer.phone") || "전화번호"}
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1741,7 +1750,7 @@ export default function CustomerDetailPage() {
                       />
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.phone || "정보 없음"}
+                        {displayData.phone || t("common.noData") || "정보 없음"}
                       </p>
                     )}
                   </div>
@@ -1981,13 +1990,13 @@ export default function CustomerDetailPage() {
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          등록일
+                          {t("customer.createdAt") || "등록일"}
                         </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(displayData.createdAt).toLocaleDateString(
-                          "ko-KR",
-                        )}
+                        {displayData.createdAt 
+                          ? new Date(displayData.createdAt).toLocaleDateString("ko-KR")
+                          : t("common.noData") || "정보 없음"}
                       </span>
                     </div>
 
@@ -1995,13 +2004,13 @@ export default function CustomerDetailPage() {
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          마지막 수정
+                          {t("customer.updatedAt") || "마지막 수정"}
                         </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(displayData.updatedAt).toLocaleDateString(
-                          "ko-KR",
-                        )}
+                        {displayData.updatedAt 
+                          ? new Date(displayData.updatedAt).toLocaleDateString("ko-KR")
+                          : t("common.noData") || "정보 없음"}
                       </span>
                     </div>
                   </div>

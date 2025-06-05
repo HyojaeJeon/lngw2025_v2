@@ -133,11 +133,42 @@ export const UPDATE_CUSTOMER = gql`
     updateCustomer(id: $id, input: $input) {
       id
       name
+      contactName
       email
       phone
-      company
+      industry
+      companyType
+      grade
+      address
+      assignedUserId
+      assignedUser {
+        id
+        name
+        email
+        department
+        position
+      }
       status
-      notes
+      contacts {
+        id
+        name
+        department
+        position
+        phone
+        email
+        birthDate
+        facebook
+        tiktok
+        instagram
+        profileImage
+      }
+      facilityImages {
+        id
+        imageUrl
+        description
+        sortOrder
+      }
+      createdAt
       updatedAt
     }
   }
