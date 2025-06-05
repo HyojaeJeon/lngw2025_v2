@@ -1,3 +1,4 @@
+
 import { gql } from "@apollo/client";
 
 export const LOGIN_MUTATION = gql`
@@ -95,6 +96,8 @@ export const CREATE_CUSTOMER = gql`
       companyType
       grade
       address
+      profileImage
+      facilityImages
       assignedUserId
       assignedUser {
         id
@@ -115,12 +118,6 @@ export const CREATE_CUSTOMER = gql`
         instagram
         profileImage
       }
-      contactDepartment
-      contactBirthDate
-      profileImage
-      facebook
-      tiktok
-      instagram
       createdAt
       updatedAt
     }

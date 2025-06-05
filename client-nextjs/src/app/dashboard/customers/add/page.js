@@ -202,7 +202,12 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[10000] max-h-60 overflow-y-auto">
+        <div className="fixed left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[50000] max-h-60 overflow-y-auto"
+             style={{
+               top: `${ref.current?.getBoundingClientRect().bottom + window.scrollY + 4}px`,
+               left: `${ref.current?.getBoundingClientRect().left}px`,
+               width: `${ref.current?.getBoundingClientRect().width}px`
+             }}>
           {list.map((item) => (
             <button
               key={item.id}
@@ -219,7 +224,7 @@ const AddressSelector = ({ value, onChange }) => {
   );
 
   return (
-    <div ref={containerRef} className="space-y-4 relative z-10">
+    <div ref={containerRef} className="space-y-4 relative z-50">
       <div className="grid grid-cols-3 gap-4 relative">
         {renderDropdown(
           "province",
@@ -356,7 +361,12 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999] max-h-80 overflow-hidden">
+        <div className="fixed left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[50000] max-h-80 overflow-hidden"
+             style={{
+               top: `${containerRef.current?.getBoundingClientRect().bottom + window.scrollY + 8}px`,
+               left: `${containerRef.current?.getBoundingClientRect().left}px`,
+               width: `${containerRef.current?.getBoundingClientRect().width}px`
+             }}>
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -1055,7 +1065,7 @@ export default function AddCustomerPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4" style={{ overflow: 'visible' }}>
       <ImageLoadingModal isVisible={imageLoading} />
 
       <div className="container mx-auto max-w-6xl">
