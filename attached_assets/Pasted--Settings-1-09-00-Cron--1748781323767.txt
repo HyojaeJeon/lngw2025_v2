@@ -1,0 +1,62 @@
+## 설정(Settings) 화면
+
+1. **스케줄링 설정**
+    - **콘텐츠 생성 스케줄**: “매일 09:00” 등 Cron 표현식 입력 또는 드롭다운 선택
+    - **성과 수집 스케줄**: “매일 10:00” 등
+    - **A/B 테스트 지연 설정**: 예) 변형 간 최소 2분 지연 등
+2. **A/B 테스트 기준 설정**
+    - **플랫폼별 우선순위 가중치**:
+        - Facebook Engagement 가중치(예: 0.3)
+        - TikTok Views 가중치(예: 0.5)
+        - Instagram Reach 가중치(예: 0.2)
+    - **최종 승자 기준**: “가중치 합산 점수 기준” 또는 “특정 플랫폼 우선 순위” 선택
+3. **알림 채널 설정**
+    - **Slack Webhook URL** 입력
+    - **관리자 이메일 주소**(복수 입력)
+    - **알림 대상 이벤트**:
+        - “콘텐츠 생성 완료”
+        - “승인 요청 도착”
+        - “게시 성공/실패”
+        - “A/B 테스트 종료”
+        - “AI 오류 발생” 등 각각 토글 선택
+4. **플랫폼 API 키 관리**
+    - **Facebook/Instagram**: Page ID, Access Token 입력 테스트
+    - **TikTok**: Client Key, Client Secret, Redirect URI, Test API 연결 상태 표시
+    - **Twitter**: API Key, API Secret, Bearer Token 입력 테스트
+    - **Cloudinary**: Cloud Name, API Key, API Secret 테스트
+5. **AI 모델 파라미터**
+    - **Google AI Ultra 설정**:
+        - 온도(Temperature), 최대 토큰(Max Output Tokens), Top-p 등 슬라이더 또는 입력 필드
+    - **Stability AI 설정**: CFG 스케일, 이미지 해상도, 샘플 수 조정
+    - **RunwayML 설정**: 영상 길이(초), 해상도(720×1280, 1080×1920 등)
+6. **데이터 저장소 선택(최종)**
+    - **Google Sheets 사용 여부 토글**
+    - **데이터베이스 연결 문자열**(RDBMS or MongoDB) 입력
+    - **백업 주기 설정**: “DB 스냅샷 매일 / Google Sheets CSV 내보내기 주간” 등
+7. **보안 및 인증**
+    - **Webhook 검증 토큰**: Facebook/Instagram Webhook 검증용 토큰 설정
+    - **관리자 접근 제어**: IP 화이트리스트, 2단계 인증(2FA) 활성화 여부
+    - **로그 레벨 설정**: DEBUG, INFO, WARN, ERROR 선택
+
+---
+
+## 9. 에러 모니터링 및 시스템 헬스 체크
+
+1. **실시간 시스템 상태 배너(System Health Banner)**
+    - **API 응답 시간 평균**(AI 호출, 플랫폼 API 각 평균 응답 시간)
+    - **최근 1시간 오류율**(백분율)
+    - **서버 CPU/메모리 사용량**(자체 서버 호스팅 시)
+2. **오류 로그 대시보드(Error Log Dashboard)**
+    - **테이블**: timestamp, 모듈 이름(예: AI, SNS, Scheduler), 오류 메시지 요약, 심각도 레벨
+    - **필터**:
+        - 기간(예: “지난 24시간”, “지난 7일”)
+        - 모듈별 필터(“AI 텍스트 생성 오류”, “Facebook API 오류” 등)
+        - “미해결 오류만 보기” 토글
+3. **재시도 큐 상태(Retry Queue Status)**
+    - **큐에 쌓여있는 작업 수**(예: “재시도 대기 중인 포스팅 3건”)
+    - **최근 재시도 이력**: 작업 ID, 콘텐츠 ID, 시도 횟수, 마지막 시도 시간
+    - **“전체 재시도” 버튼**: 수동으로 큐에 있는 모든 작업 재시도 트리거
+4. **Webhook 상태(Health Check)**
+    - **Facebook/Instagram Webhook**: 최종 이벤트 수신 시간, 정상 연결 여부
+    - **AI API 상태**: Google AI Ultra, Stability AI, RunwayML 등 외부 서비스 연결 상태(정상/지연/에러)
+    - **DB/Google Sheets 연결 상태**: 연결 테스트 버튼(“DB 연결 테스트” 클릭 시 “성공/실패” 표시)

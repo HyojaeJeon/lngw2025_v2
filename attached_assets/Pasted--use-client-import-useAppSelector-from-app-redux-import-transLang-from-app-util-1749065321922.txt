@@ -1,0 +1,264 @@
+"use client";
+
+import { useAppSelector } from "@/app/_redux";
+import { transLang } from "@/app/_utils/functions/comFunc";
+import { useContext, useEffect, useRef, useState } from "react";
+
+const buttonStyle = ` flexAllCenter w-full max-h-[40px] py-[12px] px-[17px] rounded-[28px] bg-white bg-opacity-[35%] border border-[#F5EFEB] border-opacity-[16%] focus:outline-none focus:border-[#F5EFEB] focus:border-opacity-[40%] transition-all`;
+
+// value == address :
+// {
+//  detailAddress: "afsdadfsfdsasdaadfs"
+//  district: "Long Điền"
+//  province: "Bà Rịa - Vũng Tàu"
+//  ward: "Long Hải"
+// }
+const SelectAddress = ({ isInit, inputClass, onChange, isNeedAddressName, value }) => {
+  const lang = useAppSelector((state) => state.user.lang);
+  const userInfo = useAppSelector((state) => state.user.userInfo);
+  const [address, setAddress] = useState({
+    province: "",
+    district: "",
+    ward: "",
+    detailAddress: "",
+    addressName: "",
+  });
+
+  const [addressType, setAddressType] = useState({ provinces: [], districts: [], wards: [] });
+  const [selected, setSelected] = useState({ province: {}, district: {}, ward: {}, detailAddress: "" });
+  const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
+  const [ward, setWard] = useState("");
+  const [detailAddress, setDetailAddress] = useState("");
+  const [addressName, setAddressName] = useState("");
+
+  const detailAddressRef = useRef(null);
+  const containerRef = useRef();
+
+  const fetchAddressData = async (level, id = 0) => {
+    const url = `https://esgoo.net/api-tinhthanh/${level}/${id}.htm`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.error === 0 ? data.data : [];
+  };
+
+  const handleOutsideClick = (event) => {
+    if (containerRef.current && !containerRef.current.contains(event.target)) {
+      setAddressType((prev) => ({ ...prev, provinceOpen: false, districtOpen: false, wardOpen: false }));
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchAddressData(1).then((provinces) => setAddressType((prev) => ({ ...prev, provinces })));
+  }, []);
+
+  useEffect(() => {
+    if (selected?.province?.id) {
+      fetchAddressData(2, selected?.province?.id).then((districts) => setAddressType((prev) => ({ ...prev, districts, wards: [] })));
+    }
+  }, [selected?.province]);
+
+  useEffect(() => {
+    if (selected?.district.id) {
+      fetchAddressData(3, selected?.district.id).then((wards) => setAddressType((prev) => ({ ...prev, wards })));
+    }
+  }, [selected?.district]);
+
+  const handleSelection = (type, item) => {
+    setSelected((prev) => ({ ...prev, [type]: item }));
+
+    // District, Ward 선택 시 province 초기화
+    if (type === "province") {
+      // Province 선택 시 district 목록 오픈
+      setAddressType((prev) => ({ ...prev, provinceOpen: false, districtOpen: true, wardOpen: false }));
+
+      setSelected((prev) => ({ ...prev, district: {}, ward: {} }));
+    }
+    // Ward 선택 시 District, provice 초기화
+    if (type === "district") {
+      setSelected((prev) => ({ ...prev, ward: {} }));
+      setAddressType((prev) => ({ ...prev, provinceOpen: false, districtOpen: false, wardOpen: true }));
+    }
+
+    // 선택완료 후 상세주소로 포커스 및 스크롤 이동
+    if (type === "ward") {
+      if (detailAddressRef.current) {
+        detailAddressRef.current.focus();
+        // detailAddressRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+
+    // addressName
+    if (type === "addressName") {
+      setSelected((prev) => ({ ...prev, addressName: {} }));
+      setAddressType((prev) => ({ ...prev, provinceOpen: false, districtOpen: false, wardOpen: false }));
+    }
+    // 목록 닫기
+    setAddressType((prev) => ({ ...prev, [`${type}Open`]: false }));
+  };
+
+  const renderDropdownName = (type) => {
+    switch (type) {
+      case "province":
+        return transLang(lang, "도시 선택", "Tỉnh/Thành phố");
+      case "district":
+        return transLang(lang, "구역 선택", "Quận/Huyện");
+      case "ward":
+        return transLang(lang, "거리 선택", "Phường/Xã");
+      default:
+        return "";
+    }
+  };
+
+  const renderDefaultValue = (type) => {
+    switch (type) {
+      case "province":
+        return province;
+      case "district":
+        return district;
+      case "ward":
+        return ward;
+      case "addressName":
+        return addressName;
+      case "detailAddress":
+        return detailAddress;
+
+      default:
+        return null;
+    }
+  };
+
+  // value prop의 값이 존재할 경우 state 초기화
+  const [isInitValue, setIsInitValue] = useState(false);
+  useEffect(() => {
+    if (isInit && value && !isInitValue) {
+      setSelected({
+        province: { name: value.province },
+        district: { name: value.district },
+        ward: { name: value.ward },
+        detailAddress: value.detailAddress,
+      });
+
+      setDetailAddress(value.detailAddress);
+      isNeedAddressName && setAddressName(value.addressName);
+      setIsInitValue(true);
+    }
+  }, [isInit, value]); // value가 변경될 때마다 실행
+
+  // 변경된 데이터 부모컴포넌트로 전송
+  useEffect(() => {
+    const isAddressError = selected?.province && selected?.district && selected?.ward && selected?.detailAddress ? false : true;
+    if (selected && isInitValue) {
+      // Arrange data
+      const addressData = {
+        province: selected?.province?.name,
+        district: selected?.district?.name,
+        ward: selected?.ward?.name,
+        detailAddress: detailAddress,
+        addressName: selected?.addressName || addressName,
+        isAddressError,
+      };
+
+      setAddress(addressData);
+
+      // 부모 컴포넌트로 데이터 전송
+      onChange && onChange(addressData);
+    }
+  }, [selected]);
+
+  // console.log("selected", selected);
+  // console.log("address", address);
+
+  const renderDropdown = (type, list) => (
+    <div className="relative flex w-full h-full max-h-[45px] max-w-[32%] min-w-[32%]">
+      <button
+        className={`h-full relative ${buttonStyle}  ${
+          selected[type]?.name || renderDefaultValue(type) ? "font-bold text-wrap tcDefault" : "tc40"
+        } xxs:text-[12px] xs:text-[12px] sm:text-[12px] md:text-[12px] z-[102]`}
+        onClick={(e) => {
+          e.stopPropagation(); // 이벤트 버블링 중지
+          setAddressType((prev) => ({
+            ...prev,
+            [`${type}Open`]: addressType[`${type}Open`] ? false : true,
+          }));
+        }}
+      >
+        {/* 선택된 데이터 */}
+        {selected[type]?.name ? selected[type]?.name : renderDropdownName(type)}
+      </button>
+      {addressType[`${type}Open`] && (
+        <div className="absolute top-[45px] left-0 flex flex-col w-full rounded-[12px] max-h-[300px] overflow-y-auto z-[103] shadow-2xl">
+          {list.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`max-h-[40px] ${
+                inputClass ? inputClass : "text-[14px]"
+              } py-[12px] px-[17px] bg-white bg-opacity-[70%] hover:bg-opacity-[90%] border border-[#F5EFEB] border-opacity-[16%] focus:outline-none focus:border-[#F5EFEB] focus:border-opacity-[40%] transition-all z-[103]`}
+              onClick={(e) => handleSelection(type, item)}
+            >
+              {item?.full_name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div>
+      <div ref={containerRef} className="flex-col w-full justify-between mb-[16px]">
+        <label className="text-[12px] font-semibold tcDefault mb-[4px] ml-[6px]">Địa chỉ</label>
+
+        <div className="flex w-full justify-between mt-[4px]">
+          {renderDropdown("province", addressType.provinces)}
+          {renderDropdown("district", addressType.districts)}
+          {renderDropdown("ward", addressType.wards)}
+        </div>
+      </div>
+      <div className="flex w-full justify-between mb-[16px]">
+        <div className="flex flex-col w-full">
+          <label className="text-[12px] font-semibold tcDefault mb-[4px] ml-[6px]">Tòa nhà, số nhà, tên đường</label>
+          <input
+            ref={detailAddressRef}
+            type="text"
+            className={`max-h-[40px] text-[12px] py-[12px] px-[17px] rounded-[28px] bg-white bg-opacity-[35%] border border-[#F5EFEB] border-opacity-[16%] focus:outline-none focus:border-[#F5EFEB] focus:border-opacity-[40%] transition-all ${
+              selected?.detailAddress || detailAddress ? "tcDefault font-bold" : "tc56"
+            }`}
+            placeholder="Nhập họ"
+            onChange={(e) => {
+              setSelected((prev) => ({ ...prev, addressName: e.target.value }));
+              setDetailAddress(e.target.value);
+            }}
+            value={detailAddress}
+          />
+        </div>
+      </div>
+      {isNeedAddressName && (
+        <div className="flex w-full justify-between ">
+          <div className="flex flex-col w-full">
+            <label className="text-[12px] font-semibold tcDefault mb-[4px] ml-[6px]">Tên địa chỉ (ví dụ : văn phòng, nhà, v.v ... )</label>
+            <input
+              type="text"
+              className={`max-h-[40px] ${
+                inputClass ? inputClass : "text-[14px]"
+              } py-[12px] px-[17px] rounded-[28px] bg-white bg-opacity-[35%] border border-[#F5EFEB] border-opacity-[16%] focus:outline-none focus:border-[#F5EFEB] focus:border-opacity-[40%] transition-all tc56`}
+              placeholder="Tên địa chỉ"
+              onChange={(e) => setAddressName(e.target.value)}
+              value={addressName}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SelectAddress;

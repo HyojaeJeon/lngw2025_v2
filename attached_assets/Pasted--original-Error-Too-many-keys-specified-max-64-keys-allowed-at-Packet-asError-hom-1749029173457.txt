@@ -1,0 +1,85 @@
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (/home/runner/workspace/server/node_modules/mysql2/lib/packets/packet.js:740:17)
+      at Query.execute (/home/runner/workspace/server/node_modules/mysql2/lib/commands/command.js:29:26)
+      at Connection.handlePacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:475:34)
+      at PacketParser.onPacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:93:12)
+      at PacketParser.executeStart (/home/runner/workspace/server/node_modules/mysql2/lib/packet_parser.js:75:16)
+      at Socket.<anonymous> (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+[nodemon] app crashed - waiting for file changes before starting...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+[nodemon] restarting due to changes...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+Connecting to database...
+Executing (default): SELECT 1+1 AS result
+Database connection established successfully.
+Syncing database...
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'marketing_dashboard'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='marketing_dashboard' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Unable to start server: Error
+    at Query.run (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/mysql/query.js:52:25)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async User.sync (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:984:11)
+    at async Sequelize.sync (/home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:377:9)
+    at async startServer (/home/runner/workspace/server/index.js:95:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (/home/runner/workspace/server/node_modules/mysql2/lib/packets/packet.js:740:17)
+      at Query.execute (/home/runner/workspace/server/node_modules/mysql2/lib/commands/command.js:29:26)
+      at Connection.handlePacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:475:34)
+      at PacketParser.onPacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:93:12)
+      at PacketParser.executeStart (/home/runner/workspace/server/node_modules/mysql2/lib/packet_parser.js:75:16)
+      at Socket.<anonymous> (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (/home/runner/workspace/server/node_modules/mysql2/lib/packets/packet.js:740:17)
+      at Query.execute (/home/runner/workspace/server/node_modules/mysql2/lib/commands/command.js:29:26)
+      at Connection.handlePacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:475:34)
+      at PacketParser.onPacket (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:93:12)
+      at PacketParser.executeStart (/home/runner/workspace/server/node_modules/mysql2/lib/packet_parser.js:75:16)
+      at Socket.<anonymous> (/home/runner/workspace/server/node_modules/mysql2/lib/base/connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}

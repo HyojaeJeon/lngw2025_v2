@@ -1,0 +1,32 @@
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+(node:7012) Warning: Accessing non-existent property 'kind' of module exports inside circular dependency
+Error starting server: Error: typeDefs must contain only strings, documents, schemas, or functions, got object
+    at visitTypeSources (/home/runner/workspace/server/node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:58:19)
+    at visitTypeSources (/home/runner/workspace/server/node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:40:17)
+    at mergeGraphQLTypes (/home/runner/workspace/server/node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:66:22)
+    at mergeTypeDefs (/home/runner/workspace/server/node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:13:22)
+    at makeExecutableSchema (/home/runner/workspace/server/node_modules/@graphql-tools/schema/cjs/makeExecutableSchema.js:73:58)
+    at ApolloServer.constructSchema (/home/runner/workspace/server/node_modules/apollo-server-core/dist/ApolloServer.js:361:50)
+    at new ApolloServerBase (/home/runner/workspace/server/node_modules/apollo-server-core/dist/ApolloServer.js:165:75)
+    at new ApolloServer (/home/runner/workspace/server/node_modules/apollo-server-express/dist/ApolloServer.js:13:1)
+    at startServer (/home/runner/workspace/server/index.js:53:18)
+    at Object.<anonymous> (/home/runner/workspace/server/index.js:119:1)
+[nodemon] app crashed - waiting for file changes before starting...

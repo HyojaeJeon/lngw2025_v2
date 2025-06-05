@@ -1,0 +1,110 @@
+const { gql } = require("apollo-server-express");
+
+const authTypeDefs = gql`
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
+  input LoginInput {
+    email: String!
+    password: String!
+  }
+
+  input EmergencyContactInput {
+    name: String!
+    relationship: String!
+    phoneNumber: String!
+  }
+
+  input SkillInput {
+    name: String!
+    level: String
+  }
+
+  input RegisterInput {
+    email: String!
+    password: String!
+    confirmPassword: String!
+    name: String!
+    department: String
+    position: String
+    employeeId: String
+    joinDate: Date
+    phoneNumber: String
+    phoneCountry: String
+    address: String
+    nationality: String
+    birthDate: Date
+    visaStatus: String
+    emergencyContact: [EmergencyContactInput]
+    skills: [SkillInput]
+    experiences: [ExperienceInput]
+  }
+
+  input ExperienceInput {
+    company: String!
+    position: String!
+    period: String!
+    description: String
+  }
+
+  type EmergencyContact {
+    name: String!
+    relationship: String!
+    phoneNumber: String!
+  }
+
+  type Experience {
+    id: ID!
+    company: String!
+    position: String!
+    period: String!
+    description: String
+    userId: ID!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  input UserUpdateInput {
+    name: String
+    department: String
+    position: String
+    employeeId: String
+    joinDate: Date
+    phoneNumber: String
+    address: String
+    nationality: String
+    birthDate: Date
+    visaStatus: String
+    emergencyContact: [EmergencyContactInput]
+    skills: [SkillInput]
+  }
+
+  input UpdateUserProfileInput {
+    name: String
+    department: String
+    position: String
+    employeeId: String
+    joinDate: Date
+    phoneNumber: String
+    address: String
+    nationality: String
+    birthDate: Date
+    visaStatus: String
+    emergencyContact: [EmergencyContactInput]
+    skills: [SkillInput]
+  }
+
+  extend type Query {
+    me: User!
+  }
+
+  extend type Mutation {
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    updateUserProfile(input: UpdateUserProfileInput!): User!
+  }
+`;
+
+module.exports = authTypeDefs;

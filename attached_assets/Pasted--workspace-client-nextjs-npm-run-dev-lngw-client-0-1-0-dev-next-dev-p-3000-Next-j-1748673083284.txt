@@ -1,0 +1,53 @@
+~/workspace/client-nextjs$ npm run dev
+
+> lngw-client@0.1.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.3.3
+   - Local:        http://localhost:3000
+   - Network:      http://172.31.128.13:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1268ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 740ms (108 modules)
+ ○ Compiling / ...
+ ⨯ src/app/layout.js
+An error occurred in `next/font`.
+
+Error [ERR_REQUIRE_ESM]: require() of ES Module /home/runner/workspace/postcss.config.js from /home/runner/workspace/node_modules/next/dist/lib/find-config.js not supported.
+Instead change the require of postcss.config.js in /home/runner/workspace/node_modules/next/dist/lib/find-config.js to a dynamic import() which is available in all CommonJS modules.
+    at mod.require (/home/runner/workspace/node_modules/next/dist/server/require-hook.js:65:28)
+    at findConfig (/home/runner/workspace/node_modules/next/dist/lib/find-config.js:87:24)
+    at async getPostCssPlugins (/home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js:93:18)
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/index.js:125:36
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js:94:33
+    at async Span.traceAsyncFn (/home/runner/workspace/node_modules/next/dist/trace/trace.js:157:20)
+ ⨯ src/app/layout.js
+An error occurred in `next/font`.
+
+Error [ERR_REQUIRE_ESM]: require() of ES Module /home/runner/workspace/postcss.config.js from /home/runner/workspace/node_modules/next/dist/lib/find-config.js not supported.
+Instead change the require of postcss.config.js in /home/runner/workspace/node_modules/next/dist/lib/find-config.js to a dynamic import() which is available in all CommonJS modules.
+    at mod.require (/home/runner/workspace/node_modules/next/dist/server/require-hook.js:65:28)
+    at findConfig (/home/runner/workspace/node_modules/next/dist/lib/find-config.js:87:24)
+    at async getPostCssPlugins (/home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js:93:18)
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/index.js:125:36
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js:94:33
+    at async Span.traceAsyncFn (/home/runner/workspace/node_modules/next/dist/trace/trace.js:157:20)
+ ⨯ src/app/layout.js
+An error occurred in `next/font`.
+
+Error [ERR_REQUIRE_ESM]: require() of ES Module /home/runner/workspace/postcss.config.js from /home/runner/workspace/node_modules/next/dist/lib/find-config.js not supported.
+Instead change the require of postcss.config.js in /home/runner/workspace/node_modules/next/dist/lib/find-config.js to a dynamic import() which is available in all CommonJS modules.
+    at mod.require (/home/runner/workspace/node_modules/next/dist/server/require-hook.js:65:28)
+    at findConfig (/home/runner/workspace/node_modules/next/dist/lib/find-config.js:87:24)
+    at async getPostCssPlugins (/home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js:93:18)
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/config/blocks/css/index.js:125:36
+    at async /home/runner/workspace/node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js:94:33
+    at async Span.traceAsyncFn (/home/runner/workspace/node_modules/next/dist/trace/trace.js:157:20)
+ GET / 500 in 8740ms

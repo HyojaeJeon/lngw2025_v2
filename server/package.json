@@ -1,0 +1,32 @@
+{
+  "name": "marketing-server",
+  "version": "1.0.0",
+  "description": "Marketing Dashboard GraphQL Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "db:start": "mysqld --user=$(whoami) --datadir=/home/runner/workspace/mysql-data --socket=/tmp/mysql.sock --port=3306 &",
+    "dev": "npm run db:start && nodemon index.js",
+    "seed": "node seeders/index.js"
+  },
+  "dependencies": {
+    "@graphql-tools/merge": "^9.0.24",
+    "apollo-server-express": "^3.12.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "graphql": "^16.6.0",
+    "graphql-scalars": "^1.24.2",
+    "jsonwebtoken": "^9.0.0",
+    "moment": "^2.29.4",
+    "mysql2": "^3.2.0",
+    "sequelize": "^6.29.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "author": "",
+  "license": "ISC"
+}

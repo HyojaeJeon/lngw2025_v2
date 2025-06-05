@@ -1,0 +1,240 @@
+modules = ["nodejs-20", "web", "postgresql-16"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["lsof", "nix-output-monitor"]
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
+
+[workflows]
+runButton = "Start Full Stack with GraphQL"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Start Next.js Client"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm install && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm run dev"
+
+[[workflows.workflow]]
+name = "Start Server Only"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server/index.js"
+
+[[workflows.workflow]]
+name = "Start Full Stack"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && node index.js"
+
+[[workflows.workflow]]
+name = "Start Next.js Only"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start GraphQL Server"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm install && npm run dev"
+
+[[workflows.workflow]]
+name = "Install GraphQL Dependencies"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm install"
+
+[[workflows.workflow]]
+name = "Start Next.js Client Only"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev"
+
+[[workflows.workflow]]
+name = "Start Full Stack with MySQL"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "service mysql start"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm run dev &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Full Stack with GraphQL"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm install && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm install && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Full Stack with GraphQL"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "service mysql start && cd server-graphql && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Full Stack Development"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Full Stack Development"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Client Development"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm install && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Fix Dependencies and Start"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server-graphql && npm run dev &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Marketing Server"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm install && npm run dev"
+
+[[workflows.workflow]]
+name = "Start Full Marketing Stack"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[ports]]
+localPort = 3000
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 3306
+externalPort = 3003
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 24678
+externalPort = 3000
