@@ -107,22 +107,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Customer.associate = function(models) {
-    Customer.belongsTo(models.User, {
-      foreignKey: 'assignedUserId',
-      as: 'assignedUser'
-    });
-    Customer.hasMany(models.ContactPerson, {
-      foreignKey: 'customerId',
-      as: 'contacts',
-      onDelete: 'CASCADE'
-    });
-    Customer.hasMany(models.CustomerImage, {
-      foreignKey: 'customerId',
-      as: 'images',
-      onDelete: 'CASCADE'
-    });
-  };
+  
 
   return Customer;
 };

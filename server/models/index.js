@@ -116,38 +116,57 @@ TrendingKeyword.belongsTo(TrendAnalysis, {
   as: "trend",
 });
 
+// Customer - User associations (User can have many customers assigned)
+User.hasMany(Customer, {
+  foreignKey: 'assignedUserId',
+  as: 'assignedCustomers'
+});
+Customer.belongsTo(User, {
+  foreignKey: 'assignedUserId',
+  as: 'assignedUser'
+});
+
+// Customer - ContactPerson associations
 Customer.hasMany(ContactPerson, {
   foreignKey: 'customerId',
   as: 'contacts',
   onDelete: 'CASCADE'
 });
+ContactPerson.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer'
+});
+
+// Customer - CustomerImage associations
 Customer.hasMany(CustomerImage, {
   foreignKey: 'customerId',
   as: 'images',
   onDelete: 'CASCADE'
 });
+CustomerImage.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer'
+});
 
-// Call associate functions
-Customer.associate = (models) => {
-    Customer.belongsTo(models.User, {
-        foreignKey: 'assignedUserId',
-        as: 'assignedUser'
-    });
-    models.User.hasMany(Customer, {
-        foreignKey: 'assignedUserId',
-        as: 'assignedCustomers'
-    });
-    Customer.hasMany(models.ContactPerson, {
-        foreignKey: 'customerId',
-        as: 'contacts',
-        onDelete: 'CASCADE'
-    });
-    Customer.hasMany(models.CustomerImage, {
-        foreignKey: 'customerId',
-        as: 'images',
-        onDelete: 'CASCADE'
-    });
-};
+// Customer - SalesOpportunity associations
+Customer.hasMany(SalesOpportunity, {
+  foreignKey: 'customerId',
+  as: 'opportunities'
+});
+SalesOpportunity.belongsTo(Customer, {
+  foreignKey: 'customerId',
+  as: 'customer'
+});
+
+// User - SalesOpportunity associations
+User.hasMany(SalesOpportunity, {
+  foreignKey: 'assignedUserId',
+  as: 'assignedOpportunities'
+});
+SalesOpportunity.belongsTo(User, {
+  foreignKey: 'assignedUserId',
+  as: 'assignedUser'
+});
 
 const models = {
   sequelize,
