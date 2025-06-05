@@ -1,41 +1,50 @@
-# ───────────────────────────────────────────
-# 1) Build Stage: 클라이언트(Next.js) + 서버 코드 빌드
-# ───────────────────────────────────────────
-FROM node:16-alpine AS builder
-WORKDIR /app
+name: Replit-AI → Windows-Docker 자동 배포
 
-# (1) 클라이언트 종속성 설치 및 빌드
-COPY client-nextjs/package.json client-nextjs/package-lock.json ./client-nextjs/
-WORKDIR /app/client-nextjs
-RUN npm ci
-COPY client-nextjs/ ./
-RUN npm run build
+on:
+  push:
+    branches:
+      - main
 
-# (2) 서버 종속성 설치
-WORKDIR /app
-COPY server/package.json server/package-lock.json ./server/
-WORKDIR /app/server
-RUN npm ci
-COPY server/ ./
-# (필요하다면) RUN npm run build  (TypeScript/Babel 등 사용 시)
+jobs:
+  build_and_deploy:
+    # self-hosted 러너 중 Windows 환경에서만 실행
+    runs-on: [self-hosted, Windows, X64]
 
-# ───────────────────────────────────────────
-# 2) Production Stage: 런타임용 이미지를 생성
-# ───────────────────────────────────────────
-FROM node:16-alpine AS runner
-WORKDIR /app
+    steps:
+      # 1) 저장소 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-# (1) 클라이언트 정적 파일 복제
-COPY --from=builder /app/client-nextjs/.next ./client/.next
-COPY --from=builder /app/client-nextjs/public ./client/public
+      # 2) (선택) Node.js 버전 지정 — Dockerfile이 Node.js 이미지를 사용한다면 불필요할 수 있음
+      #   - name: Set up Node.js
+      #     uses: actions/setup-node@v3
+      #     with:
+      #       node-version: "20"
 
-# (2) 서버 의존성 및 소스 복제
-COPY --from=builder /app/server/node_modules ./server/node_modules
-COPY --from=builder /app/server ./
+      # 3) Docker 이미지 빌드 및 컨테이너 실행
+      - name: Build and Run Docker Container
+        shell: powershell
+        run: |
+          # (a) GitHub 워크스페이스(= 체크아웃된 코드가 위치한 디렉터리)로 이동
+          cd ${{ github.workspace }}
 
-# (3) 포트 노출 (예: 서버가 4000 포트를 사용해 클라이언트를 서빙한다면 4000으로)
-EXPOSE 3000
+          # (b) Dockerfile 기반으로 이미지 빌드
+          docker build -t lngw-image:latest .
 
-# (4) 서버 진입 및 실행
-WORKDIR /app/server
-CMD ["node", "index.js"]
+          # (c) 기존 컨테이너가 있다면 중지 및 삭제
+          if (docker ps -q --filter "name=lngw2025_v2_server") {
+            docker stop lngw2025_v2_server
+            docker rm lngw2025_v2_server
+          }
+
+          # (d) 새 컨테이너 실행 (포트 매핑, 자동 재시작 옵션 등)
+          docker run -d `
+            --name lngw2025_v2_server `
+            -p 3000:4000 `
+            --restart always `
+            lngw-image:latest
+
+      # 4) 배포 완료 메시지 (로그용)
+      - name: Deployment Complete
+        shell: powershell
+        run: Write-Host "✅ Deployment finished on Windows Docker runner."
