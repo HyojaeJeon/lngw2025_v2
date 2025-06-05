@@ -1,4 +1,3 @@
-
 import { gql } from "@apollo/client";
 
 export const LOGIN_MUTATION = gql`
@@ -214,61 +213,6 @@ export const UPDATE_SALES_OPPORTUNITY = gql`
 export const DELETE_SALES_OPPORTUNITY = gql`
   mutation DeleteSalesOpportunity($id: ID!) {
     deleteSalesOpportunity(id: $id)
-  }
-`;
-
-export const REGISTER = gql`
-  mutation Register($input: RegisterInput!) {
-    register(input: $input) {
-      token
-      user {
-        id
-        email
-        name
-        department
-        position
-        phoneNumber
-        nationality
-        joinDate
-        birthDate
-        address
-        employeeId
-        visaStatus
-        emergencyContact {
-          id
-          name
-          relationship
-          phoneNumber
-        }
-        skills {
-          id
-          name
-          level
-        }
-        experiences {
-          id
-          company
-          position
-          period
-          description
-        }
-      }
-    }
-  }
-`;
-
-export const LOGIN = gql`
-  mutation Login($input: LoginInput!) {
-    login(input: $input) {
-      token
-      user {
-        id
-        email
-        name
-        role
-        department
-      }
-    }
   }
 `;
 

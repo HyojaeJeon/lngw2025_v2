@@ -4,6 +4,36 @@ const { Customer } = models; // Import Customer model
 
 const customerResolvers = {
   Query: {
+    users: async (parent, { limit = 10, offset = 0, search }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
+      const whereCondition = search ? {
+        [Op.or]: [
+          { name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { department: { [Op.like]: `%${search}%` } },
+          { position: { [Op.like]: `%${search}%` } }
+        ]
+      } : {};
+
+      try {
+        const users = await models.User.findAll({
+          where: whereCondition,
+          limit,
+          offset,
+          attributes: ['id', 'name', 'email', 'phoneNumber', 'department', 'position'],
+          order: [['name', 'ASC']]
+        });
+
+        return users || [];
+      } catch (error) {
+        console.error('Users query error:', error);
+        return [];
+      }
+    },
+
     checkCompanyName: async (_, { name }) => {
       try {
         const existingCustomer = await Customer.findOne({

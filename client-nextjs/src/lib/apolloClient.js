@@ -43,6 +43,12 @@ const errorLink = onError(
     if (networkError) {
       console.error(`Network error: ${networkError}`);
 
+      // AbortError 처리 - 무시하고 계속 진행
+      if (networkError.name === 'AbortError') {
+        console.log('Request was aborted, ignoring...');
+        return;
+      }
+
       if (networkError.statusCode === 401) {
         localStorage.removeItem("auth_token");
         if (typeof window !== "undefined") {

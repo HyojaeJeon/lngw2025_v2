@@ -202,7 +202,7 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[10000] max-h-60 overflow-y-auto">
           {list.map((item) => (
             <button
               key={item.id}
@@ -219,8 +219,8 @@ const AddressSelector = ({ value, onChange }) => {
   );
 
   return (
-    <div ref={containerRef} className="space-y-4 relative">
-      <div className="grid grid-cols-3 gap-4">
+    <div ref={containerRef} className="space-y-4 relative z-10">
+      <div className="grid grid-cols-3 gap-4 relative">
         {renderDropdown(
           "province",
           addressType.provinces,
@@ -267,12 +267,20 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
     data: usersData,
     loading,
     fetchMore,
+    error
   } = useQuery(GET_USERS, {
     variables: { limit: 10, offset: 0, search: searchTerm },
     onError: (error) => console.error("Users query error:", error),
+    fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all'
   });
 
   const users = usersData?.users || [];
+
+  // 에러가 있을 때 로그 출력
+  if (error) {
+    console.error("GraphQL Users Error:", error);
+  }
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -348,7 +356,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999]">
+        <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999] max-h-80 overflow-hidden">
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -364,6 +372,16 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
           </div>
 
           <div className="max-h-64 overflow-y-auto" onScroll={handleScroll}>
+            {error && (
+              <div className="p-3 text-center text-red-500">
+                <p className="text-sm">사용자 목록을 불러올 수 없습니다.</p>
+              </div>
+            )}
+            {!error && users.length === 0 && !loading && (
+              <div className="p-3 text-center text-gray-500">
+                <p className="text-sm">등록된 사용자가 없습니다.</p>
+              </div>
+            )}
             {users.map((user) => (
               <div
                 key={user.id}
