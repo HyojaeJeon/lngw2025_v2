@@ -90,7 +90,7 @@ const customerResolvers = {
           {
             model: models.CustomerImage,
             as: "images",
-            order: [['sortOrder', 'ASC']],
+            order: [["sortOrder", "ASC"]],
           },
         ],
         order: [["createdAt", "DESC"]],
@@ -112,7 +112,7 @@ const customerResolvers = {
           {
             model: models.CustomerImage,
             as: "images",
-            order: [['sortOrder', 'ASC']],
+            order: [["sortOrder", "ASC"]],
           },
         ],
       });
@@ -125,75 +125,81 @@ const customerResolvers = {
         throw new Error("Authentication required");
       }
 
+      // 1) 트랜잭션 시작
+      const transaction = await models.sequelize.transaction();
+
       try {
-        // Start transaction
-        const transaction = await models.sequelize.transaction();
+        // 2) customer 생성
+        const { contacts, facilityImages, ...customerData } = input;
+        const customer = await models.Customer.create(
+          {
+            ...customerData,
+            createdBy: user.id,
+          },
+          { transaction },
+        );
 
-        try {
-          // Create customer
-          const { contacts, images, ...customerData } = input;
-          const customer = await models.Customer.create(
-            {
-              ...customerData,
-              createdBy: user.id,
-            },
-            { transaction },
-          );
-
-          // Create contacts if provided
-          if (contacts && contacts.length > 0) {
-            const contactsData = contacts.map((contact) => ({
-              ...contact,
-              customerId: customer.id,
-            }));
-            await models.ContactPerson.bulkCreate(contactsData, {
-              transaction,
-            });
-          }
-
-          // Create images if provided
-          if (images && images.length > 0) {
-            const imagesData = images.map((image, index) => ({
-              ...image,
-              customerId: customer.id,
-              sortOrder: image.sortOrder || index,
-              imageType: image.imageType || 'facility',
-            }));
-            await models.CustomerImage.bulkCreate(imagesData, {
-              transaction,
-            });
-          }
-
-          // Commit transaction
-          await transaction.commit();
-
-          // Return customer with contacts and images
-          const createdCustomer = await models.Customer.findByPk(customer.id, {
-            include: [
-              {
-                model: models.User,
-                as: "assignedUser",
-                attributes: ["id", "name", "email", "department", "position"],
-              },
-              {
-                model: models.ContactPerson,
-                as: "contacts",
-              },
-              {
-                model: models.CustomerImage,
-                as: "images",
-                order: [['sortOrder', 'ASC']],
-              },
-            ],
+        // 3) contacts가 있으면 bulkInsert
+        if (contacts && contacts.length > 0) {
+          const contactsData = contacts.map((contact) => ({
+            ...contact,
+            customerId: customer.id,
+          }));
+          await models.ContactPerson.bulkCreate(contactsData, {
+            transaction,
           });
-
-          return createdCustomer;
-        } catch (error) {
-          await transaction.rollback();
-          throw error;
         }
+
+        // 4) facilityImages가 있으면 bulkInsert
+        if (facilityImages && facilityImages.length > 0) {
+          // (참고) facilityImages 배열이 실제로 image 객체인지, 문자열(URL)인지 확인 필요
+          const imagesData = facilityImages.map((img, index) => ({
+            imageUrl: typeof img === "string" ? img : img.url,
+            customerId: customer.id,
+            sortOrder: img.sortOrder ?? index,
+            imageType: img.imageType ?? "facility",
+          }));
+          await models.CustomerImage.bulkCreate(imagesData, {
+            transaction,
+          });
+        }
+
+        // 5) 생성 작업 모두 성공 시 커밋
+        await transaction.commit();
+
+        // 6) (트랜잭션 외부) 생성된 Customer를 연관 모델과 함께 조회
+        const createdCustomer = await models.Customer.findByPk(customer.id, {
+          include: [
+            {
+              model: models.User,
+              as: "assignedUser",
+              attributes: ["id", "name", "email", "position"],
+            },
+            {
+              model: models.ContactPerson,
+              as: "contacts",
+            },
+            {
+              model: models.CustomerImage,
+              as: "images",
+              // 정렬을 include 옵션 안에서 지정하려면 include 안의 order 속성에 넣어야 합니다.
+              // 예: { model: models.CustomerImage, as: "images", order: [["sortOrder", "ASC"]] }
+            },
+          ],
+          order: [
+            [{ model: models.CustomerImage, as: "images" }, "sortOrder", "ASC"],
+          ],
+        });
+
+        return createdCustomer;
       } catch (error) {
+        // 7) 생성 단계에서 문제가 발생한 경우에만 트랜잭션 롤백
         console.error("Create customer error:", error);
+        try {
+          await transaction.rollback();
+        } catch (rollbackError) {
+          console.error("Rollback error:", rollbackError);
+        }
         throw new Error("Failed to create customer: " + error.message);
       }
     },
@@ -237,7 +243,10 @@ const customerResolvers = {
     images: async (customer) => {
       return await models.CustomerImage.findAll({
         where: { customerId: customer.id },
-        order: [["sortOrder", "ASC"], ["createdAt", "ASC"]],
+        order: [
+          ["sortOrder", "ASC"],
+          ["createdAt", "ASC"],
+        ],
       });
     },
   },

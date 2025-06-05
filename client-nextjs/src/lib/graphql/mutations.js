@@ -118,10 +118,9 @@ export const CREATE_CUSTOMER = gql`
         instagram
         profileImage
       }
-      images {
+      facilityImages {
         id
         imageUrl
-        imageType
         description
         sortOrder
       }

@@ -40,6 +40,7 @@ const customerTypeDefs = gql`
     profileImage: String
     facebook: String
     tiktok: String
+    facilityImages: [CustomerImage!]
     instagram: String
     opportunities: [SalesOpportunity!]
     createdAt: Date!
@@ -139,18 +140,11 @@ const customerTypeDefs = gql`
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
     contacts: [ContactPersonInput!]
-    images: [CustomerImageInput!]
-  }
-
-  input CustomerImageInput {
-    imageUrl: String!
-    imageType: String
-    description: String
-    sortOrder: Int
   }
 
   input ContactPersonInput {
