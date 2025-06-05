@@ -1,49 +1,59 @@
-name: Replit-AI → Windows-Docker 자동 배포
+version: "3.8"
 
-on:
-  push:
-    branches:
-      - main
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - proxy
 
-jobs:
-  build_and_deploy:
-    runs-on: [self-hosted, Windows, X64]
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-ssl
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL=admin@yourdomain.com
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+    depends_on:
+      - nginx-proxy
+    networks:
+      - proxy
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lngw2025_v2_server
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=host.docker.internal
+      - DB_PORT=3306
+      - DB_NAME=lngw2025_db
+      - DB_USER=appuser
+      - DB_PASSWORD=gywo9988!@
+      - PORT=4000
+      - VIRTUAL_HOST=yourdomain.com
+      - LETSENCRYPT_HOST=yourdomain.com
+      - LETSENCRYPT_EMAIL=admin@yourdomain.com
+    expose:
+      - "4000"
+    networks:
+      - proxy
+    restart: always
 
-      - name: Build and Run Docker Container
-        shell: powershell
-        run: |
-          cd ${{ github.workspace }}
-
-          # 기존 컨테이너 강제 삭제
-          $cid = docker ps -aq --filter "name=lngw2025_v2_server"
-          if ($cid) {
-            docker rm -f $cid
-          }
-
-          # Docker 데몬 상태 확인
-          docker version
-
-          # 이미지 빌드
-          docker build -t lngw-image:latest .
-
-          # 컨테이너 실행
-          docker run -d `
-            --name lngw2025_v2_server `
-            -e NODE_ENV=production `
-            -e DB_HOST=host.docker.internal `
-            -e DB_PORT=3306 `
-            -e DB_NAME=lngw2025_db `
-            -e DB_USER=appuser `
-            -e DB_PASSWORD=gywo9988!@ `
-            -e PORT=4000 `
-            -p 3000:4000 `
-            --restart always `
-            lngw-image:latest
-
-      - name: Deployment Complete
-        shell: powershell
-        run: Write-Host "✅ Deployment finished on Windows Docker runner."
+networks:
+  proxy:
+    driver: bridge
