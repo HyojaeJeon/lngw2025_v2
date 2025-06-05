@@ -35,6 +35,7 @@ const customerTypeDefs = gql`
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
@@ -123,6 +124,7 @@ const customerTypeDefs = gql`
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String

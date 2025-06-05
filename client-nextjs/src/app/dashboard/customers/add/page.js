@@ -45,6 +45,7 @@ import { useLanguage } from "@/contexts/languageContext.js";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
+import CustomCalendar from "@/components/common/CustomCalendar.js";
 
 // 이미지 로딩 모달 컴포넌트
 const ImageLoadingModal = ({ isVisible }) => {
@@ -812,12 +813,15 @@ const ContactPersonForm = ({
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {t("contact.birthDate") || "생년월일"}
           </Label>
-          <Input
-            type="date"
-            value={contact.birthDate || ""}
-            onChange={(e) => updateContact(index, "birthDate", e.target.value)}
-            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
-          />
+          <div className="mt-1">
+            <CustomCalendar
+              value={contact.birthDate || ""}
+              onChange={(date) => updateContact(index, "birthDate", date)}
+              placeholder={t("contact.birthDatePlaceholder") || "생년월일을 선택하세요"}
+              language="ko"
+              t={t}
+            />
+          </div>
         </div>
 
         {/* 소셜 미디어 */}
