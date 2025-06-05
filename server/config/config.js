@@ -3,42 +3,32 @@ dotenv.config();
 
 const commonConfig = {
   dialect: "mysql",
-  timezone: process.env.DB_TIMEZONE || "+00:00", // 추가된 부분
+  timezone: process.env.DB_TIMEZONE || "+00:00",
   logging: process.env.NODE_ENV === "development" ? console.log : false,
-  pool: {
-    max: 10,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
+  pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
 };
 
 module.exports = {
   development: {
-    username: "appuser",
-    password: "gywo9988!@",
-    database: "lngw2025_db",
-    host: "localhost",
+    username: process.env.DB_USER, // DB_USER
+    password: process.env.DB_PASSWORD, // DB_PASSWORD
+    database: process.env.DB_NAME, // DB_NAME
+    host: process.env.DB_HOST || "127.0.0.1",
+    port: process.env.DB_PORT || 3306,
     dialect: "mysql",
-    dialectOptions: {
-      socketPath: "/home/runner/workspace/mysql.sock",
-    },
     timezone: process.env.DB_TIMEZONE || "+00:00",
     logging: process.env.NODE_ENV === "development" ? console.log : false,
-    pool: {
-      max: 10,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
+    pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
   },
-  test: {
-    use_env_variable: "DATABASE_URL",
-    ...commonConfig,
-  },
-
   production: {
-    use_env_variable: "DATABASE_URL",
-    ...commonConfig,
+    username: process.env.DB_USER, // DB_USER
+    password: process.env.DB_PASSWORD, // DB_PASSWORD
+    database: process.env.DB_NAME, // DB_NAME
+    host: process.env.DB_HOST || "127.0.0.1",
+    port: process.env.DB_PORT || 3306,
+    dialect: "mysql",
+    timezone: process.env.DB_TIMEZONE || "+00:00",
+    logging: false,
+    pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
   },
 };

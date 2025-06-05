@@ -7,44 +7,43 @@ on:
 
 jobs:
   build_and_deploy:
-    # self-hosted 러너 중 Windows 환경에서만 실행
     runs-on: [self-hosted, Windows, X64]
 
     steps:
-      # 1) 저장소 코드 체크아웃
+      # 1) 코드 체크아웃
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) (선택) Node.js 버전 지정 — Dockerfile이 Node.js 이미지를 사용한다면 불필요할 수 있음
-      #   - name: Set up Node.js
-      #     uses: actions/setup-node@v3
-      #     with:
-      #       node-version: "20"
-
-      # 3) Docker 이미지 빌드 및 컨테이너 실행
+      # 2) Docker 이미지 빌드 및 컨테이너 실행
       - name: Build and Run Docker Container
         shell: powershell
         run: |
-          # (a) GitHub 워크스페이스(= 체크아웃된 코드가 위치한 디렉터리)로 이동
           cd ${{ github.workspace }}
 
-          # (b) Dockerfile 기반으로 이미지 빌드
-          docker build -t lngw-image:latest .
-
-          # (c) 기존 컨테이너가 있다면 중지 및 삭제
+          # (a) 기존 컨테이너가 실행 중이면 중지 및 삭제
           if (docker ps -q --filter "name=lngw2025_v2_server") {
             docker stop lngw2025_v2_server
             docker rm lngw2025_v2_server
           }
 
-          # (d) 새 컨테이너 실행 (포트 매핑, 자동 재시작 옵션 등)
+          # (b) 이미지 빌드
+          docker build -t lngw-image:latest .
+
+          # (c) 컨테이너 실행: Windows MySQL(host.docker.internal)로 연결
           docker run -d `
             --name lngw2025_v2_server `
+            -e NODE_ENV=production `
+            -e DB_HOST=host.docker.internal `
+            -e DB_PORT=3306 `
+            -e DB_NAME=lngw2025_db `
+            -e DB_USER=appuser `
+            -e DB_PASSWORD=gywo9988!@ `
+            -e PORT=4000 `
             -p 3000:4000 `
             --restart always `
             lngw-image:latest
 
-      # 4) 배포 완료 메시지 (로그용)
+      # 3) 배포 완료 메시지 출력
       - name: Deployment Complete
         shell: powershell
         run: Write-Host "✅ Deployment finished on Windows Docker runner."
