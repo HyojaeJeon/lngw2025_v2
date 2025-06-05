@@ -1,0 +1,31 @@
+🚀 GraphQL Playground: http://0.0.0.0:5000/graphql
+Executing (default): SELECT `id`, `email`, `password`, `name`, `role`, `department`, `position`, `employeeId`, `joinDate`, `phoneNumber`, `address`, `nationality`, `birthDate`, `visaStatus`, `createdAt`, `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Error fetching customers: EagerLoadingError [SequelizeEagerLoadingError]: CustomerImage is associated to Customer using an alias. You've included an alias (images), but it does not match the alias(es) defined in your association (facilityImages).
+    at Customer._getIncludedAssociation (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:574:15)
+    at Customer._validateIncludedElement (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:502:53)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/model.js:421:37
+    at Array.map (<anonymous>)
+    at Customer._validateIncludedElements (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:417:39)
+    at Customer.findAll (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1124:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.customers (/home/runner/workspace/server/resolvers/customer/index.js:86:27)
+Executing (default): SELECT `id`, `email`, `password`, `name`, `role`, `department`, `position`, `employeeId`, `joinDate`, `phoneNumber`, `address`, `nationality`, `birthDate`, `visaStatus`, `createdAt`, `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Error fetching customers: EagerLoadingError [SequelizeEagerLoadingError]: CustomerImage is associated to Customer using an alias. You've included an alias (images), but it does not match the alias(es) defined in your association (facilityImages).
+    at Customer._getIncludedAssociation (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:574:15)
+    at Customer._validateIncludedElement (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:502:53)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/model.js:421:37
+    at Array.map (<anonymous>)
+    at Customer._validateIncludedElements (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:417:39)
+    at Customer.findAll (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1124:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.customers (/home/runner/workspace/server/resolvers/customer/index.js:86:27)
+Executing (default): SELECT `id`, `email`, `password`, `name`, `role`, `department`, `position`, `employeeId`, `joinDate`, `phoneNumber`, `address`, `nationality`, `birthDate`, `visaStatus`, `createdAt`, `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Error fetching customers: EagerLoadingError [SequelizeEagerLoadingError]: CustomerImage is associated to Customer using an alias. You've included an alias (images), but it does not match the alias(es) defined in your association (facilityImages).
+    at Customer._getIncludedAssociation (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:574:15)
+    at Customer._validateIncludedElement (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:502:53)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/model.js:421:37
+    at Array.map (<anonymous>)
+    at Customer._validateIncludedElements (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:417:39)
+    at Customer.findAll (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1124:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.customers (/home/runner/workspace/server/resolvers/customer/index.js:86:27)

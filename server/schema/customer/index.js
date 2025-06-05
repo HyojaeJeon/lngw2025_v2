@@ -26,9 +26,7 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
-
     grade: String
-
     address: String
     assignedUserId: ID
     assignedUser: User

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql } from "@apollo/client";
 
 export const GET_ME = gql`
   query GetMe {
@@ -86,6 +86,12 @@ export const GET_CUSTOMERS = gql`
       address
       profileImage
       status
+      facilityImages {
+        id
+        imageUrl
+        description
+        sortOrder
+      }
       assignedUserId
       assignedUser {
         id

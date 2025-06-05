@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -42,7 +41,8 @@ import {
   Activity,
   FileText,
   CreditCard,
-  Briefcase
+  Briefcase,
+  ChevronDown,
 } from "lucide-react";
 import Image from "next/image";
 import ImageGallery from "react-image-gallery";
@@ -208,7 +208,9 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
                 handleSelection(type, item);
                 const fullAddress =
                   `${type === "province" ? item.full_name : selected.province?.name || ""} ${
-                    type === "district" ? item.full_name : selected.district?.name || ""
+                    type === "district"
+                      ? item.full_name
+                      : selected.district?.name || ""
                   } ${type === "ward" ? item.full_name : selected.ward?.name || ""}`.trim();
                 onChange(fullAddress);
               }}
@@ -271,18 +273,20 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
   const [showGallery, setShowGallery] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const galleryImages = Array.isArray(images) 
-    ? images.map(img => ({
-        original: typeof img === 'string' ? img : img.imageUrl,
-        thumbnail: typeof img === 'string' ? img : img.imageUrl,
-        description: typeof img === 'object' ? img.description : ''
+  const galleryImages = Array.isArray(images)
+    ? images.map((img) => ({
+        original: typeof img === "string" ? img : img.imageUrl,
+        thumbnail: typeof img === "string" ? img : img.imageUrl,
+        description: typeof img === "object" ? img.description : "",
       }))
-    : images 
-      ? [{
-          original: images,
-          thumbnail: images,
-          description: title
-        }]
+    : images
+      ? [
+          {
+            original: images,
+            thumbnail: images,
+            description: title,
+          },
+        ]
       : [];
 
   const openGallery = (index = 0) => {
@@ -294,7 +298,9 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
     return (
       <div className="text-center py-8">
         <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-        <p className="text-gray-500 dark:text-gray-400">등록된 이미지가 없습니다</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          등록된 이미지가 없습니다
+        </p>
       </div>
     );
   }
@@ -304,10 +310,13 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
       <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
         {title}
       </Label>
-      
+
       {isProfile ? (
         <div className="flex justify-center">
-          <div className="relative group cursor-pointer" onClick={() => openGallery(0)}>
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => openGallery(0)}
+          >
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
               <Image
                 src={galleryImages[0].original}
@@ -538,7 +547,13 @@ export default function CustomerDetailPage() {
     try {
       const changedData = {};
       Object.keys(editData).forEach((key) => {
-        if (editData[key] !== originalData[key] && key !== '__typename' && key !== 'id' && key !== 'createdAt' && key !== 'updatedAt') {
+        if (
+          editData[key] !== originalData[key] &&
+          key !== "__typename" &&
+          key !== "id" &&
+          key !== "createdAt" &&
+          key !== "updatedAt"
+        ) {
           changedData[key] = editData[key];
         }
       });
@@ -639,7 +654,10 @@ export default function CustomerDetailPage() {
             </div>
             <div className="flex space-x-2">
               {!isEditing ? (
-                <Button onClick={handleEdit} className="bg-blue-500 hover:bg-blue-600">
+                <Button
+                  onClick={handleEdit}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
                   <Edit3 className="w-4 h-4 mr-2" />
                   수정
                 </Button>
@@ -653,7 +671,10 @@ export default function CustomerDetailPage() {
                     <X className="w-4 h-4 mr-2" />
                     취소
                   </Button>
-                  <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
+                  <Button
+                    onClick={handleSave}
+                    className="bg-green-500 hover:bg-green-600"
+                  >
                     <Save className="w-4 h-4 mr-2" />
                     저장
                   </Button>
@@ -686,7 +707,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <Input
                         value={displayData.name || ""}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
                         className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                       />
                     ) : (
@@ -703,7 +726,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <Input
                         value={displayData.contactName || ""}
-                        onChange={(e) => handleInputChange("contactName", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("contactName", e.target.value)
+                        }
                         className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                       />
                     ) : (
@@ -720,7 +745,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <Input
                         value={displayData.industry || ""}
-                        onChange={(e) => handleInputChange("industry", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("industry", e.target.value)
+                        }
                         className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                       />
                     ) : (
@@ -737,7 +764,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <select
                         value={displayData.companyType || ""}
-                        onChange={(e) => handleInputChange("companyType", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("companyType", e.target.value)
+                        }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
                         <option value="">선택하세요</option>
@@ -749,7 +778,9 @@ export default function CustomerDetailPage() {
                       </select>
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {companyTypes[displayData.companyType] || displayData.companyType || "정보 없음"}
+                        {companyTypes[displayData.companyType] ||
+                          displayData.companyType ||
+                          "정보 없음"}
                       </p>
                     )}
                   </div>
@@ -761,7 +792,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <select
                         value={displayData.grade || ""}
-                        onChange={(e) => handleInputChange("grade", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("grade", e.target.value)
+                        }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
                         <option value="">선택하세요</option>
@@ -773,12 +806,18 @@ export default function CustomerDetailPage() {
                       </select>
                     ) : (
                       <div className="mt-1">
-                        <span className={`inline-block px-3 py-2 rounded-xl text-sm font-medium ${
-                          displayData.grade === "A" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300" :
-                          displayData.grade === "B" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" :
-                          "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                        }`}>
-                          {gradeLabels[displayData.grade] || displayData.grade || "미분류"}
+                        <span
+                          className={`inline-block px-3 py-2 rounded-xl text-sm font-medium ${
+                            displayData.grade === "A"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              : displayData.grade === "B"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {gradeLabels[displayData.grade] ||
+                            displayData.grade ||
+                            "미분류"}
                         </span>
                       </div>
                     )}
@@ -791,7 +830,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <select
                         value={displayData.assignedUserId || ""}
-                        onChange={(e) => handleInputChange("assignedUserId", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("assignedUserId", e.target.value)
+                        }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
                         <option value="">선택하세요</option>
@@ -814,7 +855,9 @@ export default function CustomerDetailPage() {
                     </Label>
                     <AddressSelector
                       value={displayData.address || ""}
-                      onChange={(address) => handleInputChange("address", address)}
+                      onChange={(address) =>
+                        handleInputChange("address", address)
+                      }
                       isEditing={isEditing}
                     />
                   </div>
@@ -843,7 +886,9 @@ export default function CustomerDetailPage() {
                       <Input
                         type="email"
                         value={displayData.email || ""}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                       />
                     ) : (
@@ -859,7 +904,9 @@ export default function CustomerDetailPage() {
                     {isEditing ? (
                       <Input
                         value={displayData.phone || ""}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("phone", e.target.value)
+                        }
                         className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                       />
                     ) : (
@@ -897,15 +944,16 @@ export default function CustomerDetailPage() {
                   )}
 
                   {/* 구분선 */}
-                  {displayData.profileImage && displayData.images?.length > 0 && (
-                    <div className="border-t border-gray-200 dark:border-gray-600"></div>
-                  )}
+                  {displayData.profileImage &&
+                    displayData.images?.length > 0 && (
+                      <div className="border-t border-gray-200 dark:border-gray-600"></div>
+                    )}
 
                   {/* 시설 사진 */}
                   <div>
                     <ImageGallerySection
                       title="시설 사진"
-                      images={displayData.images}
+                      images={displayData.facilityImages}
                     />
                   </div>
                 </div>
@@ -954,28 +1002,43 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <TrendingUp className="w-4 h-4 text-green-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">상태</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        상태
+                      </span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      displayData.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" :
-                      displayData.status === "inactive" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300" :
-                      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                    }`}>
-                      {displayData.status === "active" ? "활성" :
-                       displayData.status === "inactive" ? "비활성" : "잠재고객"}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        displayData.status === "active"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                          : displayData.status === "inactive"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                            : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                      }`}
+                    >
+                      {displayData.status === "active"
+                        ? "활성"
+                        : displayData.status === "inactive"
+                          ? "비활성"
+                          : "잠재고객"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <Award className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">고객 등급</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        고객 등급
+                      </span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      displayData.grade === "A" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300" :
-                      displayData.grade === "B" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" :
-                      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        displayData.grade === "A"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          : displayData.grade === "B"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                      }`}
+                    >
                       {displayData.grade}등급
                     </span>
                   </div>
@@ -983,7 +1046,9 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <Users className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">담당자 수</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        담당자 수
+                      </span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {displayData.contacts?.length || 0}명
@@ -993,17 +1058,21 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <ImageIcon className="w-4 h-4 text-orange-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">시설 이미지</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        시설 이미지
+                      </span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {displayData.images?.length || 0}개
+                      {displayData.facilityImages?.length || 0}개
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <Briefcase className="w-4 h-4 text-teal-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">회사 유형</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        회사 유형
+                      </span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {companyTypes[displayData.companyType] || "미분류"}
@@ -1013,7 +1082,9 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <UserCheck className="w-4 h-4 text-green-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">담당 영업사원</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        담당 영업사원
+                      </span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {displayData.assignedUser?.name || "미배정"}
@@ -1024,20 +1095,28 @@ export default function CustomerDetailPage() {
                     <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">등록일</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          등록일
+                        </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(displayData.createdAt).toLocaleDateString('ko-KR')}
+                        {new Date(displayData.createdAt).toLocaleDateString(
+                          "ko-KR",
+                        )}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl mt-2">
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">마지막 수정</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          마지막 수정
+                        </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(displayData.updatedAt).toLocaleDateString('ko-KR')}
+                        {new Date(displayData.updatedAt).toLocaleDateString(
+                          "ko-KR",
+                        )}
                       </span>
                     </div>
                   </div>
@@ -1054,34 +1133,48 @@ export default function CustomerDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-3">
-                <Button 
+                <Button
                   className="w-full justify-start bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
                   variant="outline"
-                  onClick={() => router.push(`/dashboard/sales/opportunities?customer=${customerId}`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/sales/opportunities?customer=${customerId}`,
+                    )
+                  }
                 >
                   <TrendingUp className="w-4 h-4 mr-2" />
                   영업 기회 관리
                 </Button>
-                <Button 
+                <Button
                   className="w-full justify-start bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                   variant="outline"
-                  onClick={() => router.push(`/dashboard/customers/history?customer=${customerId}`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/customers/history?customer=${customerId}`,
+                    )
+                  }
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   활동 이력 보기
                 </Button>
-                <Button 
+                <Button
                   className="w-full justify-start bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
                   variant="outline"
-                  onClick={() => router.push(`/dashboard/revenue/record?customer=${customerId}`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/revenue/record?customer=${customerId}`,
+                    )
+                  }
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   거래 내역
                 </Button>
-                <Button 
+                <Button
                   className="w-full justify-start bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
                   variant="outline"
-                  onClick={() => window.open(`mailto:${displayData.email}`, '_blank')}
+                  onClick={() =>
+                    window.open(`mailto:${displayData.email}`, "_blank")
+                  }
                   disabled={!displayData.email}
                 >
                   <Mail className="w-4 h-4 mr-2" />

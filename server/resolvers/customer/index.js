@@ -1,6 +1,11 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
-const { Customer, User, ContactPerson, CustomerImage } = require("../../models");
+const {
+  Customer,
+  User,
+  ContactPerson,
+  CustomerImage,
+} = require("../../models");
 
 const customerResolvers = {
   Query: {
@@ -123,7 +128,7 @@ const customerResolvers = {
             },
             {
               model: models.CustomerImage,
-              as: "images",
+              as: "facilityImages",
               order: [["sortOrder", "ASC"]],
               attributes: ["id", "imageUrl", "description", "sortOrder"],
             },

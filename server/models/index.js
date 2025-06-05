@@ -22,20 +22,47 @@ const sequelize = new Sequelize(
 const User = require("./User")(sequelize, Sequelize.DataTypes);
 const Experience = require("./Experience")(sequelize, Sequelize.DataTypes);
 const Content = require("./Content")(sequelize, Sequelize.DataTypes);
-const ScheduledPost = require("./ScheduledPost")(sequelize, Sequelize.DataTypes);
+const ScheduledPost = require("./ScheduledPost")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 const PostingLog = require("./PostingLog")(sequelize, Sequelize.DataTypes);
 const PlatformStat = require("./PlatformStat")(sequelize, Sequelize.DataTypes);
-const TrendAnalysis = require("./TrendAnalysis")(sequelize, Sequelize.DataTypes);
-const TrendingKeyword = require("./TrendingKeyword")(sequelize, Sequelize.DataTypes);
+const TrendAnalysis = require("./TrendAnalysis")(
+  sequelize,
+  Sequelize.DataTypes,
+);
+const TrendingKeyword = require("./TrendingKeyword")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 const ABTestGroup = require("./ABTestGroup")(sequelize, Sequelize.DataTypes);
-const ABTestVariant = require("./ABTestVariant")(sequelize, Sequelize.DataTypes);
-const ContentRecommendation = require("./ContentRecommendation")(sequelize, Sequelize.DataTypes);
+const ABTestVariant = require("./ABTestVariant")(
+  sequelize,
+  Sequelize.DataTypes,
+);
+const ContentRecommendation = require("./ContentRecommendation")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 const Skill = require("./Skill")(sequelize, Sequelize.DataTypes);
-const EmergencyContact = require("./EmergencyContact")(sequelize, Sequelize.DataTypes);
+const EmergencyContact = require("./EmergencyContact")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 const Customer = require("./Customer")(sequelize, Sequelize.DataTypes);
-const ContactPerson = require('./ContactPerson')(sequelize, Sequelize.DataTypes);
-const CustomerImage = require('./CustomerImage')(sequelize, Sequelize.DataTypes);
-const SalesOpportunity = require("./SalesOpportunity")(sequelize, Sequelize.DataTypes);
+const ContactPerson = require("./ContactPerson")(
+  sequelize,
+  Sequelize.DataTypes,
+);
+const CustomerImage = require("./CustomerImage")(
+  sequelize,
+  Sequelize.DataTypes,
+);
+const SalesOpportunity = require("./SalesOpportunity")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 const Address = require("./Address")(sequelize, Sequelize.DataTypes);
 const Service = require("./Service")(sequelize, Sequelize.DataTypes);
 
@@ -118,54 +145,54 @@ TrendingKeyword.belongsTo(TrendAnalysis, {
 
 // Customer - User associations (User can have many customers assigned)
 User.hasMany(Customer, {
-  foreignKey: 'assignedUserId',
-  as: 'assignedCustomers'
+  foreignKey: "assignedUserId",
+  as: "assignedCustomers",
 });
 Customer.belongsTo(User, {
-  foreignKey: 'assignedUserId',
-  as: 'assignedUser'
+  foreignKey: "assignedUserId",
+  as: "assignedUser",
 });
 
 // Customer - ContactPerson associations
 Customer.hasMany(ContactPerson, {
-  foreignKey: 'customerId',
-  as: 'contacts',
-  onDelete: 'CASCADE'
+  foreignKey: "customerId",
+  as: "contacts",
+  onDelete: "CASCADE",
 });
 ContactPerson.belongsTo(Customer, {
-  foreignKey: 'customerId',
-  as: 'customer'
+  foreignKey: "customerId",
+  as: "customer",
 });
 
 // Customer - CustomerImage associations
 Customer.hasMany(CustomerImage, {
-  foreignKey: 'customerId',
-  as: 'images',
-  onDelete: 'CASCADE'
+  foreignKey: "customerId",
+  as: "facilityImages",
+  onDelete: "CASCADE",
 });
 CustomerImage.belongsTo(Customer, {
-  foreignKey: 'customerId',
-  as: 'customer'
+  foreignKey: "customerId",
+  as: "customer",
 });
 
 // Customer - SalesOpportunity associations
 Customer.hasMany(SalesOpportunity, {
-  foreignKey: 'customerId',
-  as: 'opportunities'
+  foreignKey: "customerId",
+  as: "opportunities",
 });
 SalesOpportunity.belongsTo(Customer, {
-  foreignKey: 'customerId',
-  as: 'customer'
+  foreignKey: "customerId",
+  as: "customer",
 });
 
 // User - SalesOpportunity associations
 User.hasMany(SalesOpportunity, {
-  foreignKey: 'assignedUserId',
-  as: 'assignedOpportunities'
+  foreignKey: "assignedUserId",
+  as: "assignedOpportunities",
 });
 SalesOpportunity.belongsTo(User, {
-  foreignKey: 'assignedUserId',
-  as: 'assignedUser'
+  foreignKey: "assignedUserId",
+  as: "assignedUser",
 });
 
 const models = {
@@ -187,7 +214,7 @@ const models = {
   Customer,
   ContactPerson,
   CustomerImage,
-  SalesOpportunity, 
+  SalesOpportunity,
   Address,
   Service,
 };
