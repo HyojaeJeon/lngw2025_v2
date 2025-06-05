@@ -1,8 +1,26 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
+const { Customer } = models; // Import Customer model
 
 const customerResolvers = {
   Query: {
+    checkCompanyName: async (_, { name }) => {
+      try {
+        const existingCustomer = await Customer.findOne({
+          where: {
+            name: name.trim()
+          }
+        });
+
+        return {
+          exists: !!existingCustomer,
+          message: existingCustomer ? "이미 등록된 회사명입니다." : "사용 가능한 회사명입니다."
+        };
+      } catch (error) {
+        console.error("Company name check error:", error);
+        throw new Error("회사명 중복 확인 중 오류가 발생했습니다.");
+      }
+    },
     customers: async (parent, { limit = 10, offset = 0, search }, { user }) => {
       if (!user) {
         throw new Error('Authentication required');

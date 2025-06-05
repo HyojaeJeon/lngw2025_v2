@@ -4,6 +4,7 @@ const customerTypeDefs = gql`
   extend type Query {
     customers(limit: Int, offset: Int, search: String): [Customer!]!
     customer(id: ID!): Customer
+    checkCompanyName(name: String!): CompanyNameCheckResult!
     addresses(limit: Int, offset: Int): [Address!]!
     services(limit: Int, offset: Int): [Service!]!
     users(limit: Int, offset: Int, search: String): [User!]!
@@ -56,6 +57,11 @@ const customerTypeDefs = gql`
     profileImage: String
     createdAt: Date!
     updatedAt: Date!
+  }
+
+  type CompanyNameCheckResult {
+    exists: Boolean!
+    message: String!
   }
 
   type SalesOpportunity {

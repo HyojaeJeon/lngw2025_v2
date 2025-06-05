@@ -129,6 +129,15 @@ export const GET_SALES_OPPORTUNITIES = gql`
   }
 `;
 
+export const CHECK_COMPANY_NAME = gql`
+  query CheckCompanyName($name: String!) {
+    checkCompanyName(name: $name) {
+      exists
+      message
+    }
+  }
+`;
+
 export const USER_QUERY = gql`
   query GetUser {
     user {

@@ -1,13 +1,13 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { Button } from "@/components/ui/button.js";
-import { useQuery, useMutation } from "@apollo/client";
-import { GET_USERS, GET_ADDRESSES, GET_SERVICES } from "@/lib/graphql/queries.js";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
+import { GET_USERS, GET_ADDRESSES, GET_SERVICES, CHECK_COMPANY_NAME } from "@/lib/graphql/queries.js";
 import { CREATE_ADDRESS, CREATE_SERVICE, CREATE_CUSTOMER } from "@/lib/graphql/mutations.js";
 import { Building2, MapPin, ChevronDown, User, Phone, Mail, FileText, Calendar, Plus, Upload, X, Search, UserPlus, Camera, Eye, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/languageContext.js";
@@ -156,7 +156,7 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="absolute bottom-full left-0 w-full mb-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
           {list.map((item) => (
             <button
               key={item.id}
@@ -273,7 +273,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999]">
+        <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl z-[9999]">
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -334,7 +334,16 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false,
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    // 다중 이미지의 경우 최대 5개 제한
+    if (isMultiple && (images.length + files.length) > 5) {
+      alert(t("image.maxLimit") || "최대 5개까지 업로드 가능합니다.");
+      return;
+    }
+    
     setImageLoading(true);
+    const uploadedUrls = [];
     
     try {
       for (const file of files) {
@@ -357,15 +366,19 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false,
         
         if (response.ok) {
           const { url } = await response.json();
-          if (isMultiple) {
-            onImagesChange([...images, url]);
-          } else {
-            onImagesChange(url);
-          }
+          uploadedUrls.push(url);
         }
+      }
+      
+      // 업로드 완료 후 한 번에 상태 업데이트
+      if (isMultiple) {
+        onImagesChange([...images, ...uploadedUrls]);
+      } else {
+        onImagesChange(uploadedUrls[0] || "");
       }
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
+      alert(t("image.uploadError") || "이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setImageLoading(false);
     }
@@ -390,14 +403,19 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false,
       
       <div className="flex flex-wrap gap-4">
         {/* 업로드 버튼 */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-        >
-          <Upload className="w-8 h-8 text-gray-400 mb-2" />
-          <span className="text-sm text-gray-500">{t("image.add") || "이미지 추가"}</span>
-        </button>
+        {(!isMultiple || (isMultiple && images.length < 5)) && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            <Upload className="w-8 h-8 text-gray-400 mb-2" />
+            <span className="text-sm text-gray-500">{t("image.add") || "이미지 추가"}</span>
+            {isMultiple && (
+              <span className="text-xs text-gray-400 mt-1">{images.length}/5</span>
+            )}
+          </button>
+        )}
 
         {/* 이미지 미리보기 */}
         {isMultiple ? (
@@ -704,6 +722,8 @@ export default function AddCustomerPage() {
   const router = useRouter();
   const [imageLoading, setImageLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [companyNameCheck, setCompanyNameCheck] = useState({ checking: false, exists: false, message: "" });
+  const [checkCompanyName] = useLazyQuery(CHECK_COMPANY_NAME);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -724,13 +744,63 @@ export default function AddCustomerPage() {
 
   const [createCustomer] = useMutation(CREATE_CUSTOMER);
 
+  // Debounced company name validation
+  const debouncedCheckCompanyName = useCallback(
+    debounce(async (name) => {
+      if (name.trim().length < 2) {
+        setCompanyNameCheck({ checking: false, exists: false, message: "" });
+        return;
+      }
+      
+      setCompanyNameCheck(prev => ({ ...prev, checking: true }));
+      
+      try {
+        const { data } = await checkCompanyName({
+          variables: { name: name.trim() }
+        });
+        
+        setCompanyNameCheck({
+          checking: false,
+          exists: data.checkCompanyName.exists,
+          message: data.checkCompanyName.message
+        });
+      } catch (error) {
+        console.error("Company name check error:", error);
+        setCompanyNameCheck({
+          checking: false,
+          exists: false,
+          message: "중복 확인 중 오류가 발생했습니다."
+        });
+      }
+    }, 500),
+    [checkCompanyName]
+  );
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // 회사명 입력 시 중복 검사
+    if (name === 'name') {
+      debouncedCheckCompanyName(value);
+    }
   };
+
+  // Debounce utility function
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   const addContactPerson = () => {
     setFormData(prev => ({
@@ -768,6 +838,26 @@ export default function AddCustomerPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 유효성 검사
+    const errors = [];
+    if (!formData.name.trim()) errors.push("회사명은 필수입니다.");
+    if (!formData.industry.trim()) errors.push("업종은 필수입니다.");
+    if (!formData.companyType.trim()) errors.push("회사유형은 필수입니다.");
+    if (!formData.grade.trim()) errors.push("고객등급은 필수입니다.");
+    if (!formData.address.trim()) errors.push("주소는 필수입니다.");
+    if (formData.contacts.length === 0) errors.push("담당자는 최소 1명 필요합니다.");
+    
+    // 회사명 중복 확인
+    if (companyNameCheck.exists) {
+      errors.push("이미 등록된 회사명입니다. 다른 회사명을 입력해주세요.");
+    }
+    
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -844,15 +934,28 @@ export default function AddCustomerPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-3">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("company.name") || "회사명"} *</Label>
-                  <Input
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder={t("company.namePlaceholder") || "회사명을 입력하세요"}
-                    className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder={t("company.namePlaceholder") || "회사명을 입력하세요"}
+                      className={`mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl
+                                 ${companyNameCheck.exists ? 'border-red-500' : companyNameCheck.message && !companyNameCheck.exists ? 'border-green-500' : ''}`}
+                      required
+                    />
+                    {companyNameCheck.checking && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 mt-1">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                  </div>
+                  {companyNameCheck.message && (
+                    <p className={`text-xs mt-1 ${companyNameCheck.exists ? 'text-red-600' : 'text-green-600'}`}>
+                      {companyNameCheck.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
