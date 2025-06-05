@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
 import { useLanguage } from "@/contexts/languageContext.js";
-import { GET_CUSTOMER, GET_USERS } from "@/lib/graphql/queries.js";
+import { GET_CUSTOMER, GET_USERS, CHECK_COMPANY_NAME } from "@/lib/graphql/queries.js";
 import {
   UPDATE_CUSTOMER,
   ADD_CONTACT_PERSON,
@@ -54,6 +55,8 @@ import {
   Plus,
   Trash2,
   Upload,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import Image from "next/image";
 import ImageGallery from "react-image-gallery";
@@ -85,13 +88,15 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   const districtRef = useRef();
   const wardRef = useRef();
 
-  // 기존 주소 파싱 및 설정
+  // Parse and set existing address
   useEffect(() => {
     if (value && typeof value === "string") {
       const addressParts = value.split(" ").filter((part) => part.trim());
       if (addressParts.length >= 3) {
         const [provinceName, districtName, wardName, ...detailParts] =
           addressParts;
+        
+        // Set display values for read mode
         setAddress((prev) => ({
           ...prev,
           province: provinceName,
@@ -99,9 +104,19 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
           ward: wardName,
           detailAddress: detailParts.join(" "),
         }));
+
+        // For edit mode, try to find matching items in the dropdown lists
+        if (isEditing && addressType.provinces.length > 0) {
+          const matchingProvince = addressType.provinces.find(p => 
+            p.full_name.includes(provinceName) || p.name === provinceName
+          );
+          if (matchingProvince) {
+            setSelected(prev => ({ ...prev, province: matchingProvince }));
+          }
+        }
       }
     }
-  }, [value]);
+  }, [value, isEditing, addressType.provinces]);
 
   const fetchAddressData = async (level, id = 0) => {
     const url = `https://esgoo.net/api-tinhthanh/${level}/${id}.htm`;
@@ -191,7 +206,7 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
       <button
         type="button"
         className={`w-full h-12 px-3 text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white flex items-center justify-between
-                   ${selected[type]?.name ? "font-medium" : "text-gray-500 dark:text-gray-400"}
+                   ${selected[type]?.name || address[type] ? "font-medium" : "text-gray-500 dark:text-gray-400"}
                    ${(type === "district" && !selected?.province?.id) || (type === "ward" && !selected?.district?.id) ? "opacity-50 cursor-not-allowed" : ""}`}
         onClick={(e) => {
           e.stopPropagation();
@@ -211,7 +226,9 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
           (type === "ward" && !selected?.district?.id)
         }
       >
-        <span className="text-sm">{selected[type]?.name || placeholder}</span>
+        <span className="text-sm">
+          {selected[type]?.name || address[type] || placeholder}
+        </span>
         {isEditing && (
           <ChevronDown
             className={`w-4 h-4 transition-transform duration-200 ${addressType[`${type}Open`] ? "rotate-180" : ""}`}
@@ -236,11 +253,11 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
               onClick={() => {
                 handleSelection(type, item);
                 const fullAddress =
-                  `${type === "province" ? item.full_name : selected.province?.name || ""} ${
+                  `${type === "province" ? item.full_name : selected.province?.name || address.province || ""} ${
                     type === "district"
                       ? item.full_name
-                      : selected.district?.name || ""
-                  } ${type === "ward" ? item.full_name : selected.ward?.name || ""}`.trim();
+                      : selected.district?.name || address.district || ""
+                  } ${type === "ward" ? item.full_name : selected.ward?.name || address.ward || ""} ${address.detailAddress || ""}`.trim();
                 onChange(fullAddress);
               }}
             >
@@ -319,9 +336,10 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
           placeholder={t("address.detailAddress") || "상세 주소를 입력하세요"}
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
-            setAddress((prev) => ({ ...prev, detailAddress: e.target.value }));
+            const newDetailAddress = e.target.value;
+            setAddress((prev) => ({ ...prev, detailAddress: newDetailAddress }));
             const fullAddress =
-              `${selected.province?.name || ""} ${selected.district?.name || ""} ${selected.ward?.name || ""} ${e.target.value}`.trim();
+              `${selected.province?.name || address.province || ""} ${selected.district?.name || address.district || ""} ${selected.ward?.name || address.ward || ""} ${newDetailAddress}`.trim();
             onChange(fullAddress);
           }}
         />
@@ -1163,13 +1181,18 @@ const ContactPersonCard = ({
 export default function CustomerDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [editingContact, setEditingContact] = useState(null);
   const [showAddContact, setShowAddContact] = useState(false);
+  const [nameValidation, setNameValidation] = useState({ 
+    status: null, 
+    message: "", 
+    isChecking: false 
+  });
 
   const customerId = params.id;
 
@@ -1177,26 +1200,11 @@ export default function CustomerDetailPage() {
     variables: { id: customerId },
     onCompleted: (data) => {
       if (data?.customer) {
-        // 주소 정보 파싱
         const customer = data.customer;
-        if (customer.address) {
-          const addressParts = customer.address
-            .split(" ")
-            .filter((part) => part.trim());
-          if (addressParts.length >= 3) {
-            const [city, district, province, ...detailParts] = addressParts;
-            customer.parsedAddress = {
-              city,
-              district,
-              province,
-              detailAddress: detailParts.join(" "),
-            };
-          }
-        }
         
-        // 기본값 설정 (모든 필드를 안전하게 처리)
+        // Process all fields safely with proper defaults
         const processedCustomer = {
-          ...customer,
+          id: customer.id,
           name: customer.name || "",
           contactName: customer.contactName || "",
           assignedUserId: customer.assignedUserId || customer.assignedUser?.id || "",
@@ -1213,7 +1221,6 @@ export default function CustomerDetailPage() {
           facebook: customer.facebook || "",
           tiktok: customer.tiktok || "",
           instagram: customer.instagram || "",
-          // 연관 데이터도 안전하게 처리
           assignedUser: customer.assignedUser || null,
           contacts: customer.contacts || [],
           facilityImages: customer.facilityImages || [],
@@ -1233,6 +1240,25 @@ export default function CustomerDetailPage() {
     variables: { limit: 100, offset: 0 },
   });
 
+  const [checkCompanyName] = useLazyQuery(CHECK_COMPANY_NAME, {
+    onCompleted: (data) => {
+      setNameValidation({
+        status: data.checkCompanyName.exists ? 'error' : 'success',
+        message: data.checkCompanyName.exists 
+          ? t('customer.name.duplicate') 
+          : t('customer.name.available'),
+        isChecking: false
+      });
+    },
+    onError: () => {
+      setNameValidation({
+        status: 'error',
+        message: t('customer.name.checkError'),
+        isChecking: false
+      });
+    }
+  });
+
   const [updateCustomer] = useMutation(UPDATE_CUSTOMER);
   const [addContactPerson] = useMutation(ADD_CONTACT_PERSON);
   const [updateContactPerson] = useMutation(UPDATE_CONTACT_PERSON);
@@ -1244,26 +1270,26 @@ export default function CustomerDetailPage() {
   const users = usersData?.users || [];
 
   const companyTypes = {
-    SME: t("customer.companyType.sme") || t("company.type.small") || "중소기업",
-    LARGE: t("customer.companyType.large") || t("company.type.large") || "대기업",
-    STARTUP: t("customer.companyType.startup") || t("company.type.startup") || "스타트업",
-    PUBLIC: t("customer.companyType.public") || t("company.type.public") || "공공기관",
-    NONPROFIT: t("customer.companyType.nonprofit") || t("company.type.nonprofit") || "비영리단체",
+    SME: t("customer.companyType.sme") || "중소기업",
+    LARGE: t("customer.companyType.large") || "대기업",
+    STARTUP: t("customer.companyType.startup") || "스타트업",
+    PUBLIC: t("customer.companyType.public") || "공공기관",
+    NONPROFIT: t("customer.companyType.nonprofit") || "비영리단체",
   };
 
   const gradeLabels = {
-    A: t("customer.grade.a") || t("customer.grade.vip") || "A급 (VIP)",
-    B: t("customer.grade.b") || t("customer.grade.excellent") || "B급 (우수)",
-    C: t("customer.grade.c") || t("customer.grade.normal") || "C급 (일반)",
-    D: t("customer.grade.d") || t("customer.grade.standard") || "D급 (표준)",
-    E: t("customer.grade.e") || t("customer.grade.basic") || "E급 (기본)",
+    A: t("customer.grade.a") || "A급 (VIP)",
+    B: t("customer.grade.b") || "B급 (우수)",
+    C: t("customer.grade.c") || "C급 (일반)",
+    D: t("customer.grade.d") || "D급 (표준)",
+    E: t("customer.grade.e") || "E급 (기본)",
   };
 
   const handleEdit = () => {
     setIsEditing(true);
-    // 현재 데이터를 기반으로 수정 데이터 설정 (기본값 보존)
+    // Keep all current data as edit data with proper defaults
     const currentData = customer || originalData;
-    const editDataToSet = {
+    setEditData({
       ...currentData,
       assignedUserId: currentData.assignedUserId || currentData.assignedUser?.id || "",
       industry: currentData.industry || "",
@@ -1275,17 +1301,28 @@ export default function CustomerDetailPage() {
       name: currentData.name || "",
       contactName: currentData.contactName || "",
       status: currentData.status || "active",
-    };
-    setEditData(editDataToSet);
+    });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditData({ ...originalData });
+    setNameValidation({ status: null, message: "", isChecking: false });
   };
 
   const handleSave = async () => {
     try {
+      // Check for name validation error
+      if (nameValidation.status === 'error' && editData.name !== originalData.name) {
+        toast({
+          title: "오류",
+          description: nameValidation.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Only include changed fields
       const changedData = {};
       Object.keys(editData).forEach((key) => {
         if (
@@ -1296,6 +1333,8 @@ export default function CustomerDetailPage() {
           key !== "updatedAt" &&
           key !== "contacts" &&
           key !== "facilityImages" &&
+          key !== "images" &&
+          key !== "opportunities" &&
           key !== "assignedUser"
         ) {
           changedData[key] = editData[key];
@@ -1303,35 +1342,59 @@ export default function CustomerDetailPage() {
       });
 
       if (Object.keys(changedData).length === 0) {
-        toast({
+        const toastId = toast({
           title: "알림",
           description: "변경된 내용이 없습니다.",
         });
+        
+        // Auto dismiss the toast after 3 seconds
+        setTimeout(() => {
+          dismiss(toastId);
+        }, 3000);
+        
         setIsEditing(false);
         return;
       }
 
-      await updateCustomer({
+      const result = await updateCustomer({
         variables: {
           id: customerId,
           input: changedData,
         },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "고객 정보가 성공적으로 업데이트되었습니다.",
       });
+      
+      // Auto dismiss the toast after 3 seconds
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
+
+      // Update local state with the returned data
+      if (result.data?.updateCustomer) {
+        const updatedCustomer = result.data.updateCustomer;
+        setOriginalData(updatedCustomer);
+        setEditData(updatedCustomer);
+      }
 
       setIsEditing(false);
+      setNameValidation({ status: null, message: "", isChecking: false });
       refetch();
     } catch (error) {
       console.error("Update error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "고객 정보 업데이트 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      // Auto dismiss the toast after 5 seconds
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1340,6 +1403,21 @@ export default function CustomerDetailPage() {
       ...prev,
       [field]: value,
     }));
+
+    // Check company name for duplicates only if it's different from original
+    if (field === 'name' && value && value !== originalData.name && value.trim() !== '') {
+      setNameValidation({ status: null, message: "", isChecking: true });
+      
+      // Debounce the API call
+      const timeoutId = setTimeout(() => {
+        checkCompanyName({ variables: { name: value } });
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    } else if (field === 'name' && value === originalData.name) {
+      // Reset validation if name is back to original
+      setNameValidation({ status: null, message: "", isChecking: false });
+    }
   };
 
   const handleAddContact = async (contactData) => {
@@ -1351,20 +1429,28 @@ export default function CustomerDetailPage() {
         },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "담당자가 성공적으로 추가되었습니다.",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
 
       setShowAddContact(false);
       refetch();
     } catch (error) {
       console.error("Add contact error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "담당자 추가 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1377,20 +1463,28 @@ export default function CustomerDetailPage() {
         },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "담당자 정보가 성공적으로 업데이트되었습니다.",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
 
       setEditingContact(null);
       refetch();
     } catch (error) {
       console.error("Update contact error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "담당자 정보 업데이트 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1402,19 +1496,27 @@ export default function CustomerDetailPage() {
         variables: { id: contactId },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "담당자가 성공적으로 삭제되었습니다.",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
 
       refetch();
     } catch (error) {
       console.error("Delete contact error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "담당자 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1427,19 +1529,27 @@ export default function CustomerDetailPage() {
         },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "이미지가 성공적으로 추가되었습니다.",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
 
       refetch();
     } catch (error) {
       console.error("Add image error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "이미지 추가 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1451,19 +1561,27 @@ export default function CustomerDetailPage() {
         variables: { id: imageId },
       });
 
-      toast({
+      const toastId = toast({
         title: "성공",
         description: "이미지가 성공적으로 삭제되었습니다.",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 3000);
 
       refetch();
     } catch (error) {
       console.error("Delete image error:", error);
-      toast({
+      const toastId = toast({
         title: "오류",
         description: "이미지 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      
+      setTimeout(() => {
+        dismiss(toastId);
+      }, 5000);
     }
   };
 
@@ -1543,6 +1661,7 @@ export default function CustomerDetailPage() {
                   <Button
                     onClick={handleSave}
                     className="bg-green-500 hover:bg-green-600"
+                    disabled={nameValidation.status === 'error' && editData.name !== originalData.name}
                   >
                     <Save className="w-4 h-4 mr-2" />
                     저장
@@ -1561,10 +1680,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Building2 className="w-5 h-5 mr-2" />
-                  {t("customer.basicInfo") || t("customer.companyInfo") || "기본 회사 정보"}
+                  {t("customer.basicInfo") || "기본 회사 정보"}
                 </CardTitle>
                 <CardDescription className="text-blue-100">
-                  {t("customer.basicInfoDescription") || t("customer.companyInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
+                  {t("customer.basicInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1574,13 +1693,36 @@ export default function CustomerDetailPage() {
                       {t("customer.name") || "회사명"} *
                     </Label>
                     {isEditing ? (
-                      <Input
-                        value={displayData.name || ""}
-                        onChange={(e) =>
-                          handleInputChange("name", e.target.value)
-                        }
-                        className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
-                      />
+                      <div className="mt-1 space-y-2">
+                        <div className="relative">
+                          <Input
+                            value={displayData.name || ""}
+                            onChange={(e) =>
+                              handleInputChange("name", e.target.value)
+                            }
+                            className={`h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl pr-10
+                              ${nameValidation.status === 'error' ? 'border-red-500' : ''}
+                              ${nameValidation.status === 'success' ? 'border-green-500' : ''}
+                            `}
+                          />
+                          {nameValidation.isChecking && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                            </div>
+                          )}
+                          {nameValidation.status === 'error' && (
+                            <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-500" />
+                          )}
+                          {nameValidation.status === 'success' && (
+                            <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                          )}
+                        </div>
+                        {nameValidation.message && (
+                          <p className={`text-xs ${nameValidation.status === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+                            {nameValidation.message}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-lg font-semibold text-gray-900 dark:text-white">
                         {displayData.name}
@@ -1590,7 +1732,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.assignedUser") || t("customer.manager") || "담당자"}
+                      {t("customer.assignedUser") || "담당자"}
                     </Label>
                     {isEditing ? (
                       <div className="mt-1">
@@ -1611,7 +1753,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.industry") || t("customer.businessType") || "업종"}
+                      {t("customer.industry") || "업종"}
                     </Label>
                     {isEditing ? (
                       <Input
@@ -1630,7 +1772,7 @@ export default function CustomerDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("customer.companyType") || t("customer.organizationType") || "회사 유형"}
+                      {t("customer.companyType") || "회사 유형"}
                     </Label>
                     {isEditing ? (
                       <select
@@ -1741,10 +1883,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
-                  {t("customer.contactInfo") || t("contact.information") || "연락처 정보"}
+                  {t("customer.contactInfo") || "연락처 정보"}
                 </CardTitle>
                 <CardDescription className="text-green-100">
-                  {t("customer.contactInfoDescription") || t("contact.informationDescription") || "고객사의 연락처 정보를 관리합니다"}
+                  {t("customer.contactInfoDescription") || "고객사의 연락처 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1795,10 +1937,10 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <ImageIcon className="w-5 h-5 mr-2" />
-                  {t("customer.imageGallery") || t("image.gallery") || "이미지 갤러리"}
+                  {t("customer.imageGallery") || "이미지 갤러리"}
                 </CardTitle>
                 <CardDescription className="text-purple-100">
-                  {t("customer.imageGalleryDescription") || t("image.galleryDescription") || "고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다"}
+                  {t("customer.imageGalleryDescription") || "고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1838,7 +1980,7 @@ export default function CustomerDetailPage() {
                 <CardTitle className="text-xl font-semibold flex items-center justify-between">
                   <div className="flex items-center">
                     <Users className="w-5 h-5 mr-2" />
-                    {t("customer.contactPersons") || t("contact.persons") || "담당자 정보"}
+                    {t("customer.contactPersons") || "담당자 정보"}
                   </div>
                   <Button
                     variant="outline"
@@ -1847,11 +1989,11 @@ export default function CustomerDetailPage() {
                     className="text-white border-white hover:bg-white hover:text-orange-600"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    {t("customer.addContactPerson") || t("contact.addPerson") || "담당자 추가"}
+                    {t("customer.addContactPerson") || "담당자 추가"}
                   </Button>
                 </CardTitle>
                 <CardDescription className="text-orange-100">
-                  {t("customer.contactPersonsDescription") || t("contact.personsDescription") || "고객사의 담당자들의 상세 정보를 관리합니다"}
+                  {t("customer.contactPersonsDescription") || "고객사의 담당자들의 상세 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1919,7 +2061,7 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Activity className="w-5 h-5 mr-2" />
-                  {t("customer.summary") || t("customer.summaryInfo") || "요약 정보"}
+                  {t("customer.summary") || "요약 정보"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -2054,7 +2196,7 @@ export default function CustomerDetailPage() {
               <CardHeader className="bg-gradient-to-r from-gray-500 to-gray-600 text-white p-6">
                 <CardTitle className="text-xl font-semibold flex items-center">
                   <Star className="w-5 h-5 mr-2" />
-                  {t("customer.quickActions") || t("common.quickActions") || "빠른 액션"}
+                  {t("customer.quickActions") || "빠른 액션"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-3">

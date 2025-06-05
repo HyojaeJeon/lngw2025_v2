@@ -460,6 +460,11 @@ const translations = {
     'customer.grade.c': 'C급 (일반)',
     'customer.grade.d': 'D급 (표준)',
     'customer.grade.e': 'E급 (기본)',
+
+    // 회사명 중복 검사 관련
+    'customer.name.duplicate': '이미 존재하는 회사명입니다',
+    'customer.name.available': '사용 가능한 회사명입니다',
+    'customer.name.checkError': '회사명 중복 검사 중 오류가 발생했습니다',
   },
   vi: {
     // 공통
@@ -916,6 +921,11 @@ const translations = {
     'customer.grade.c': 'Hạng C (Bình thường)',
     'customer.grade.d': 'Hạng D (Tiêu chuẩn)',
     'customer.grade.e': 'Hạng E (Cơ bản)',
+
+    // 회사명 중복 검사 관련
+    'customer.name.duplicate': 'Tên công ty đã tồn tại',
+    'customer.name.available': 'Tên công ty có thể sử dụng',
+    'customer.name.checkError': 'Lỗi khi kiểm tra tên công ty',
   },
   en: {
     // 공통
@@ -1360,6 +1370,11 @@ const translations = {
     'customer.grade.c': 'Grade C (Normal)',
     'customer.grade.d': 'Grade D (Standard)',
     'customer.grade.e': 'Grade E (Basic)',
+
+    // 회사명 중복 검사 관련
+    'customer.name.duplicate': 'Company name already exists',
+    'customer.name.available': 'Company name is available',
+    'customer.name.checkError': 'Error occurred while checking company name',
   }
 }
 

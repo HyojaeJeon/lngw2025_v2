@@ -159,13 +159,13 @@ const customerResolvers = {
       try {
         // 2) customer 생성 (주소 매핑 처리)
         const { contacts, facilityImages, city, district, province, detailAddress, ...customerData } = input;
-        
+
         // 주소 정보를 address 필드로 통합
         let fullAddress = "";
         if (city || district || province || detailAddress) {
           fullAddress = [city, district, province, detailAddress].filter(Boolean).join(" ");
         }
-        
+
         const customer = await models.Customer.create(
           {
             ...customerData,
@@ -252,18 +252,132 @@ const customerResolvers = {
       }
     },
 
+    checkCompanyName: async (_, { name }, {user}) => {
+        if (!user) {
+            throw new Error("Authentication required");
+        }
+      try {
+        const existingCustomer = await Customer.findOne({
+          where: { name },
+        });
+
+        return {
+          exists: !!existingCustomer,
+          message: existingCustomer ? "Company name already exists" : "Company name is available",
+        };
+      } catch (error) {
+        console.error("Error checking company name:", error);
+        throw new Error("Failed to check company name");
+      }
+    },
+
     updateCustomer: async (parent, { id, input }, { user }) => {
       if (!user) {
         throw new Error("Authentication required");
       }
 
-      const customer = await models.Customer.findByPk(id);
-      if (!customer) {
-        throw new Error("Customer not found");
-      }
+      try {
+        // Get current customer data
+        const currentCustomer = await Customer.findByPk(id);
+        if (!currentCustomer) {
+          throw new Error("Customer not found");
+        }
 
-      await customer.update(input);
-      return customer;
+        // Filter out unchanged fields
+        const changedFields = {};
+        Object.keys(input).forEach(key => {
+          if (input[key] !== currentCustomer[key]) {
+            changedFields[key] = input[key];
+          }
+        });
+
+        // If no fields changed, return current customer
+        if (Object.keys(changedFields).length === 0) {
+          const customer = await Customer.findByPk(id, {
+            include: [
+              {
+                model: models.User,
+                as: "assignedUser",
+                attributes: ["id", "name", "email", "department", "position"],
+              },
+              {
+                model: models.ContactPerson,
+                as: "contacts",
+              },
+              {
+                model: models.CustomerImage,
+                as: "images",
+              },
+              {
+                model: models.CustomerImage,
+                as: "facilityImages",
+                where: { imageType: "facility" },
+                required: false,
+              },
+              {
+                model: models.SalesOpportunity,
+                as: "opportunities",
+                include: [
+                  {
+                    model: models.User,
+                    as: "assignedUser",
+                    attributes: ["id", "name", "email"],
+                  },
+                ],
+              },
+            ],
+          });
+          return customer;
+        }
+
+        const [updatedRowsCount] = await Customer.update(changedFields, {
+          where: { id },
+        });
+
+        if (updatedRowsCount === 0) {
+          throw new Error("Customer not found or no changes made");
+        }
+
+        const updatedCustomer = await Customer.findByPk(id, {
+          include: [
+            {
+              model: models.User,
+              as: "assignedUser",
+              attributes: ["id", "name", "email", "department", "position"],
+            },
+            {
+              model: models.ContactPerson,
+              as: "contacts",
+            },
+            {
+              model: models.CustomerImage,
+              as: "images",
+            },
+            {
+              model: models.CustomerImage,
+              as: "facilityImages",
+              where: { imageType: "facility" },
+              required: false,
+            },
+            {
+              model: models.SalesOpportunity,
+              as: "opportunities",
+              include: [
+                {
+                  model: models.User,
+                  as: "assignedUser",
+                  attributes: ["id", "name", "email"],
+                },
+              ],
+            },
+          ],
+        });
+
+        return updatedCustomer;
+      } catch (error) {
+        console.error("Error updating customer:", error);
+        throw new Error("Failed to update customer");
+      }
     },
 
     deleteCustomer: async (parent, { id }, { user }) => {
