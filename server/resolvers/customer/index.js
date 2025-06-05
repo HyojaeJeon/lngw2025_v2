@@ -269,7 +269,85 @@ const customerResolvers = {
       }
 
       await customer.destroy();
-      return true;
+      return { success: true, message: "Customer deleted successfully" };
+    },
+
+    addContactPerson: async (parent, { customerId, input }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
+
+      const customer = await models.Customer.findByPk(customerId);
+      if (!customer) {
+        throw new Error("Customer not found");
+      }
+
+      const contactPerson = await models.ContactPerson.create({
+        ...input,
+        customerId: customerId,
+      });
+
+      return contactPerson;
+    },
+
+    updateContactPerson: async (parent, { id, input }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
+
+      const contactPerson = await models.ContactPerson.findByPk(id);
+      if (!contactPerson) {
+        throw new Error("Contact person not found");
+      }
+
+      await contactPerson.update(input);
+      return contactPerson;
+    },
+
+    deleteContactPerson: async (parent, { id }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
+
+      const contactPerson = await models.ContactPerson.findByPk(id);
+      if (!contactPerson) {
+        throw new Error("Contact person not found");
+      }
+
+      await contactPerson.destroy();
+      return { success: true, message: "Contact person deleted successfully" };
+    },
+
+    addCustomerImage: async (parent, { customerId, input }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
+
+      const customer = await models.Customer.findByPk(customerId);
+      if (!customer) {
+        throw new Error("Customer not found");
+      }
+
+      const customerImage = await models.CustomerImage.create({
+        ...input,
+        customerId: customerId,
+      });
+
+      return customerImage;
+    },
+
+    deleteCustomerImage: async (parent, { id }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
+
+      const customerImage = await models.CustomerImage.findByPk(id);
+      if (!customerImage) {
+        throw new Error("Customer image not found");
+      }
+
+      await customerImage.destroy();
+      return { success: true, message: "Customer image deleted successfully" };
     },
   },
   ContactPerson: {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -16,7 +17,14 @@ import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
 import { useLanguage } from "@/contexts/languageContext.js";
 import { GET_CUSTOMER, GET_USERS } from "@/lib/graphql/queries.js";
-import { UPDATE_CUSTOMER } from "@/lib/graphql/mutations.js";
+import { 
+  UPDATE_CUSTOMER,
+  ADD_CONTACT_PERSON,
+  UPDATE_CONTACT_PERSON,
+  DELETE_CONTACT_PERSON,
+  ADD_CUSTOMER_IMAGE,
+  DELETE_CUSTOMER_IMAGE
+} from "@/lib/graphql/mutations.js";
 import {
   Building2,
   User,
@@ -43,6 +51,9 @@ import {
   CreditCard,
   Briefcase,
   ChevronDown,
+  Plus,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import Image from "next/image";
 import ImageGallery from "react-image-gallery";
@@ -269,15 +280,17 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
   );
 };
 
-const ImageGallerySection = ({ title, images, isProfile = false }) => {
+const ImageGallerySection = ({ title, images, isProfile = false, onAddImage, onDeleteImage, canEdit = false }) => {
   const [showGallery, setShowGallery] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const fileInputRef = useRef();
 
   const galleryImages = Array.isArray(images)
     ? images.map((img) => ({
         original: typeof img === "string" ? img : img.imageUrl,
         thumbnail: typeof img === "string" ? img : img.imageUrl,
         description: typeof img === "object" ? img.description : "",
+        id: typeof img === "object" ? img.id : null,
       }))
     : images
       ? [
@@ -285,6 +298,7 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
             original: images,
             thumbnail: images,
             description: title,
+            id: null,
           },
         ]
       : [];
@@ -294,7 +308,40 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
     setShowGallery(true);
   };
 
-  if (galleryImages.length === 0) {
+  const handleFileUpload = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    Array.from(files).forEach(file => {
+      formData.append('files', file);
+    });
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.urls && result.urls.length > 0) {
+          result.urls.forEach((url, index) => {
+            onAddImage({
+              imageUrl: url,
+              imageType: isProfile ? 'profile' : 'facility',
+              description: `${title} ${galleryImages.length + index + 1}`,
+              sortOrder: galleryImages.length + index,
+            });
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+    }
+  };
+
+  if (galleryImages.length === 0 && !canEdit) {
     return (
       <div className="text-center py-8">
         <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
@@ -307,28 +354,83 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
 
   return (
     <div className="space-y-4">
-      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {title}
-      </Label>
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {title}
+        </Label>
+        {canEdit && (
+          <div className="flex space-x-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              multiple
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2"
+            >
+              <Upload className="w-4 h-4" />
+              <span>이미지 추가</span>
+            </Button>
+          </div>
+        )}
+      </div>
 
-      {isProfile ? (
+      {galleryImages.length === 0 ? (
+        <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
+          <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            등록된 이미지가 없습니다
+          </p>
+          {canEdit && (
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2 mx-auto"
+            >
+              <Upload className="w-4 h-4" />
+              <span>첫 번째 이미지 추가</span>
+            </Button>
+          )}
+        </div>
+      ) : isProfile ? (
         <div className="flex justify-center">
-          <div
-            className="relative group cursor-pointer"
-            onClick={() => openGallery(0)}
-          >
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              <Image
-                src={galleryImages[0].original}
-                alt="프로필 이미지"
-                width={128}
-                height={128}
-                className="w-full h-full object-cover"
-              />
+          <div className="relative group">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => openGallery(0)}
+            >
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <Image
+                  src={galleryImages[0].original}
+                  alt="프로필 이미지"
+                  width={128}
+                  height={128}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-200 flex items-center justify-center">
+                <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </div>
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-200 flex items-center justify-center">
-              <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+            {canEdit && galleryImages[0].id && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteImage(galleryImages[0].id);
+                }}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            )}
           </div>
         </div>
       ) : (
@@ -337,9 +439,11 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
             <div
               key={index}
               className="relative group cursor-pointer"
-              onClick={() => openGallery(index)}
             >
-              <div className="aspect-square rounded-xl overflow-hidden">
+              <div
+                className="aspect-square rounded-xl overflow-hidden"
+                onClick={() => openGallery(index)}
+              >
                 <Image
                   src={image.original}
                   alt={`시설 이미지 ${index + 1}`}
@@ -351,13 +455,26 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-xl transition-all duration-200 flex items-center justify-center">
                 <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
+              {canEdit && image.id && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2 w-6 h-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteImage(image.id);
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              )}
             </div>
           ))}
         </div>
       )}
 
       {/* Image Gallery Modal */}
-      {showGallery && (
+      {showGallery && galleryImages.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999]">
           <div className="relative w-full h-full max-w-4xl max-h-4xl p-4">
             <button
@@ -381,7 +498,142 @@ const ImageGallerySection = ({ title, images, isProfile = false }) => {
   );
 };
 
-const ContactPersonCard = ({ contact, index }) => {
+const ContactPersonForm = ({ contact, onSave, onCancel, isEditing = false }) => {
+  const [formData, setFormData] = useState({
+    name: contact?.name || "",
+    department: contact?.department || "",
+    position: contact?.position || "",
+    phone: contact?.phone || "",
+    email: contact?.email || "",
+    birthDate: contact?.birthDate || "",
+    facebook: contact?.facebook || "",
+    tiktok: contact?.tiktok || "",
+    instagram: contact?.instagram || "",
+    profileImage: contact?.profileImage || "",
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            이름 *
+          </Label>
+          <Input
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            className="mt-1 h-12 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            부서
+          </Label>
+          <Input
+            value={formData.department}
+            onChange={(e) => handleInputChange("department", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            직책
+          </Label>
+          <Input
+            value={formData.position}
+            onChange={(e) => handleInputChange("position", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            전화번호
+          </Label>
+          <Input
+            value={formData.phone}
+            onChange={(e) => handleInputChange("phone", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            이메일
+          </Label>
+          <Input
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            생년월일
+          </Label>
+          <Input
+            type="date"
+            value={formData.birthDate}
+            onChange={(e) => handleInputChange("birthDate", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Facebook
+          </Label>
+          <Input
+            value={formData.facebook}
+            onChange={(e) => handleInputChange("facebook", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Instagram
+          </Label>
+          <Input
+            value={formData.instagram}
+            onChange={(e) => handleInputChange("instagram", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            TikTok
+          </Label>
+          <Input
+            value={formData.tiktok}
+            onChange={(e) => handleInputChange("tiktok", e.target.value)}
+            className="mt-1 h-12 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="flex space-x-2 pt-4">
+        <Button type="submit" className="bg-green-500 hover:bg-green-600">
+          <Save className="w-4 h-4 mr-2" />
+          저장
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          <X className="w-4 h-4 mr-2" />
+          취소
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+const ContactPersonCard = ({ contact, index, onEdit, onDelete, canEdit = false }) => {
   const { t } = useLanguage();
 
   return (
@@ -409,13 +661,33 @@ const ContactPersonCard = ({ contact, index }) => {
 
           {/* 담당자 정보 */}
           <div className="flex-1 space-y-3">
-            <div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {contact.name}
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {contact.department} • {contact.position}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {contact.name}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {contact.department} • {contact.position}
+                </p>
+              </div>
+              {canEdit && (
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(contact)}
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onDelete(contact.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -495,6 +767,8 @@ export default function CustomerDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [originalData, setOriginalData] = useState({});
+  const [editingContact, setEditingContact] = useState(null);
+  const [showAddContact, setShowAddContact] = useState(false);
 
   const customerId = params.id;
 
@@ -513,6 +787,11 @@ export default function CustomerDetailPage() {
   });
 
   const [updateCustomer] = useMutation(UPDATE_CUSTOMER);
+  const [addContactPerson] = useMutation(ADD_CONTACT_PERSON);
+  const [updateContactPerson] = useMutation(UPDATE_CONTACT_PERSON);
+  const [deleteContactPerson] = useMutation(DELETE_CONTACT_PERSON);
+  const [addCustomerImage] = useMutation(ADD_CUSTOMER_IMAGE);
+  const [deleteCustomerImage] = useMutation(DELETE_CUSTOMER_IMAGE);
 
   const customer = data?.customer;
   const users = usersData?.users || [];
@@ -552,7 +831,10 @@ export default function CustomerDetailPage() {
           key !== "__typename" &&
           key !== "id" &&
           key !== "createdAt" &&
-          key !== "updatedAt"
+          key !== "updatedAt" &&
+          key !== "contacts" &&
+          key !== "facilityImages" &&
+          key !== "assignedUser"
         ) {
           changedData[key] = editData[key];
         }
@@ -596,6 +878,131 @@ export default function CustomerDetailPage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleAddContact = async (contactData) => {
+    try {
+      await addContactPerson({
+        variables: {
+          customerId: customerId,
+          input: contactData,
+        },
+      });
+
+      toast({
+        title: "성공",
+        description: "담당자가 성공적으로 추가되었습니다.",
+      });
+
+      setShowAddContact(false);
+      refetch();
+    } catch (error) {
+      console.error("Add contact error:", error);
+      toast({
+        title: "오류",
+        description: "담당자 추가 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateContact = async (contactData) => {
+    try {
+      await updateContactPerson({
+        variables: {
+          id: editingContact.id,
+          input: contactData,
+        },
+      });
+
+      toast({
+        title: "성공",
+        description: "담당자 정보가 성공적으로 업데이트되었습니다.",
+      });
+
+      setEditingContact(null);
+      refetch();
+    } catch (error) {
+      console.error("Update contact error:", error);
+      toast({
+        title: "오류",
+        description: "담당자 정보 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteContact = async (contactId) => {
+    if (!confirm("이 담당자를 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteContactPerson({
+        variables: { id: contactId },
+      });
+
+      toast({
+        title: "성공",
+        description: "담당자가 성공적으로 삭제되었습니다.",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Delete contact error:", error);
+      toast({
+        title: "오류",
+        description: "담당자 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddImage = async (imageData) => {
+    try {
+      await addCustomerImage({
+        variables: {
+          customerId: customerId,
+          input: imageData,
+        },
+      });
+
+      toast({
+        title: "성공",
+        description: "이미지가 성공적으로 추가되었습니다.",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Add image error:", error);
+      toast({
+        title: "오류",
+        description: "이미지 추가 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!confirm("이 이미지를 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteCustomerImage({
+        variables: { id: imageId },
+      });
+
+      toast({
+        title: "성공",
+        description: "이미지가 성공적으로 삭제되었습니다.",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Delete image error:", error);
+      toast({
+        title: "오류",
+        description: "이미지 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -927,33 +1334,34 @@ export default function CustomerDetailPage() {
                   이미지 갤러리
                 </CardTitle>
                 <CardDescription className="text-purple-100">
-                  고객사의 프로필 이미지와 시설 사진을 확인할 수 있습니다
+                  고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-8">
                   {/* 프로필 이미지 */}
-                  {displayData.profileImage && (
-                    <div>
-                      <ImageGallerySection
-                        title="고객사 프로필 이미지"
-                        images={displayData.profileImage}
-                        isProfile={true}
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <ImageGallerySection
+                      title="고객사 프로필 이미지"
+                      images={displayData.profileImage}
+                      isProfile={true}
+                      onAddImage={handleAddImage}
+                      onDeleteImage={handleDeleteImage}
+                      canEdit={true}
+                    />
+                  </div>
 
                   {/* 구분선 */}
-                  {displayData.profileImage &&
-                    displayData.images?.length > 0 && (
-                      <div className="border-t border-gray-200 dark:border-gray-600"></div>
-                    )}
+                  <div className="border-t border-gray-200 dark:border-gray-600"></div>
 
                   {/* 시설 사진 */}
                   <div>
                     <ImageGallerySection
                       title="시설 사진"
                       images={displayData.facilityImages}
+                      onAddImage={handleAddImage}
+                      onDeleteImage={handleDeleteImage}
+                      canEdit={true}
                     />
                   </div>
                 </div>
@@ -961,30 +1369,80 @@ export default function CustomerDetailPage() {
             </Card>
 
             {/* 담당자 정보 */}
-            {displayData.contacts && displayData.contacts.length > 0 && (
-              <Card className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
-                  <CardTitle className="text-xl font-semibold flex items-center">
+            <Card className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
+                <CardTitle className="text-xl font-semibold flex items-center justify-between">
+                  <div className="flex items-center">
                     <Users className="w-5 h-5 mr-2" />
                     담당자 정보
-                  </CardTitle>
-                  <CardDescription className="text-orange-100">
-                    고객사의 담당자들의 상세 정보입니다
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {displayData.contacts.map((contact, index) => (
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAddContact(true)}
+                    className="text-white border-white hover:bg-white hover:text-orange-600"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    담당자 추가
+                  </Button>
+                </CardTitle>
+                <CardDescription className="text-orange-100">
+                  고객사의 담당자들의 상세 정보를 관리합니다
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                {showAddContact && (
+                  <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <h4 className="text-lg font-semibold mb-4">새 담당자 추가</h4>
+                    <ContactPersonForm
+                      onSave={handleAddContact}
+                      onCancel={() => setShowAddContact(false)}
+                    />
+                  </div>
+                )}
+
+                {editingContact && (
+                  <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <h4 className="text-lg font-semibold mb-4">담당자 정보 수정</h4>
+                    <ContactPersonForm
+                      contact={editingContact}
+                      onSave={handleUpdateContact}
+                      onCancel={() => setEditingContact(null)}
+                      isEditing={true}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {displayData.contacts && displayData.contacts.length > 0 ? (
+                    displayData.contacts.map((contact, index) => (
                       <ContactPersonCard
                         key={contact.id || index}
                         contact={contact}
                         index={index}
+                        onEdit={setEditingContact}
+                        onDelete={handleDeleteContact}
+                        canEdit={true}
                       />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">
+                        등록된 담당자가 없습니다
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddContact(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        첫 번째 담당자 추가
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* 사이드바 */}

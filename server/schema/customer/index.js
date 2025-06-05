@@ -16,6 +16,11 @@ const customerTypeDefs = gql`
     deleteCustomer(id: ID!): MutationResponse!
     createAddress(input: AddressInput!): Address!
     createService(input: ServiceInput!): Service!
+    addContactPerson(customerId: ID!, input: ContactPersonInput!): ContactPerson!
+    updateContactPerson(id: ID!, input: ContactPersonInput!): ContactPerson!
+    deleteContactPerson(id: ID!): MutationResponse!
+    addCustomerImage(customerId: ID!, input: CustomerImageInput!): CustomerImage!
+    deleteCustomerImage(id: ID!): MutationResponse!
   }
 
   type Customer {
@@ -177,6 +182,18 @@ const customerTypeDefs = gql`
     description: String
     category: String
     status: String
+  }
+
+  input CustomerImageInput {
+    imageUrl: String!
+    imageType: String
+    description: String
+    sortOrder: Int
+  }
+
+  type MutationResponse {
+    success: Boolean!
+    message: String
   }
 `;
 

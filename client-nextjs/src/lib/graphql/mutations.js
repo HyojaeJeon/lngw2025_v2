@@ -145,7 +145,76 @@ export const UPDATE_CUSTOMER = gql`
 
 export const DELETE_CUSTOMER = gql`
   mutation DeleteCustomer($id: ID!) {
-    deleteCustomer(id: $id)
+    deleteCustomer(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const ADD_CONTACT_PERSON = gql`
+  mutation AddContactPerson($customerId: ID!, $input: ContactPersonInput!) {
+    addContactPerson(customerId: $customerId, input: $input) {
+      id
+      name
+      department
+      position
+      phone
+      email
+      birthDate
+      facebook
+      tiktok
+      instagram
+      profileImage
+    }
+  }
+`;
+
+export const UPDATE_CONTACT_PERSON = gql`
+  mutation UpdateContactPerson($id: ID!, $input: ContactPersonInput!) {
+    updateContactPerson(id: $id, input: $input) {
+      id
+      name
+      department
+      position
+      phone
+      email
+      birthDate
+      facebook
+      tiktok
+      instagram
+      profileImage
+    }
+  }
+`;
+
+export const DELETE_CONTACT_PERSON = gql`
+  mutation DeleteContactPerson($id: ID!) {
+    deleteContactPerson(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const ADD_CUSTOMER_IMAGE = gql`
+  mutation AddCustomerImage($customerId: ID!, $input: CustomerImageInput!) {
+    addCustomerImage(customerId: $customerId, input: $input) {
+      id
+      imageUrl
+      imageType
+      description
+      sortOrder
+    }
+  }
+`;
+
+export const DELETE_CUSTOMER_IMAGE = gql`
+  mutation DeleteCustomerImage($id: ID!) {
+    deleteCustomerImage(id: $id) {
+      success
+      message
+    }
   }
 `;
 
