@@ -122,9 +122,9 @@ async function startServer() {
     console.log("Database connection established successfully.");
 
     if (process.env.NODE_ENV === "development") {
-      // 데이터베이스 동기화 - alter 모드로 변경하여 기존 인덱스 충돌 방지
+      // 데이터베이스 동기화
       console.log("Syncing database...");
-      await models.sequelize.sync({ alter: true }); // 기존 테이블 구조를 유지하면서 변경사항만 적용
+      await models.sequelize.sync({ force: false }); // 테이블을 완전히 재생성
       console.log("Database synced successfully.");
       const userCount = await models.User.count();
       if (userCount === 0) {

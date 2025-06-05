@@ -1,5 +1,6 @@
 { pkgs }: {
   deps = [
+    pkgs.systemdMinimal
     pkgs.nano
     pkgs.haskellPackages.snap-templates
     pkgs.python312Packages.pyngrok
