@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -8,14 +9,171 @@ import { Button } from "@/components/ui/button.js";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_USERS, GET_ADDRESSES, GET_SERVICES } from "@/lib/graphql/queries.js";
 import { CREATE_ADDRESS, CREATE_SERVICE, CREATE_CUSTOMER } from "@/lib/graphql/mutations.js";
-import { Building2, MapPin, ChevronDown, User, Phone, Mail, FileText, Calendar, Plus, Upload, X, Search, UserPlus, Camera } from "lucide-react";
+import { Building2, MapPin, ChevronDown, User, Phone, Mail, FileText, Calendar, Plus, Upload, X, Search, UserPlus, Camera, Eye, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/languageContext.js";
 import Image from "next/image";
+
+const AddressSelector = ({ value, onChange }) => {
+  const [address, setAddress] = useState({
+    province: "",
+    district: "",
+    ward: "",
+    detailAddress: ""
+  });
+  const [addressType, setAddressType] = useState({ 
+    provinces: [], 
+    districts: [], 
+    wards: [],
+    provinceOpen: false,
+    districtOpen: false,
+    wardOpen: false
+  });
+  const [selected, setSelected] = useState({ province: {}, district: {}, ward: {} });
+  const containerRef = useRef();
+
+  const fetchAddressData = async (level, id = 0) => {
+    const url = `https://esgoo.net/api-tinhthanh/${level}/${id}.htm`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.error === 0 ? data.data : [];
+    } catch (error) {
+      console.error("주소 데이터 가져오기 실패:", error);
+      return [];
+    }
+  };
+
+  const handleOutsideClick = (event) => {
+    if (containerRef.current && !containerRef.current.contains(event.target)) {
+      setAddressType(prev => ({ 
+        ...prev, 
+        provinceOpen: false, 
+        districtOpen: false, 
+        wardOpen: false 
+      }));
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    fetchAddressData(1).then(provinces => setAddressType(prev => ({ ...prev, provinces })));
+  }, []);
+
+  useEffect(() => {
+    if (selected?.province?.id) {
+      fetchAddressData(2, selected?.province?.id).then(districts => 
+        setAddressType(prev => ({ ...prev, districts, wards: [] }))
+      );
+    }
+  }, [selected?.province]);
+
+  useEffect(() => {
+    if (selected?.district?.id) {
+      fetchAddressData(3, selected?.district?.id).then(wards => 
+        setAddressType(prev => ({ ...prev, wards }))
+      );
+    }
+  }, [selected?.district]);
+
+  const handleSelection = (type, item) => {
+    setSelected(prev => ({ ...prev, [type]: item }));
+
+    if (type === "province") {
+      setAddressType(prev => ({ 
+        ...prev, 
+        provinceOpen: false, 
+        districtOpen: true, 
+        wardOpen: false 
+      }));
+      setSelected(prev => ({ ...prev, district: {}, ward: {} }));
+    }
+    
+    if (type === "district") {
+      setSelected(prev => ({ ...prev, ward: {} }));
+      setAddressType(prev => ({ 
+        ...prev, 
+        provinceOpen: false, 
+        districtOpen: false, 
+        wardOpen: true 
+      }));
+    }
+
+    if (type === "ward") {
+      setAddressType(prev => ({ 
+        ...prev, 
+        provinceOpen: false, 
+        districtOpen: false, 
+        wardOpen: false 
+      }));
+    }
+  };
+
+  const renderDropdown = (type, list, placeholder) => (
+    <div className="relative w-full">
+      <button
+        type="button"
+        className={`w-full h-12 px-3 text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white flex items-center justify-between
+                   ${selected[type]?.name ? 'font-medium' : 'text-gray-500 dark:text-gray-400'}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          setAddressType(prev => ({
+            ...prev,
+            [`${type}Open`]: !prev[`${type}Open`]
+          }));
+        }}
+      >
+        <span className="text-sm">
+          {selected[type]?.name || placeholder}
+        </span>
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${addressType[`${type}Open`] ? 'rotate-180' : ''}`} />
+      </button>
+
+      {addressType[`${type}Open`] && (
+        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+          {list.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => handleSelection(type, item)}
+            >
+              {item.full_name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div ref={containerRef} className="space-y-4">
+      <div className="grid grid-cols-3 gap-4">
+        {renderDropdown("province", addressType.provinces, "도/시 선택")}
+        {renderDropdown("district", addressType.districts, "구/군 선택")}
+        {renderDropdown("ward", addressType.wards, "동/읍/면 선택")}
+      </div>
+      <div>
+        <Input
+          type="text"
+          placeholder="상세 주소를 입력하세요"
+          className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+          onChange={(e) => {
+            const fullAddress = `${selected.province?.name || ''} ${selected.district?.name || ''} ${selected.ward?.name || ''} ${e.target.value}`.trim();
+            onChange(fullAddress);
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const SearchableUserSelect = ({ value, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loadedCount, setLoadedCount] = useState(10);
   const dropdownRef = useRef(null);
 
   const { data: usersData, loading, fetchMore } = useQuery(GET_USERS, {
@@ -82,7 +240,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
               </div>
             </>
           ) : (
-            <span className="text-gray-500 dark:text-gray-400">{placeholder}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</span>
           )}
         </div>
         <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -136,6 +294,162 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false }) => {
+  const [previewImage, setPreviewImage] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const { url } = await response.json();
+          if (isMultiple) {
+            onImagesChange([...images, url]);
+          } else {
+            onImagesChange(url);
+          }
+        }
+      } catch (error) {
+        console.error('이미지 업로드 실패:', error);
+      }
+    }
+  };
+
+  const removeImage = (index) => {
+    if (isMultiple) {
+      const newImages = images.filter((_, i) => i !== index);
+      onImagesChange(newImages);
+    } else {
+      onImagesChange("");
+    }
+  };
+
+  const openPreview = (imageUrl) => {
+    setPreviewImage(imageUrl);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</Label>
+      
+      <div className="flex flex-wrap gap-4">
+        {/* 업로드 버튼 */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+        >
+          <Upload className="w-8 h-8 text-gray-400 mb-2" />
+          <span className="text-sm text-gray-500">이미지 추가</span>
+        </button>
+
+        {/* 이미지 미리보기 */}
+        {isMultiple ? (
+          images.map((image, index) => (
+            <div key={index} className="relative w-32 h-32 group">
+              <Image
+                src={image}
+                alt={`이미지 ${index + 1}`}
+                fill
+                className="object-cover rounded-xl cursor-pointer"
+                onClick={() => openPreview(image)}
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-xl transition-all duration-200 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => openPreview(image)}
+                    className="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="p-2 bg-white rounded-full text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          images && (
+            <div className="relative w-32 h-32 group">
+              <Image
+                src={images}
+                alt="프로필 이미지"
+                fill
+                className="object-cover rounded-xl cursor-pointer"
+                onClick={() => openPreview(images)}
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-xl transition-all duration-200 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => openPreview(images)}
+                    className="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeImage()}
+                    className="p-2 bg-white rounded-full text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple={isMultiple}
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+
+      {/* 이미지 미리보기 모달 */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setPreviewImage(null)}>
+          <div className="relative max-w-4xl max-h-4xl">
+            <Image
+              src={previewImage}
+              alt="미리보기"
+              width={800}
+              height={600}
+              className="object-contain"
+            />
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-4 right-4 p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
         </div>
       )}
@@ -225,7 +539,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.name || ""}
             onChange={(e) => updateContact(index, 'name', e.target.value)}
             placeholder="담당자 이름"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
             required
           />
         </div>
@@ -237,7 +551,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.department || ""}
             onChange={(e) => updateContact(index, 'department', e.target.value)}
             placeholder="부서명"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -248,7 +562,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.position || ""}
             onChange={(e) => updateContact(index, 'position', e.target.value)}
             placeholder="직책"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -260,7 +574,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.phone || ""}
             onChange={(e) => updateContact(index, 'phone', e.target.value)}
             placeholder="전화번호"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -271,7 +585,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.email || ""}
             onChange={(e) => updateContact(index, 'email', e.target.value)}
             placeholder="이메일"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -281,7 +595,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             type="date"
             value={contact.birthDate || ""}
             onChange={(e) => updateContact(index, 'birthDate', e.target.value)}
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -293,7 +607,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.facebook || ""}
             onChange={(e) => updateContact(index, 'facebook', e.target.value)}
             placeholder="Facebook URL"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -304,7 +618,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.tiktok || ""}
             onChange={(e) => updateContact(index, 'tiktok', e.target.value)}
             placeholder="TikTok URL"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
 
@@ -315,7 +629,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
             value={contact.instagram || ""}
             onChange={(e) => updateContact(index, 'instagram', e.target.value)}
             placeholder="Instagram URL"
-            className="mt-1 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
+            className="mt-1 h-12 text-sm bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 focus:border-blue-500 focus:ring-blue-200"
           />
         </div>
       </div>
@@ -336,6 +650,8 @@ export default function AddCustomerPage() {
     grade: "",
     address: "",
     assignedUserId: "",
+    profileImage: "",
+    facilityImages: [],
     contacts: []
   });
 
@@ -445,7 +761,7 @@ export default function AddCustomerPage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-3">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">회사명 *</Label>
                   <Input
                     name="name"
@@ -453,24 +769,9 @@ export default function AddCustomerPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="회사명을 입력하세요"
-                    className="mt-1 h-12 text-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                    className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                     required
                   />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">회사 유형</Label>
-                  <select
-                    name="companyType"
-                    value={formData.companyType}
-                    onChange={handleInputChange}
-                    className="mt-1 w-full h-12 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
-                  >
-                    <option value="">회사 유형 선택</option>
-                    {companyTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
                 </div>
 
                 <div>
@@ -481,8 +782,23 @@ export default function AddCustomerPage() {
                     value={formData.industry}
                     onChange={handleInputChange}
                     placeholder="업종을 입력하세요"
-                    className="mt-1 h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                    className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                   />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">회사 유형</Label>
+                  <select
+                    name="companyType"
+                    value={formData.companyType}
+                    onChange={handleInputChange}
+                    className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
+                  >
+                    <option value="">회사 유형 선택</option>
+                    {companyTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -491,7 +807,7 @@ export default function AddCustomerPage() {
                     name="grade"
                     value={formData.grade}
                     onChange={handleInputChange}
-                    className="mt-1 w-full h-12 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
+                    className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                   >
                     <option value="">고객 등급 선택</option>
                     {grades.map(grade => (
@@ -500,16 +816,14 @@ export default function AddCustomerPage() {
                   </select>
                 </div>
 
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-3">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">주소</Label>
-                  <Input
-                    name="address"
-                    type="text"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="회사 주소를 입력하세요"
-                    className="mt-1 h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
-                  />
+                  <div className="mt-1">
+                    <AddressSelector
+                      value={formData.address}
+                      onChange={(address) => setFormData(prev => ({...prev, address}))}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -535,14 +849,44 @@ export default function AddCustomerPage() {
             </CardContent>
           </Card>
 
-          {/* 담당자 정보 */}
+          {/* 이미지 업로드 */}
           <Card className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
+              <CardTitle className="text-xl font-semibold flex items-center">
+                <ImageIcon className="w-5 h-5 mr-2" />
+                이미지 등록
+              </CardTitle>
+              <CardDescription className="text-purple-100">
+                고객사의 프로필 이미지와 시설 사진을 등록해 주세요
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <ImageUploadSection
+                  title="고객사 프로필 이미지"
+                  images={formData.profileImage}
+                  onImagesChange={(image) => setFormData(prev => ({...prev, profileImage: image}))}
+                  isMultiple={false}
+                />
+                
+                <ImageUploadSection
+                  title="시설 사진"
+                  images={formData.facilityImages}
+                  onImagesChange={(images) => setFormData(prev => ({...prev, facilityImages: images}))}
+                  isMultiple={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 담당자 정보 */}
+          <Card className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <UserPlus className="w-5 h-5 mr-2" />
                 담당자 정보
               </CardTitle>
-              <CardDescription className="text-purple-100">
+              <CardDescription className="text-orange-100">
                 고객사의 담당자들을 추가해 주세요
               </CardDescription>
             </CardHeader>
