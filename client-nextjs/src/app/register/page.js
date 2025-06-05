@@ -842,7 +842,7 @@ export default function RegisterPage() {
                             phoneNumber: "",
                           })
                         }
-                      >Update register page to use correct mutation.<Plus className="w-4 h-4 mr-2" />
+                      >Update register page touse correct mutation.<Plus className="w-4 h-4 mr-2" />
                         {t("register.addEmergencyContact")}
                       </Button>
                     </div>

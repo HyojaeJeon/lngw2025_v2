@@ -388,12 +388,14 @@ export default function ProfilePage() {
                       {t("register.birthDate")}{" "}
                       <span className="text-red-500">*</span>
                     </Label>
-                    <CustomCalendar
+                    <Input
+                      id="birthDate"
+                      name="birthDate"
+                      type="date"
                       value={formData.birthDate || ""}
-                      language={language}
-                      t={t}
-                      onChange={(value) => handleInputChange({ target: { name: "birthDate", value } })}
+                      onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="text-sm"
                     />
                   </div>
                   <div>
@@ -509,12 +511,14 @@ export default function ProfilePage() {
                       {t("register.joinDate")}{" "}
                       <span className="text-red-500">*</span>
                     </Label>
-                    <CustomCalendar
+                    <Input
+                      id="joinDate"
+                      name="joinDate"
+                      type="date"
                       value={formData.joinDate || ""}
-                      language={language}
-                      t={t}
-                      onChange={(value) => handleInputChange({ target: { name: "joinDate", value } })}
+                      onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="text-sm"
                     />
                   </div>
                 </div>

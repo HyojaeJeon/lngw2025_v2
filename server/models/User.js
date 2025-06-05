@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         comment: "임시번호",
       },
       joinDate: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         allowNull: true,
         comment: "입사일",
       },
@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
         comment: "국적",
       },
       birthDate: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         allowNull: true,
         comment: "생년월일",
       },
