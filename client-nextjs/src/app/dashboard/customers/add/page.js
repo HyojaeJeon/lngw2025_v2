@@ -1044,22 +1044,21 @@ export default function AddCustomerPage() {
   };
 
   const companyTypes = [
-    { value: "중소기업", label: t("company.type.small") || "중소기업" },
-    { value: "대기업", label: t("company.type.large") || "대기업" },
-    { value: "스타트업", label: t("company.type.startup") || "스타트업" },
-    { value: "공공기관", label: t("company.type.public") || "공공기관" },
-    { value: "비영리단체", label: t("company.type.nonprofit") || "비영리단체" },
-    { value: "직접입력", label: t("company.type.custom") || "직접입력" },
+    { value: "SME", label: t("company.type.small") || "중소기업" },
+    { value: "LARGE", label: t("company.type.large") || "대기업" },
+    { value: "STARTUP", label: t("company.type.startup") || "스타트업" },
+    { value: "PUBLIC", label: t("company.type.public") || "공공기관" },
+    { value: "NONPROFIT", label: t("company.type.nonprofit") || "비영리단체" },
+    { value: "CUSTOM", label: t("company.type.custom") || "직접입력" },
   ];
 
   const grades = [
-    { value: "A급 (VIP)", label: t("customer.grade.vip") || "A급 (VIP)" },
-    {
-      value: "B급 (우수)",
-      label: t("customer.grade.excellent") || "B급 (우수)",
-    },
-    { value: "C급 (일반)", label: t("customer.grade.normal") || "C급 (일반)" },
-    { value: "직접입력", label: t("customer.grade.custom") || "직접입력" },
+    { value: "A", label: t("customer.grade.vip") || "A급 (VIP)" },
+    { value: "B", label: t("customer.grade.excellent") || "B급 (우수)" },
+    { value: "C", label: t("customer.grade.normal") || "C급 (일반)" },
+    { value: "D", label: t("customer.grade.standard") || "D급 (표준)" },
+    { value: "E", label: t("customer.grade.basic") || "E급 (기본)" },
+    { value: "CUSTOM", label: t("customer.grade.custom") || "직접입력" },
   ];
 
   return (
@@ -1172,7 +1171,7 @@ export default function AddCustomerPage() {
                       </option>
                     ))}
                   </select>
-                  {formData.companyType === "직접입력" && (
+                  {formData.companyType === "CUSTOM" && (
                     <Input
                       name="companyType"
                       type="text"
@@ -1206,7 +1205,7 @@ export default function AddCustomerPage() {
                       </option>
                     ))}
                   </select>
-                  {formData.grade === "직접입력" && (
+                  {formData.grade === "CUSTOM" && (
                     <Input
                       name="grade"
                       type="text"

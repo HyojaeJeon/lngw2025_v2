@@ -84,6 +84,35 @@ export const GET_CUSTOMERS = gql`
       companyType
       grade
       address
+      profileImage
+      status
+      assignedUserId
+      assignedUser {
+        id
+        name
+        email
+        department
+        position
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_CUSTOMER = gql`
+  query GetCustomer($id: ID!) {
+    customer(id: $id) {
+      id
+      name
+      contactName
+      email
+      phone
+      industry
+      companyType
+      grade
+      address
+      profileImage
       status
       assignedUserId
       assignedUser {
@@ -100,11 +129,15 @@ export const GET_CUSTOMERS = gql`
         position
         phone
         email
+        birthDate
+        facebook
+        tiktok
+        instagram
+        profileImage
       }
-      images {
+      facilityImages {
         id
         imageUrl
-        imageType
         description
         sortOrder
       }

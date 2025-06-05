@@ -88,17 +88,14 @@ export default function CustomersPage() {
   };
 
   const getGradeName = (grade) => {
-    console.log("GRADE : ", grade);
-    switch (grade) {
-      case "A":
-        return "VIP";
-      case "B":
-        return "우수";
-      case "C":
-        return "일반";
-      default:
-        return "미분류";
-    }
+    const gradeLabels = {
+      A: t("customer.grade.vip") || "VIP",
+      B: t("customer.grade.excellent") || "우수",
+      C: t("customer.grade.normal") || "일반",
+      D: t("customer.grade.standard") || "표준",
+      E: t("customer.grade.basic") || "기본",
+    };
+    return gradeLabels[grade] || "미분류";
   };
 
   const renderPagination = () => {
@@ -531,18 +528,35 @@ export default function CustomersPage() {
                 </div>
 
                 <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {["상세보기", "수정", "활동이력"].map((action, idx) => (
-                    <Button
-                      key={idx}
-                      variant="outline"
-                      size="sm"
-                      className="transition-all duration-300 transform  hover:shadow-md
-                                       group-hover:border-blue-300 group-hover:text-blue-600 
-                                       dark:group-hover:border-blue-500 dark:group-hover:text-blue-400"
-                    >
-                      {action}
-                    </Button>
-                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
+                    className="transition-all duration-300 transform hover:shadow-md
+                               group-hover:border-blue-300 group-hover:text-blue-600 
+                               dark:group-hover:border-blue-500 dark:group-hover:text-blue-400"
+                  >
+                    상세보기
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
+                    className="transition-all duration-300 transform hover:shadow-md
+                               group-hover:border-green-300 group-hover:text-green-600 
+                               dark:group-hover:border-green-500 dark:group-hover:text-green-400"
+                  >
+                    수정
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="transition-all duration-300 transform hover:shadow-md
+                               group-hover:border-purple-300 group-hover:text-purple-600 
+                               dark:group-hover:border-purple-500 dark:group-hover:text-purple-400"
+                  >
+                    활동이력
+                  </Button>
                 </div>
               </CardContent>
             </Card>

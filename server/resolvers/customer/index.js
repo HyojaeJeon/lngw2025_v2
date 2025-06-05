@@ -1,6 +1,6 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
-const { Customer } = models; // Import Customer model
+const { Customer, User, ContactPerson, CustomerImage } = require("../../models");
 
 const customerResolvers = {
   Query: {
@@ -77,24 +77,31 @@ const customerResolvers = {
           }
         : {};
 
-      return await models.Customer.findAll({
-        where: whereCondition,
-        limit,
-        offset,
-        include: [
-          {
-            model: models.User,
-            as: "assignedUser",
-            attributes: ["id", "name", "email", "department", "position"],
-          },
-          {
-            model: models.CustomerImage,
-            as: "images",
-            order: [["sortOrder", "ASC"]],
-          },
-        ],
-        order: [["createdAt", "DESC"]],
-      });
+      try {
+        const customers = await Customer.findAll({
+          where: whereCondition,
+          limit,
+          offset,
+          include: [
+            {
+              model: models.User,
+              as: "assignedUser",
+              attributes: ["id", "name", "email", "department", "position"],
+            },
+            {
+              model: models.CustomerImage,
+              as: "images",
+              order: [["sortOrder", "ASC"]],
+            },
+          ],
+          order: [["createdAt", "DESC"]],
+        });
+
+        return customers;
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        throw new Error("Failed to fetch customers");
+      }
     },
 
     customer: async (parent, { id }, { user }) => {
@@ -102,20 +109,36 @@ const customerResolvers = {
         throw new Error("Authentication required");
       }
 
-      return await models.Customer.findByPk(id, {
-        include: [
-          {
-            model: models.User,
-            as: "assignedUser",
-            attributes: ["id", "name", "email", "department", "position"],
-          },
-          {
-            model: models.CustomerImage,
-            as: "images",
-            order: [["sortOrder", "ASC"]],
-          },
-        ],
-      });
+      try {
+        const customer = await Customer.findByPk(id, {
+          include: [
+            {
+              model: models.User,
+              as: "assignedUser",
+              attributes: ["id", "name", "email", "department", "position"],
+            },
+            {
+              model: models.ContactPerson,
+              as: "contacts",
+            },
+            {
+              model: models.CustomerImage,
+              as: "images",
+              order: [["sortOrder", "ASC"]],
+              attributes: ["id", "imageUrl", "description", "sortOrder"],
+            },
+          ],
+        });
+
+        if (!customer) {
+          throw new Error("Customer not found");
+        }
+
+        return customer;
+      } catch (error) {
+        console.error("Error fetching customer:", error);
+        throw new Error("Failed to fetch customer");
+      }
     },
   },
 
