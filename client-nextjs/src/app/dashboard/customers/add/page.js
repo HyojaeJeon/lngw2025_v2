@@ -12,6 +12,21 @@ import { CREATE_ADDRESS, CREATE_SERVICE, CREATE_CUSTOMER } from "@/lib/graphql/m
 import { Building2, MapPin, ChevronDown, User, Phone, Mail, FileText, Calendar, Plus, Upload, X, Search, UserPlus, Camera, Eye, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/languageContext.js";
 import Image from "next/image";
+import imageCompression from 'browser-image-compression';
+
+// 이미지 로딩 모달 컴포넌트
+const ImageLoadingModal = ({ isVisible }) => {
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-gray-700 dark:text-gray-300">이미지를 처리 중입니다...</p>
+      </div>
+    </div>
+  );
+};
 
 const AddressSelector = ({ value, onChange }) => {
   const [address, setAddress] = useState({
@@ -133,7 +148,7 @@ const AddressSelector = ({ value, onChange }) => {
       </button>
 
       {addressType[`${type}Open`] && (
-        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-[9999] max-h-60 overflow-y-auto">
           {list.map((item) => (
             <button
               key={item.id}
@@ -150,7 +165,7 @@ const AddressSelector = ({ value, onChange }) => {
   );
 
   return (
-    <div ref={containerRef} className="space-y-4">
+    <div ref={containerRef} className="space-y-4 relative">
       <div className="grid grid-cols-3 gap-4">
         {renderDropdown("province", addressType.provinces, "도/시 선택")}
         {renderDropdown("district", addressType.districts, "구/군 선택")}
@@ -247,7 +262,7 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl">
+        <div className="absolute z-[9999] w-full mt-2 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl shadow-2xl">
           <div className="p-3 border-b border-gray-200 dark:border-gray-600">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -301,18 +316,28 @@ const SearchableUserSelect = ({ value, onChange, placeholder }) => {
   );
 };
 
-const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false }) => {
+const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false, setImageLoading }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    setImageLoading(true);
     
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      try {
+    try {
+      for (const file of files) {
+        // 이미지 압축 옵션
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
+
+        const compressedFile = await imageCompression(file, options);
+        
+        const formData = new FormData();
+        formData.append('file', compressedFile);
+        
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData
@@ -326,9 +351,11 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false 
             onImagesChange(url);
           }
         }
-      } catch (error) {
-        console.error('이미지 업로드 실패:', error);
       }
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -435,7 +462,7 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false 
 
       {/* 이미지 미리보기 모달 */}
       {previewImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setPreviewImage(null)}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999]" onClick={() => setPreviewImage(null)}>
           <div className="relative max-w-4xl max-h-4xl">
             <Image
               src={previewImage}
@@ -457,20 +484,42 @@ const ImageUploadSection = ({ title, images, onImagesChange, isMultiple = false 
   );
 };
 
-const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => {
+const ContactPersonForm = ({ contact, index, updateContact, removeContact, setImageLoading }) => {
   const [profileImagePreview, setProfileImagePreview] = useState(contact.profileImage || null);
   const fileInputRef = useRef(null);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target.result;
-        setProfileImagePreview(result);
-        updateContact(index, 'profileImage', result);
-      };
-      reader.readAsDataURL(file);
+      setImageLoading(true);
+      try {
+        // 이미지 압축
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
+
+        const compressedFile = await imageCompression(file, options);
+        
+        const formData = new FormData();
+        formData.append('file', compressedFile);
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const { url } = await response.json();
+          setProfileImagePreview(url);
+          updateContact(index, 'profileImage', url);
+        }
+      } catch (error) {
+        console.error('이미지 업로드 실패:', error);
+      } finally {
+        setImageLoading(false);
+      }
     }
   };
 
@@ -639,6 +688,7 @@ const ContactPersonForm = ({ contact, index, updateContact, removeContact }) => 
 
 export default function AddCustomerPage() {
   const { t } = useLanguage();
+  const [imageLoading, setImageLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -647,7 +697,9 @@ export default function AddCustomerPage() {
     phone: "",
     industry: "",
     companyType: "",
+    customCompanyType: "",
     grade: "",
+    customGrade: "",
     address: "",
     assignedUserId: "",
     profileImage: "",
@@ -704,7 +756,11 @@ export default function AddCustomerPage() {
     try {
       const { data } = await createCustomer({
         variables: {
-          input: formData
+          input: {
+            ...formData,
+            companyType: formData.companyType === "직접입력" ? formData.customCompanyType : formData.companyType,
+            grade: formData.grade === "직접입력" ? formData.customGrade : formData.grade
+          }
         }
       });
       console.log("Customer created:", data);
@@ -720,17 +776,21 @@ export default function AddCustomerPage() {
     { value: "대기업", label: "대기업" },
     { value: "스타트업", label: "스타트업" },
     { value: "공공기관", label: "공공기관" },
-    { value: "비영리단체", label: "비영리단체" }
+    { value: "비영리단체", label: "비영리단체" },
+    { value: "직접입력", label: "직접입력" }
   ];
 
   const grades = [
     { value: "A급 (VIP)", label: "A급 (VIP)" },
     { value: "B급 (우수)", label: "B급 (우수)" },
-    { value: "C급 (일반)", label: "C급 (일반)" }
+    { value: "C급 (일반)", label: "C급 (일반)" },
+    { value: "직접입력", label: "직접입력" }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+      <ImageLoadingModal isVisible={imageLoading} />
+      
       <div className="container mx-auto max-w-6xl">
         {/* 헤더 */}
         <div className="mb-8">
@@ -799,6 +859,16 @@ export default function AddCustomerPage() {
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
+                  {formData.companyType === "직접입력" && (
+                    <Input
+                      name="customCompanyType"
+                      type="text"
+                      value={formData.customCompanyType}
+                      onChange={handleInputChange}
+                      placeholder="회사 유형을 입력하세요"
+                      className="mt-2 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -814,6 +884,16 @@ export default function AddCustomerPage() {
                       <option key={grade.value} value={grade.value}>{grade.label}</option>
                     ))}
                   </select>
+                  {formData.grade === "직접입력" && (
+                    <Input
+                      name="customGrade"
+                      type="text"
+                      value={formData.customGrade}
+                      onChange={handleInputChange}
+                      placeholder="고객 등급을 입력하세요"
+                      className="mt-2 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
+                    />
+                  )}
                 </div>
 
                 <div className="lg:col-span-3">
@@ -861,20 +941,31 @@ export default function AddCustomerPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <ImageUploadSection
-                  title="고객사 프로필 이미지"
-                  images={formData.profileImage}
-                  onImagesChange={(image) => setFormData(prev => ({...prev, profileImage: image}))}
-                  isMultiple={false}
-                />
+              <div className="space-y-8">
+                {/* 프로필 이미지 - 상단 */}
+                <div>
+                  <ImageUploadSection
+                    title="고객사 프로필 이미지"
+                    images={formData.profileImage}
+                    onImagesChange={(image) => setFormData(prev => ({...prev, profileImage: image}))}
+                    isMultiple={false}
+                    setImageLoading={setImageLoading}
+                  />
+                </div>
                 
-                <ImageUploadSection
-                  title="시설 사진"
-                  images={formData.facilityImages}
-                  onImagesChange={(images) => setFormData(prev => ({...prev, facilityImages: images}))}
-                  isMultiple={true}
-                />
+                {/* 구분선 */}
+                <div className="border-t border-gray-200 dark:border-gray-600"></div>
+                
+                {/* 시설 사진 - 하단 */}
+                <div>
+                  <ImageUploadSection
+                    title="시설 사진"
+                    images={formData.facilityImages}
+                    onImagesChange={(images) => setFormData(prev => ({...prev, facilityImages: images}))}
+                    isMultiple={true}
+                    setImageLoading={setImageLoading}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -899,6 +990,7 @@ export default function AddCustomerPage() {
                     index={index}
                     updateContact={updateContactPerson}
                     removeContact={removeContactPerson}
+                    setImageLoading={setImageLoading}
                   />
                 ))}
 
