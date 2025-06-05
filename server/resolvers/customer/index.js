@@ -1,11 +1,6 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
-const {
-  Customer,
-  User,
-  ContactPerson,
-  CustomerImage,
-} = require("../../models");
+const { Customer, User, ContactPerson, CustomerImage } = require("../../models");
 
 const customerResolvers = {
   Query: {
@@ -16,12 +11,7 @@ const customerResolvers = {
 
       const whereCondition = search
         ? {
-            [Op.or]: [
-              { name: { [Op.like]: `%${search}%` } },
-              { email: { [Op.like]: `%${search}%` } },
-              { department: { [Op.like]: `%${search}%` } },
-              { position: { [Op.like]: `%${search}%` } },
-            ],
+            [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }, { department: { [Op.like]: `%${search}%` } }, { position: { [Op.like]: `%${search}%` } }],
           }
         : {};
 
@@ -30,14 +20,7 @@ const customerResolvers = {
           where: whereCondition,
           limit,
           offset,
-          attributes: [
-            "id",
-            "name",
-            "email",
-            "phoneNumber",
-            "department",
-            "position",
-          ],
+          attributes: ["id", "name", "email", "phoneNumber", "department", "position"],
           order: [["name", "ASC"]],
         });
 
@@ -48,23 +31,22 @@ const customerResolvers = {
       }
     },
 
-    checkCompanyName: async (_, { name }) => {
+    checkCompanyName: async (_, { name }, { user }) => {
+      if (!user) {
+        throw new Error("Authentication required");
+      }
       try {
         const existingCustomer = await Customer.findOne({
-          where: {
-            name: name.trim(),
-          },
+          where: { name },
         });
 
         return {
           exists: !!existingCustomer,
-          message: existingCustomer
-            ? "이미 등록된 회사명입니다."
-            : "사용 가능한 회사명입니다.",
+          message: existingCustomer ? "Company name already exists" : "Company name is available",
         };
       } catch (error) {
-        console.error("Company name check error:", error);
-        throw new Error("회사명 중복 확인 중 오류가 발생했습니다.");
+        console.error("Error checking company name:", error);
+        throw new Error("Failed to check company name");
       }
     },
     customers: async (parent, { limit = 10, offset = 0, search }, { user }) => {
@@ -74,11 +56,7 @@ const customerResolvers = {
 
       const whereCondition = search
         ? {
-            [Op.or]: [
-              { name: { [Op.like]: `%${search}%` } },
-              { email: { [Op.like]: `%${search}%` } },
-              { industry: { [Op.like]: `%${search}%` } },
-            ],
+            [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }, { industry: { [Op.like]: `%${search}%` } }],
           }
         : {};
 
@@ -172,7 +150,7 @@ const customerResolvers = {
             address: fullAddress || customerData.address,
             createdBy: user.id,
           },
-          { transaction },
+          { transaction }
         );
 
         // 3) contacts가 있으면 bulkInsert
@@ -181,10 +159,7 @@ const customerResolvers = {
             // contact.birthDate: "2025-06-25" (문자열) 혹은 이미 Date 객체일 수 있음
             let parsedBirthDate = null;
             if (contact.birthDate) {
-              parsedBirthDate =
-                contact.birthDate instanceof Date
-                  ? contact.birthDate
-                  : new Date(contact.birthDate);
+              parsedBirthDate = contact.birthDate instanceof Date ? contact.birthDate : new Date(contact.birthDate);
             }
             return {
               ...contact,
@@ -234,9 +209,7 @@ const customerResolvers = {
               // 예: { model: models.CustomerImage, as: "images", order: [["sortOrder", "ASC"]] }
             },
           ],
-          order: [
-            [{ model: models.CustomerImage, as: "images" }, "sortOrder", "ASC"],
-          ],
+          order: [[{ model: models.CustomerImage, as: "images" }, "sortOrder", "ASC"]],
         });
 
         return createdCustomer;
@@ -249,25 +222,6 @@ const customerResolvers = {
           console.error("Rollback error:", rollbackError);
         }
         throw new Error("Failed to create customer: " + error.message);
-      }
-    },
-
-    checkCompanyName: async (_, { name }, {user}) => {
-        if (!user) {
-            throw new Error("Authentication required");
-        }
-      try {
-        const existingCustomer = await Customer.findOne({
-          where: { name },
-        });
-
-        return {
-          exists: !!existingCustomer,
-          message: existingCustomer ? "Company name already exists" : "Company name is available",
-        };
-      } catch (error) {
-        console.error("Error checking company name:", error);
-        throw new Error("Failed to check company name");
       }
     },
 
@@ -285,7 +239,7 @@ const customerResolvers = {
 
         // Filter out unchanged fields
         const changedFields = {};
-        Object.keys(input).forEach(key => {
+        Object.keys(input).forEach((key) => {
           if (input[key] !== currentCustomer[key]) {
             changedFields[key] = input[key];
           }
@@ -478,9 +432,7 @@ const customerResolvers = {
         return null;
       }
       // 이미 JS Date이면 그대로, 문자열이면 new Date()로 변환
-      return contact.birthDate instanceof Date
-        ? contact.birthDate
-        : new Date(contact.birthDate);
+      return contact.birthDate instanceof Date ? contact.birthDate : new Date(contact.birthDate);
     },
   },
   Customer: {
