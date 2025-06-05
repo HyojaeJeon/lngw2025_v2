@@ -1,0 +1,54 @@
+name: Replit-AI → Windows-Docker 자동 배포
+
+# main 브랜치에 푸시가 있을 때마다 실행
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    # 이 워크플로우를 Windows 셀프호스티드 러너에서만 실행하겠다는 설정
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      # 1) 저장소 코드를 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2) (선택) 프로젝트가 Node.js 기반이면 Node.js 버전 지정
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # 3) (선택) 의존성 설치 (npm ci 등)
+      - name: Install dependencies
+        run: npm ci
+        shell: pwsh
+
+      # 4) Docker 이미지 빌드 및 컨테이너 실행
+      - name: Build and Run Docker Container
+        shell: pwsh
+        run: |
+          cd ${{ github.workspace }}
+          # Docker 이미지 빌드
+          docker build -t my-app-image:latest .
+
+          # 기존 컨테이너가 있으면 중지·삭제
+          if (docker ps -q --filter "name=my-app-container") {
+            docker stop my-app-container
+            docker rm my-app-container
+          }
+
+          # 새 컨테이너 실행 (포트 매핑, 자동 재시작 옵션 등)
+          docker run -d `
+            --name my-app-container `
+            -p 3000:3000 `
+            --restart always `
+            my-app-image:latest
+
+      # 5) 배포 완료 메시지 출력
+      - name: Deployment complete
+        run: Write-Host "✅ Deployment finished on Windows Docker runner."
+        shell: pwsh
