@@ -19,9 +19,11 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       state.loading = false
       
-      // Also store in localStorage as backup
+      // Store in both localStorage and cookie
       if (typeof window !== 'undefined') {
         localStorage.setItem('auth_token', token)
+        // Set cookie for middleware
+        document.cookie = `token=${token}; path=/; max-age=${30 * 24 * 60 * 60}` // 30 days
       }
     },
     logout: (state) => {
@@ -30,9 +32,10 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.loading = false
       
-      // Clear localStorage
+      // Clear localStorage and cookie
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token')
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
       }
     },
     setLoading: (state, action) => {
@@ -41,13 +44,27 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload
     },
-    // Add action to initialize from localStorage if needed
+    // Add action to initialize from localStorage or cookie if needed
     initializeAuth: (state) => {
       if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('auth_token')
+        let token = localStorage.getItem('auth_token')
+        
+        // If not in localStorage, check cookie
+        if (!token) {
+          const cookieValue = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('token='))
+          if (cookieValue) {
+            token = cookieValue.split('=')[1]
+          }
+        }
+        
         if (token && !state.token) {
           state.token = token
           state.isAuthenticated = true
+          // Sync localStorage and cookie
+          localStorage.setItem('auth_token', token)
+          document.cookie = `token=${token}; path=/; max-age=${30 * 24 * 60 * 60}`
         }
       }
     }
