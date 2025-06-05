@@ -68,7 +68,15 @@ export const GET_SERVICES = gql`
       description
       category
       status
+      createdAt
+      updatedAt
     }
+  }
+`;
+
+export const CHECK_COMPANY_NAME = gql`
+  query CheckCompanyName($name: String!) {
+    checkCompanyName(name: $name)
   }
 `;
 

@@ -73,6 +73,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: "프로필 이미지 URL",
       },
+      facilityImages: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
       facebook: {
         type: DataTypes.STRING,
         allowNull: true,

@@ -119,6 +119,7 @@ export const CREATE_CUSTOMER = gql`
       contactDepartment
       contactBirthDate
       profileImage
+      facilityImages
       facebook
       tiktok
       instagram

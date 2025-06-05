@@ -45,6 +45,18 @@ const customerResolvers = {
           }
         ]
       });
+    },
+
+    checkCompanyName: async (parent, { name }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
+      const existingCustomer = await models.Customer.findOne({
+        where: { name: name.trim() }
+      });
+
+      return !existingCustomer; // true if available, false if taken
     }
   },
 

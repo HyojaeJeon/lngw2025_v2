@@ -4,6 +4,7 @@ const customerTypeDefs = gql`
   extend type Query {
     customers(limit: Int, offset: Int, search: String): [Customer!]!
     customer(id: ID!): Customer
+    checkCompanyName(name: String!): Boolean!
     addresses(limit: Int, offset: Int): [Address!]!
     services(limit: Int, offset: Int): [Service!]!
     users(limit: Int, offset: Int, search: String): [User!]!
@@ -34,6 +35,7 @@ const customerTypeDefs = gql`
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
@@ -110,13 +112,16 @@ const customerTypeDefs = gql`
     phone: String
     industry: String
     companyType: String
+    customCompanyType: String
     grade: String
+    customGrade: String
     address: String
     assignedUserId: ID
     status: String
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
     instagram: String
