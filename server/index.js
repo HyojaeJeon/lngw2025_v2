@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === "production") {
 // 이 값이 실제 브라우저(Next.js 등)에서 보내는 Origin 과 정확히 일치해야 합니다.
 const whitelist =
   process.env.NODE_ENV === "production"
-    ? ["https://your-production-domain.com"]
+    ? ["https://gw.lnpartners.biz"]
     : [
         "http://localhost:3000",
         "http://localhost:3001",
@@ -32,7 +32,19 @@ const whitelist =
 
 async function startServer() {
   const app = express();
+  app.get("/", (req, res) => {
+    // 예: Replit 내부에서 Next.js dev 서버가 포트 3001에서 돌고 있다면:
+    if (process.env.REPLIT) {
+      return res.redirect("https://<Replit-Your-Client-URL>:3001");
+    }
 
+    // 보통 개발(로컬) 모드
+    if (process.env.NODE_ENV !== "production") {
+      return res.redirect("http://localhost:3000");
+    }
+
+    return res.redirect("https://gw.lnpartners.biz");
+  });
   // ──────────────────────────────────────────────────────────────────────────
   // 1) Express 레벨에서 CORS 설정
   // ──────────────────────────────────────────────────────────────────────────
@@ -47,11 +59,14 @@ async function startServer() {
           return callback(null, true);
         } else {
           // 그렇지 않으면 CORS 에러
-          return callback(new Error(`CORS policy: This origin (${origin}) is not allowed.`), false);
+          return callback(
+            new Error(`CORS policy: This origin (${origin}) is not allowed.`),
+            false,
+          );
         }
       },
       credentials: true,
-    })
+    }),
   );
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -71,7 +86,10 @@ async function startServer() {
         if (authHeader) {
           const token = authHeader.replace("Bearer ", "");
           if (token) {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+            const decoded = jwt.verify(
+              token,
+              process.env.JWT_SECRET || "your-secret-key",
+            );
             // JWT에서 userId로 실제 사용자 정보 조회
             user = await models.User.findByPk(decoded.userId);
             if (user) {
@@ -100,14 +118,7 @@ async function startServer() {
   // ──────────────────────────────────────────────────────────────────────────
   // 3) “/” 기본 라우트 및 헬스체크
   // ──────────────────────────────────────────────────────────────────────────
-  const PORT = process.env.PORT || 5001;
-  app.get('/', (req, res) => {
-    // Next.js 클라이언트로 리다이렉트
-    const clientUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://your-domain.com' 
-      : 'http://localhost:5000';
-    res.redirect(clientUrl);
-  });
+  const PORT = process.env.PORT || 5000;
 
   app.get("/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
@@ -136,9 +147,13 @@ async function startServer() {
     // 반드시 process.env.PORT를 사용해야 Replit 환경에서 외부에서 접근할 수 있습니다.
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
-      console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`);
+      console.log(
+        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+      );
       if (process.env.APOLLO_PLAYGROUND === "true") {
-        console.log(`🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`);
+        console.log(
+          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+        );
       }
     });
   } catch (error) {
