@@ -1,78 +1,98 @@
-version: "3.8"
-
 services:
-  # ───────────────────────────────────────────────────────────────
-  # 1) nginx-proxy: 리버스 프록시 (80/443 포트 오픈 → 내부 서비스로 분기)
-  # ───────────────────────────────────────────────────────────────
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
-    ports:
-      - "80:80"      # HTTP (포트 80) → nginx-proxy
-      - "443:443"    # HTTPS (포트 443) → nginx-proxy
-    volumes:
-      # Docker 소켓을 읽어서, 컨테이너 라벨(VIRTUAL_HOST)에 따라 자동 프록시 구성
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-
-      # 각종 디렉터리 경로는 로컬 프로젝트 기준 상대 경로
-      - ./nginx/certs:/etc/nginx/certs
-      - ./nginx/vhost.d:/etc/nginx/vhost.d
-      - ./nginx/html:/usr/share/nginx/html
-      - ./nginx/conf.d:/etc/nginx/conf.d
-    networks:
-      - proxy
-
-  # ───────────────────────────────────────────────────────────────
-  # 2) letsencrypt: nginx-proxy companion (SSL 자동 발급 및 갱신)
-  # ───────────────────────────────────────────────────────────────
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: nginx-ssl
-    environment:
-      # “nginx-proxy” 컨테이너에서 SSL 발급 대상을 감지하기 위해
-      - NGINX_PROXY_CONTAINER=nginx-proxy
-      # 발급 실패 시/만료 알림을 받을 이메일
-      - DEFAULT_EMAIL=admin@lnpartners.biz
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./nginx/certs:/etc/nginx/certs
-      - ./nginx/vhost.d:/etc/nginx/vhost.d
-      - ./nginx/html:/usr/share/nginx/html
-    depends_on:
-      - nginx-proxy
-    networks:
-      - proxy
-
-  # ───────────────────────────────────────────────────────────────
-  # 3) app: Next.js(클라이언트) + Node.js(서버) 애플리케이션 컨테이너
-  # ───────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # 1) app: Next.js + Express(동시 실행) + Webhook (포트 7000)
+  # ──────────────────────────────────────────────
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: lngw2025_v2_server
-    environment:
-      # Node 환경 설정
-      - NODE_ENV=production
-
-      # MySQL 연결 정보 (Windows 호스트 MySQL 사용 시)
-      - DB_HOST=host.docker.internal
-      - DB_PORT=3306
-      - DB_NAME=lngw2025_db
-      - DB_USER=appuser
-      - DB_PASSWORD=gywo9988!@
-      - PORT=4000
-
-      # nginx-proxy + Let’s Encrypt Companion를 위한 환경 변수
-      - VIRTUAL_HOST=gw.lnpartners.biz
-      - LETSENCRYPT_HOST=gw.lnpartners.biz
-      - LETSENCRYPT_EMAIL=admin@lnpartners.biz
-    expose:
-      - "4000"    # 컨테이너 내부 포트만 오픈해 두면, nginx-proxy가 접근합니다.
-    networks:
-      - proxy
+      dockerfile: app.Dockerfile
+    container_name: lngw_app
     restart: always
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3201
+      - NODE_ENV=production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3201:3201"   # Next.js
+      - "5000:5000"   # Express
+      - "7000:7000"   # Webhook 서버
 
-networks:
-  proxy:
-    driver: bridge
+  # ──────────────────────────────────────────────
+  # 2) nginx: HTTPS(SSL) 리버스 프록시
+  # ──────────────────────────────────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: lngw2025_v2-nginx
+    container_name: lngw_nginx
+    restart: always
+    depends_on:
+      - app
+      - acme-cron
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./client-nextjs/.next:/app/client-nextjs/.next:ro
+      - ./nginx/certs:/etc/nginx/ssl:ro
+      - ./nginx/html:/var/www/html:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  # ──────────────────────────────────────────────
+  # 3) acme: Let’s Encrypt 기반 인증서 최초 발급
+  # ──────────────────────────────────────────────
+  acme:
+    image: neilpang/acme.sh
+    container_name: acme
+    volumes:
+      - ./nginx/certs:/etc/nginx/ssl
+      - ./nginx/html:/var/www/html
+      - ~/.acme.sh:/home/acme/.acme.sh
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - PUID=1000
+      - PGID=1000
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        # 1) Let’s Encrypt를 기본 CA로 설정
+        acme.sh --set-default-ca --server letsencrypt
+
+        # 2) 인증서 발급
+        acme.sh --issue \
+          --webroot /var/www/html \
+          -d gw.lnpartners.biz \
+          --keypath /etc/nginx/ssl/gw.lnpartners.biz.key \
+          --fullchainpath /etc/nginx/ssl/gw.lnpartners.biz.cer \
+          --reloadcmd "docker-compose exec nginx nginx -s reload"
+
+        # 발급 후 스크립트 종료
+
+  # ──────────────────────────────────────────────
+  # 4) acme-cron: 주기적 인증서 갱신 서비스
+  # ──────────────────────────────────────────────
+  acme-cron:
+    image: neilpang/acme.sh
+    container_name: acme_cron
+    volumes:
+      - ./nginx/certs:/etc/nginx/ssl
+      - ./nginx/html:/var/www/html
+      - ~/.acme.sh:/home/acme/.acme.sh
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - PUID=1000
+      - PGID=1000
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        while true; do
+          acme.sh --cron --home /home/acme/.acme.sh \
+            --reloadcmd "docker-compose exec nginx nginx -s reload"
+          sleep 12h
+        done
+    restart: always

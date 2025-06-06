@@ -1,0 +1,14 @@
+name: Auto-Deploy to Local Windows
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify-local:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Local Webhook
+        run: |
+          curl -X POST "http://gw.lnpartners.biz:7000/webhook"

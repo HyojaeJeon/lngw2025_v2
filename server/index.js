@@ -21,6 +21,7 @@ const whitelist =
     : [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:3201",
         // 포트 :3001 포함
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3001",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev",

@@ -1,0 +1,53 @@
+[Fri Jun  6 15:23:32 +07 2025] Account key creation OK.
+[Fri Jun  6 15:23:32 +07 2025] No EAB credentials found for ZeroSSL, let's obtain them
+[Fri Jun  6 15:23:34 +07 2025] Registering account: https://acme.zerossl.com/v2/DV90
+[Fri Jun  6 15:23:41 +07 2025] Registered
+[Fri Jun  6 15:23:41 +07 2025] ACCOUNT_THUMBPRINT='j3GXXMuzkM3ML5R1aLRPHfR3gF0l1EB57V3SHJGyRHI'
+
+[Fri Jun  6 15:26:16 +07 2025] Using CA: https://acme-v02.api.letsencrypt.org/directory
+[Fri Jun  6 15:26:16 +07 2025] Account key creation OK.
+[Fri Jun  6 15:26:16 +07 2025] Registering account: https://acme-v02.api.letsencrypt.org/directory
+[Fri Jun  6 15:26:18 +07 2025] Registered
+[Fri Jun  6 15:26:18 +07 2025] ACCOUNT_THUMBPRINT='ebrWQeudBK33VIn398mmWqqrCSk3dnQ0eerMhKLfZNk'
+[Fri Jun  6 15:26:18 +07 2025] Creating domain key
+[Fri Jun  6 15:26:18 +07 2025] The domain key is here: /acme.sh/gw.lnpartners.biz_ecc/gw.lnpartners.biz.key
+[Fri Jun  6 15:26:18 +07 2025] Single domain='gw.lnpartners.biz'
+[Fri Jun  6 15:26:19 +07 2025] Getting webroot for domain='gw.lnpartners.biz'
+[Fri Jun  6 15:26:19 +07 2025] Verifying: gw.lnpartners.biz
+[Fri Jun  6 15:26:20 +07 2025] Pending. The CA is processing your order, please wait. (1/30)
+[Fri Jun  6 15:26:24 +07 2025] Success
+[Fri Jun  6 15:26:24 +07 2025] Verification finished, beginning signing.
+[Fri Jun  6 15:26:24 +07 2025] Let's finalize the order.
+[Fri Jun  6 15:26:24 +07 2025] Le_OrderFinalize='https://acme-v02.api.letsencrypt.org/acme/finalize/2447162002/391810929422'
+[Fri Jun  6 15:26:27 +07 2025] Downloading cert.
+[Fri Jun  6 15:26:27 +07 2025] Le_LinkCert='https://acme-v02.api.letsencrypt.org/acme/cert/065feaaf00e562e2f896c7cd5378ec287024'
+[Fri Jun  6 15:26:28 +07 2025] Cert success.
+-----BEGIN CERTIFICATE-----
+MIIDkDCCAxWgAwIBAgISBl/qrwDlYuL4lsfNU3jsKHAkMAoGCCqGSM49BAMDMDIx
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQDEwJF
+NjAeFw0yNTA2MDYwNzI3NTNaFw0yNTA5MDQwNzI3NTJaMBwxGjAYBgNVBAMTEWd3
+LmxucGFydG5lcnMuYml6MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+KHufxhY
+oHpNgSmkBCnqN0ebpn/iIZh753Tk6OJg2nm/ET3t782pwtILqQS6QcSY/pd9UTcO
+xeLDJaiBdmuFEKOCAh8wggIbMA4GA1UdDwEB/wQEAwIHgDAdBgNVHSUEFjAUBggr
+BgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQUTW2zT+LL
+e3ExDfRtMJZpsdRv8DEwHwYDVR0jBBgwFoAUkydGmAOpUWiOmNbEQkjbI79YlNIw
+MgYIKwYBBQUHAQEEJjAkMCIGCCsGAQUFBzAChhZodHRwOi8vZTYuaS5sZW5jci5v
+cmcvMBwGA1UdEQQVMBOCEWd3LmxucGFydG5lcnMuYml6MBMGA1UdIAQMMAowCAYG
+Z4EMAQIBMC0GA1UdHwQmMCQwIqAgoB6GHGh0dHA6Ly9lNi5jLmxlbmNyLm9yZy8z
+Ny5jcmwwggEEBgorBgEEAdZ5AgQCBIH1BIHyAPAAdQDd3Mo0ldfhFgXnlTL6x5/4
+PRxQ39sAOhQSdgosrLvIKgAAAZdEWSkrAAAEAwBGMEQCIHR0N5U8d2jnVgNJRiYy
+d3Jwibafo06cKZOossq5NC+rAiBT3zxOmvtxvPIDdFsU3XptIlZvCV7xvkGHdne9
+uSKHfQB3AKRCxQZJYGFUjw/U6pz7ei0mRU2HqX8v30VZ9idPOoRUAAABl0RZML4A
+AAQDAEgwRgIhAIpZ7cdpOCu3X1Z088D35Tk/8ei4jCkLZarsxU26SYo3AiEAgCoD
+gGRhcmRNIaH96/daikMGrqgDCQWCvcKpnG+gmSMwCgYIKoZIzj0EAwMDaQAwZgIx
+ANx2kH19o/N5KLWf5h8N8cIMW00kJnLUaM8ETojkQunUY2WAaYAoIklZ2xQgR8Ky
+LwIxAMq1aC87bIsE7QOcT78PRbmhMcja+wkiOULnklusWoBxGONtXx1NkCbE6Btd
+mwBQtg==
+-----END CERTIFICATE-----
+[Fri Jun  6 15:26:28 +07 2025] Your cert is in: /acme.sh/gw.lnpartners.biz_ecc/gw.lnpartners.biz.cer
+[Fri Jun  6 15:26:28 +07 2025] Your cert key is in: /acme.sh/gw.lnpartners.biz_ecc/gw.lnpartners.biz.key
+[Fri Jun  6 15:26:28 +07 2025] The intermediate CA cert is in: /acme.sh/gw.lnpartners.biz_ecc/ca.cer
+[Fri Jun  6 15:26:28 +07 2025] And the full-chain cert is in: /acme.sh/gw.lnpartners.biz_ecc/fullchain.cer
+[Fri Jun  6 15:26:28 +07 2025] Installing key to: /etc/nginx/ssl/gw.lnpartners.biz.key
+[Fri Jun  6 15:26:28 +07 2025] Installing full chain to: /etc/nginx/ssl/gw.lnpartners.biz.cer
+[Fri Jun  6 15:26:28 +07 2025] Running reload cmd: docker-compose exec nginx nginx -s reload

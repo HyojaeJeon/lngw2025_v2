@@ -4,6 +4,7 @@
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^5.1.0",
     "graphql-scalars": "^1.24.2",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
