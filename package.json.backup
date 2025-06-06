@@ -1,11 +1,4 @@
 {
-  "name": "lngw-groupware",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "node dev.js",
-    "start": "node dev.js",
-    "build": "cd client-nextjs && npm run build"
-  },
   "dependencies": {
     "autoprefixer": "^10.4.21",
     "browser-image-compression": "^2.0.2",
