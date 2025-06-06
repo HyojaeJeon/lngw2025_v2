@@ -6,6 +6,10 @@ const LanguageContext = createContext()
 
 const translations = {
   ko: {
+    // 앱 공통
+    'app.title': 'LN Partners 그룹웨어',
+    'app.redirecting': '로딩 중입니다...',
+    
     // 공통
     login: '로그인',
     register: '회원가입',
@@ -467,6 +471,10 @@ const translations = {
     'customer.name.checkError': '회사명 중복 검사 중 오류가 발생했습니다',
   },
   vi: {
+    // 앱 공통
+    'app.title': 'LN Partners Groupware',
+    'app.redirecting': 'Đang tải...',
+    
     // 공통
     login: 'Đăng nhập',
     register: 'Đăng ký',
@@ -928,6 +936,10 @@ const translations = {
     'customer.name.checkError': 'Lỗi khi kiểm tra tên công ty',
   },
   en: {
+    // 앱 공통
+    'app.title': 'LN Partners Groupware',
+    'app.redirecting': 'Loading...',
+    
     // 공통
     login: 'Login',
     register: 'Sign Up',
