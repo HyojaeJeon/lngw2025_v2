@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/contexts/languageContext.js";
 import { useTheme } from "@/contexts/themeContext.js";
+import { getToken } from "@/lib/auth.js";
 import { Globe, Sun, Moon } from "lucide-react";
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
 
   useEffect(() => {
     // Redux store와 localStorage 모두 확인
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
     setIsRedirecting(true);
     
     setTimeout(() => {
