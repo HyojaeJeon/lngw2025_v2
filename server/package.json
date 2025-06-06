@@ -1,7 +1,7 @@
 {
-  "name": "marketing-server",
+  "name": "lngw2020_v2_server",
   "version": "1.0.0",
-  "description": "Marketing Dashboard GraphQL Server",
+  "description": "lngw2020_v2 Server",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
