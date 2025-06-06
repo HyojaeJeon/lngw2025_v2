@@ -35,7 +35,9 @@ async function startServer() {
   app.get("/", (req, res) => {
     // 예: Replit 내부에서 Next.js dev 서버가 포트 3001에서 돌고 있다면:
     if (process.env.REPLIT) {
-      return res.redirect("https://<Replit-Your-Client-URL>:3001");
+      return res.redirect(
+        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3003/",
+      );
     }
 
     // 보통 개발(로컬) 모드
