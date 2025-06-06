@@ -100,12 +100,12 @@ async function startServer() {
   // ──────────────────────────────────────────────────────────────────────────
   // 3) “/” 기본 라우트 및 헬스체크
   // ──────────────────────────────────────────────────────────────────────────
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 5001;
   app.get('/', (req, res) => {
     // Next.js 클라이언트로 리다이렉트
     const clientUrl = process.env.NODE_ENV === 'production' 
       ? 'https://your-domain.com' 
-      : 'http://localhost:3001';
+      : 'http://localhost:5000';
     res.redirect(clientUrl);
   });
 
