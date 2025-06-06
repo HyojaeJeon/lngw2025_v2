@@ -13,7 +13,7 @@ const CURSOR_URL = "http://localhost:5000/graphql";
 const REPLIT_URL =
   "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql";
 const httpLink = createHttpLink({
-  uri: process.env.NODE_ENV === "production" ? NEXT_PUBLIC_API_URL : REPLIT_URL,
+  uri: process.env.NODE_ENV === "production" ? NEXT_PUBLIC_API_URL : CURSOR_URL,
 });
 
 const authLink = setContext((_, { headers }) => {

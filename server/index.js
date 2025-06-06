@@ -87,8 +87,10 @@ async function startServer() {
 
       try {
         const authHeader = req.headers.authorization;
+        console.log("authHeader", authHeader);
         if (authHeader) {
           const token = authHeader.replace("Bearer ", "");
+          console.log("token", token);
           if (token) {
             const decoded = jwt.verify(
               token,
