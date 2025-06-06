@@ -101,13 +101,18 @@ async function startServer() {
   // 3) “/” 기본 라우트 및 헬스체크
   // ──────────────────────────────────────────────────────────────────────────
   const PORT = process.env.PORT || 5000;
-  app.get("/", (req, res) => {
-    res.json({
-      message: "Marketing Dashboard GraphQL Server",
-      graphql: `http://localhost:${PORT}${server.graphqlPath}`,
-      playground: `http://localhost:${PORT}${server.graphqlPath}`,
-    });
-  });
+  app.get('/', (req, res) => {
+    res.send(`
+    <html>
+      <head><title>LN Partners CRM</title></head>
+      <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+        <h1>🚀 LN Partners CRM Server</h1>
+        <p>GraphQL Server is running successfully!</p>
+        <a href="/graphql" style="color: #007bff;">Visit GraphQL Playground</a>
+      </body>
+    </html>
+  `);
+});
 
   app.get("/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
