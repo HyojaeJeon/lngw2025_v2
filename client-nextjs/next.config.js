@@ -2,11 +2,6 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ───────────────────────────────────────────────────────
-  // 1) App Router를 사용하도록 experimental.appDir 활성화
-  experimental: {
-    appDir: true,
-  },
 
   // ───────────────────────────────────────────────────────
   // 2) 기존에 사용 중인 다른 설정(예: rewrites, redirects 등)이 있으면 여기에 같이 둡니다.
