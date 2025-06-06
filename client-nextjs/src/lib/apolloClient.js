@@ -4,10 +4,10 @@ import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/clien
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 
-const CURSOR_URL = "http://localhost:5000/graphql";
+const CURSOR_URL = "http://localhost:5001/graphql";
 const REPLIT_URL = "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql";
 const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || (process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : REPLIT_URL), // 기본값으로 Replit URL 사용
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || (process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : CURSOR_URL), // 로컬 개발 시 포트 5001 사용
 });
 
 const authLink = setContext((_, { headers }) => {

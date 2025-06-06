@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start Full Stack with GraphQL"
+runButton = "Start Full Stack with Next.js Root"
 
 [[workflows.workflow]]
 name = "Project"
@@ -219,6 +219,19 @@ args = "cd server && npm run dev"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd client-nextjs && npm run dev -- --port 3001"
+
+[[workflows.workflow]]
+name = "Start Full Stack with Next.js Root"
+author = 43113446
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm install && npm run dev -- --port 5001"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm install && npm run dev -- --port 5000"
 
 [[ports]]
 localPort = 3000

@@ -102,17 +102,12 @@ async function startServer() {
   // ──────────────────────────────────────────────────────────────────────────
   const PORT = process.env.PORT || 5000;
   app.get('/', (req, res) => {
-    res.send(`
-    <html>
-      <head><title>LN Partners CRM</title></head>
-      <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-        <h1>🚀 LN Partners CRM Server</h1>
-        <p>GraphQL Server is running successfully!</p>
-        <a href="/graphql" style="color: #007bff;">Visit GraphQL Playground</a>
-      </body>
-    </html>
-  `);
-});
+    // Next.js 클라이언트로 리다이렉트
+    const clientUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://your-domain.com' 
+      : 'http://localhost:3001';
+    res.redirect(clientUrl);
+  });
 
   app.get("/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
