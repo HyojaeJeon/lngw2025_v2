@@ -22,8 +22,12 @@ const httpLink = createHttpLink({
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  let token = null;
+  
+  if (typeof window !== "undefined") {
+    // localStorage 또는 sessionStorage에서 토큰 조회
+    token = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+  }
 
   return {
     headers: {

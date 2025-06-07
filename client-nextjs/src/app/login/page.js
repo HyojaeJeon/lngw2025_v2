@@ -22,6 +22,33 @@ import { Globe, Sun, Moon, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "@/contexts/themeContext.js";
 
 export default function LoginPage() {
+  // 체크박스 애니메이션을 위한 스타일 추가
+  const checkboxStyle = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.2s ease-out;
+    }
+  `;
+
+  // 페이지 로드 시 저장된 토큰으로 자동 로그인 체크
+  useEffect(() => {
+    const checkAutoLogin = async () => {
+      const savedRememberMe = localStorage.getItem("rememberMe");
+      const savedToken = localStorage.getItem("auth_token");
+      
+      if (savedRememberMe === "true" && savedToken) {
+        setRememberMe(true);
+        // 토큰이 유효한지 확인하고 자동 로그인 처리는 AuthInitializer에서 담당
+      } else {
+        setRememberMe(false);
+      }
+    };
+    
+    checkAutoLogin();
+  }, []);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,13 +64,7 @@ export default function LoginPage() {
 
   const [loginMutation] = useMutation(LOGIN_MUTATION);
 
-  // 페이지 로드 시 저장된 rememberMe 상태 복원
-  useEffect(() => {
-    const savedRememberMe = localStorage.getItem("rememberMe");
-    if (savedRememberMe === "true") {
-      setRememberMe(true);
-    }
-  }, []);
+  
 
   const handleChange = (e) => {
     setFormData({
@@ -98,6 +119,16 @@ export default function LoginPage() {
   };
 
   return (
+    <>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+      `}</style>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -239,20 +270,54 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 mb-4">
-                <input
-                  id="rememberMe"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <Label
-                  htmlFor="rememberMe"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-                >
-                  {t("login.rememberMe")}
-                </Label>
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="relative">
+                  <input
+                    id="rememberMe"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => {
+                      setRememberMe(e.target.checked);
+                      localStorage.setItem('rememberMe', e.target.checked.toString());
+                    }}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor="rememberMe"
+                    className="flex items-center cursor-pointer group"
+                  >
+                    <div
+                      className={`
+                        w-5 h-5 rounded-md border-2 transition-all duration-300 ease-in-out
+                        flex items-center justify-center mr-3
+                        ${
+                          rememberMe
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 border-transparent shadow-md transform scale-105'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 group-hover:border-blue-400'
+                        }
+                      `}
+                    >
+                      {rememberMe && (
+                        <svg
+                          className="w-3 h-3 text-white animate-fadeIn"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                      {t("login.rememberMe")}
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <Button
@@ -307,5 +372,6 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

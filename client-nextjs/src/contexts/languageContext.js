@@ -299,6 +299,7 @@ const translations = {
     'login.error': '로그인 실패',
     'login.error.description': '이메일과 비밀번호를 확인해주세요.',
     'login.loading': '로그인 중...',
+    'login.rememberMe': '자동 로그인',
 
     // 회원가입 페이지
     'register.title': '회원가입',
@@ -764,6 +765,7 @@ const translations = {
     'login.error': 'Đăng nhập thất bại',
     'login.error.description': 'Vui lòng kiểm tra email và mật khẩu.',
     'login.loading': 'Đang đăng nhập...',
+    'login.rememberMe': 'Tự động đăng nhập',
 
     // 회원가입 페이지
     'register.title': 'Đăng ký',
@@ -1217,6 +1219,7 @@ const translations = {
     'login.error': 'Login failed',
     'login.error.description': 'Please check your email and password.',
     'login.loading': 'Logging in...',
+    'login.rememberMe': 'Remember me',
 
     // 회원가입 페이지
     'register.title': 'Sign Up',

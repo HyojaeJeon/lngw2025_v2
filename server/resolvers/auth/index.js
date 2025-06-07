@@ -133,11 +133,12 @@ const authResolvers = {
           await models.Experience.bulkCreate(experiencesToCreate, {});
         }
 
-        // Generate JWT token
+        // JWT 토큰 생성 (자동로그인 옵션에 따라 만료시간 설정)
+        const expiresIn = input.rememberMe ? '30d' : '7d';
         const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          process.env.JWT_SECRET || "your-secret-key",
-          { expiresIn: "7d" },
+          { userId: user.id, email: user.email, rememberMe: input.rememberMe },
+          process.env.JWT_SECRET || 'your-secret-key',
+          { expiresIn }
         );
 
         return {
