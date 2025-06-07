@@ -378,7 +378,7 @@ export function ResizableSidebar({ children }) {
                     <div
                       className={`
                       overflow-hidden transition-all duration-300 ease-in-out
-                      ${isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
+                      ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}
                     `}
                     >
                       <div className="ml-6 mt-2 space-y-1">
@@ -568,7 +568,7 @@ export function Sidebar({ isOpen, onToggle }) {
                     <div
                       className={`
                       overflow-hidden transition-all duration-300 ease-in-out
-                      ${isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
+                      ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}
                     `}
                     >
                       <div className="ml-6 mt-2 space-y-1">
