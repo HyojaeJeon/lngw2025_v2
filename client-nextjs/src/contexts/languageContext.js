@@ -103,14 +103,60 @@ const translations = {
     'marketing.campaignCalendar': '캠페인 캘린더',
     'marketing.contentLibrary': '콘텐츠 라이브러리',
     'marketing.influencerManagement': '인플루언서',
-    
-    // 설정 관련 번역 추가
-    'auditLogs.title': '감사 로그',
-    'auditLogs.description': '시스템의 모든 활동을 추적하고 분석합니다',
-    'billing.title': '결제 및 구독',
-    'billing.description': '구독 플랜과 결제 정보를 관리합니다',
-    'dataManagement.title': '데이터 관리',
-    'dataManagement.description': '백업, 가져오기, 내보내기 등 데이터 관련 작업을 관리합니다' 관리',
+
+    // 설정 관련 번역
+    'settings.dashboard': '설정 센터',
+    'settings.accessControl': '접근제어 관리',
+    'settings.general': '일반 설정',
+    'settings.profile': '프로필 설정',
+    'settings.notifications': '알림 설정',
+    'settings.integrations': '연동 설정',
+    'settings.workflows': '워크플로우',
+    'settings.dataManagement': '데이터 관리',
+    'settings.auditLogs': '감사 로그',
+    'settings.billing': '결제 및 구독',
+
+    // 접근제어 관련 번역
+    'accessControl.title': '접근제어 관리',
+    'accessControl.description': '사용자 권한과 역할을 관리합니다',
+    'accessControl.userManagement': '사용자 관리',
+    'accessControl.roleManagement': '역할 관리',
+    'accessControl.permissions': '권한 설정',
+
+    // 일반 설정 관련 번역
+    'general.title': '일반 설정',
+    'general.description': '시스템의 기본 설정을 관리합니다',
+    'general.appearance': '외관 설정',
+    'general.language': '언어 설정',
+    'general.timezone': '시간대 설정',
+
+    // 프로필 설정 관련 번역
+    'profileSettings.title': '프로필 설정',
+    'profileSettings.description': '개인 정보와 보안 설정을 관리합니다',
+    'profileSettings.personalInfo': '개인 정보',
+    'profileSettings.security': '보안 설정',
+    'profileSettings.preferences': '환경 설정',
+
+    // 알림 설정 관련 번역
+    'notifications.title': '알림 설정',
+    'notifications.description': '알림 및 메시지 설정을 관리합니다',
+    'notifications.emailNotifications': '이메일 알림',
+    'notifications.pushNotifications': '푸시 알림',
+    'notifications.templates': '알림 템플릿',
+
+    // 연동 설정 관련 번역
+    'integrations.title': '연동 설정',
+    'integrations.description': '외부 서비스와의 연동을 관리합니다',
+    'integrations.apiKeys': 'API 키 관리',
+    'integrations.webhooks': '웹훅 설정',
+    'integrations.externalServices': '외부 서비스',
+
+    // 워크플로우 관련 번역
+    'workflows.title': '워크플로우',
+    'workflows.description': '업무 프로세스와 자동화를 관리합니다',
+    'workflows.processManagement': '프로세스 관리',
+    'workflows.automation': '자동화 설정',
+    'workflows.templates': '템플릿 관리',
     'marketing.budgetExpense': '예산·지출 관리',
     'marketing.settings': '설정',
     accounting: '회계 관리',
@@ -602,7 +648,8 @@ const translations = {
     'table.pagination.next': '다음 페이지',
     'table.pagination.prev': '이전 페이지',
     'table.sort.asc': '오름차순',
-    'table.sort.desc': '내림차순',
+    'table.sort.desc': '내림차순```python
+',
     'table.actions': '작업',
     'table.select.all': '전체 선택',
     'table.select.none': '선택 해제',
@@ -1224,7 +1271,8 @@ const translations = {
     'customer.manager': 'Người quản lý',
     'customer.industry': 'Ngành nghề',
     'customer.businessType': 'Loại hình kinh doanh',
-    'customer.companyType': 'Loại công ty',
+    'customer.companyType': 'Loại```python
+ công ty',
     'customer.organizationType': 'Loại tổ chức',
     'customer.grade': 'Hạng khách hàng',
     'customer.address': 'Địa chỉ',
