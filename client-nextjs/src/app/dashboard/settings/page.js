@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -8,7 +7,6 @@ import {
   Settings,
   User,
   Bell,
-  Link,
   Workflow,
   Database,
   FileText,
@@ -73,7 +71,7 @@ export default function SettingsCenter() {
       title: t("integrations.title"),
       description: t("integrations.description"),
       href: "/dashboard/settings/integrations",
-      icon: Link,
+      icon: Bell,
       color: "bg-purple-500",
       features: ["API 키 관리", "AI 모델 연동", "OAuth 설정", "Webhook"],
       requiredRole: "admin",
@@ -213,10 +211,10 @@ export default function SettingsCenter() {
                     {module.requiredRole === "superAdmin"
                       ? "슈퍼어드민만"
                       : module.requiredRole === "admin"
-                      ? "어드민 이상"
-                      : module.requiredRole === "manager"
-                      ? "매니저 이상"
-                      : "모든 사용자"}
+                        ? "어드민 이상"
+                        : module.requiredRole === "manager"
+                          ? "매니저 이상"
+                          : "모든 사용자"}
                   </span>
                 </div>
               </div>
