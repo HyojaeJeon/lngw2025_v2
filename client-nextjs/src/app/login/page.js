@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { useDispatch, useSelector } from "react-redux";
@@ -42,7 +42,7 @@ export default function LoginPage() {
     const checkAutoLogin = async () => {
       const savedRememberMe = localStorage.getItem("rememberMe");
       const savedToken = localStorage.getItem("auth_token");
-      
+
       if (savedRememberMe === "true" && savedToken) {
         setRememberMe(true);
         // 토큰이 유효한지 확인하고 자동 로그인 처리는 AuthInitializer에서 담당
@@ -50,11 +50,11 @@ export default function LoginPage() {
         setRememberMe(false);
       }
     };
-    
+
     checkAutoLogin();
   }, []);
 
-  
+
 
   const handleChange = (e) => {
     setFormData({

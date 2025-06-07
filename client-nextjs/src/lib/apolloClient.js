@@ -12,7 +12,7 @@ import { onError } from "@apollo/client/link/error";
 const CURSOR_URL = "http://localhost:5000/graphql";
 const REPLIT_URL =
   "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql";
-
+// https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/
 const httpLink = createHttpLink({
   uri:
     process.env.NODE_ENV === "production"

@@ -254,7 +254,7 @@ export default function MarketingDashboardPage() {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="w-full max-w-none space-y-8 animate-fadeIn overflow-x-hidden">
       {/* 헤더 섹션 */}
       <div
         className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 
