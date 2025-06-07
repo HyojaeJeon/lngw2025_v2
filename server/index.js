@@ -30,6 +30,7 @@ const whitelist =
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3001",
+        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002",
       ];
 
 async function startServer() {
@@ -119,7 +120,22 @@ async function startServer() {
     },
   });
   await server.start();
-  server.applyMiddleware({ app, path: "/graphql", cors: false });
+  server.applyMiddleware({
+    app,
+    path: "/graphql",
+    cors: {
+      origin: (origin, callback) => {
+        if (!origin || whitelist.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(
+          new Error(`CORS policy: This origin (${origin}) is not allowed.`),
+          false,
+        );
+      },
+      credentials: true,
+    },
+  });
 
   // ──────────────────────────────────────────────────────────────────────────
   // 3) “/” 기본 라우트 및 헬스체크
