@@ -102,7 +102,15 @@ const translations = {
     'marketing.marketAnalysis': '시장 및 경쟁 분석',
     'marketing.campaignCalendar': '캠페인 캘린더',
     'marketing.contentLibrary': '콘텐츠 라이브러리',
-    'marketing.influencerManagement': '인플루언서 관리',
+    'marketing.influencerManagement': '인플루언서',
+    
+    // 설정 관련 번역 추가
+    'auditLogs.title': '감사 로그',
+    'auditLogs.description': '시스템의 모든 활동을 추적하고 분석합니다',
+    'billing.title': '결제 및 구독',
+    'billing.description': '구독 플랜과 결제 정보를 관리합니다',
+    'dataManagement.title': '데이터 관리',
+    'dataManagement.description': '백업, 가져오기, 내보내기 등 데이터 관련 작업을 관리합니다' 관리',
     'marketing.budgetExpense': '예산·지출 관리',
     'marketing.settings': '설정',
     accounting: '회계 관리',
