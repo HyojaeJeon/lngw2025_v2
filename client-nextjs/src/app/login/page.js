@@ -22,16 +22,20 @@ import { Globe, Sun, Moon, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "@/contexts/themeContext.js";
 
 export default function LoginPage() {
-  // 체크박스 애니메이션을 위한 스타일 추가
-  const checkboxStyle = `
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .animate-fadeIn {
-      animation: fadeIn 0.2s ease-out;
-    }
-  `;
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+  const { t, language, changeLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+
+  const [loginMutation] = useMutation(LOGIN_MUTATION);
 
   // 페이지 로드 시 저장된 토큰으로 자동 로그인 체크
   useEffect(() => {
@@ -49,20 +53,6 @@ export default function LoginPage() {
     
     checkAutoLogin();
   }, []);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const { toast } = useToast();
-  const { t, language, changeLanguage } = useLanguage();
-  const { theme, toggleTheme } = useTheme();
-
-  const [loginMutation] = useMutation(LOGIN_MUTATION);
 
   
 
