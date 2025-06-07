@@ -18,7 +18,6 @@ const httpLink = createHttpLink({
     process.env.NODE_ENV === "production"
       ? process.env.NEXT_PUBLIC_API_URL
       : REPLIT_URL,
-  credentials: "include",
 });
 
 const authLink = setContext((_, { headers }) => {
