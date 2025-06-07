@@ -151,7 +151,7 @@ const authResolvers = {
 
     login: async (_, { input }) => {
       try {
-        const { email, password } = input;
+        const { email, password, rememberMe } = input;
 
         const user = await models.User.findOne({
           where: { email },
@@ -174,10 +174,13 @@ const authResolvers = {
           throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
+        // rememberMe가 true이면 30일, false이면 7일
+        const expiresIn = rememberMe ? "30d" : "7d";
+
         const token = jwt.sign(
           { userId: user.id, email: user.email },
           process.env.JWT_SECRET || "your-secret-key",
-          { expiresIn: "7d" },
+          { expiresIn },
         );
 
         return {

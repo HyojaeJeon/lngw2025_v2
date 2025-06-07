@@ -28,6 +28,7 @@ export default function LoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -35,6 +36,14 @@ export default function LoginPage() {
   const { theme, toggleTheme } = useTheme();
 
   const [loginMutation] = useMutation(LOGIN_MUTATION);
+
+  // 페이지 로드 시 저장된 rememberMe 상태 복원
+  useEffect(() => {
+    const savedRememberMe = localStorage.getItem('rememberMe');
+    if (savedRememberMe === 'true') {
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -50,7 +59,10 @@ export default function LoginPage() {
     try {
       const { data } = await loginMutation({
         variables: {
-          input: formData,
+          input: {
+            ...formData,
+            rememberMe,
+          },
         },
       });
 
@@ -58,7 +70,8 @@ export default function LoginPage() {
         // Redux에 사용자 데이터 저장
         dispatch(setCredentials({
           user: data.login.user,
-          token: data.login.token
+          token: data.login.token,
+          rememberMe: rememberMe
         }));
 
         toast({
@@ -215,6 +228,22 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+            </div>
+
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+              >
+                {t("login.rememberMe")}
+              </Label>
             </div>
 
             <Button

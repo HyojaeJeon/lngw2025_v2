@@ -13,7 +13,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, token } = action.payload
+      const { user, token, rememberMe } = action.payload
       state.user = user
       state.token = token
       state.isAuthenticated = true
@@ -22,8 +22,12 @@ const authSlice = createSlice({
       // Store in both localStorage and cookie
       if (typeof window !== 'undefined') {
         localStorage.setItem('auth_token', token)
-        // Set cookie for middleware
-        document.cookie = `token=${token}; path=/; max-age=${30 * 24 * 60 * 60}` // 30 days
+        // rememberMe에 따라 쿠키 만료 시간 설정 (30일 또는 7일)
+        const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
+        document.cookie = `token=${token}; path=/; max-age=${maxAge}`
+        
+        // rememberMe 상태도 저장
+        localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false')
       }
     },
     logout: (state) => {

@@ -9,6 +9,7 @@ const authTypeDefs = gql`
   input LoginInput {
     email: String!
     password: String!
+    rememberMe: Boolean
   }
 
   input EmergencyContactInput {
