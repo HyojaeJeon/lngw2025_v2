@@ -186,12 +186,30 @@ const sidebarItems = [
       { name: "marketing.abtest", href: "/dashboard/marketing/abtest" },
       { name: "marketing.trends", href: "/dashboard/marketing/trends" },
       { name: "marketing.engagement", href: "/dashboard/marketing/engagement" },
-      { name: "marketing.brandStrategy", href: "/dashboard/marketing/brand-strategy" },
-      { name: "marketing.marketAnalysis", href: "/dashboard/marketing/market-analysis" },
-      { name: "marketing.campaignCalendar", href: "/dashboard/marketing/campaign-calendar" },
-      { name: "marketing.contentLibrary", href: "/dashboard/marketing/content-library" },
-      { name: "marketing.influencerManagement", href: "/dashboard/marketing/influencer-management" },
-      { name: "marketing.budgetExpense", href: "/dashboard/marketing/budget-expense" },
+      {
+        name: "marketing.brandStrategy",
+        href: "/dashboard/marketing/brand-strategy",
+      },
+      {
+        name: "marketing.marketAnalysis",
+        href: "/dashboard/marketing/market-analysis",
+      },
+      {
+        name: "marketing.campaignCalendar",
+        href: "/dashboard/marketing/campaign-calendar",
+      },
+      {
+        name: "marketing.contentLibrary",
+        href: "/dashboard/marketing/content-library",
+      },
+      {
+        name: "marketing.influencerManagement",
+        href: "/dashboard/marketing/influencer-management",
+      },
+      {
+        name: "marketing.budgetExpense",
+        href: "/dashboard/marketing/budget-expense",
+      },
       { name: "marketing.settings", href: "/dashboard/marketing/settings" },
     ],
   },
@@ -217,7 +235,10 @@ const sidebarItems = [
       { name: "accounting.dashboard", href: "/dashboard/accounting" },
       { name: "accounting.voucher", href: "/dashboard/accounting/voucher" },
       { name: "accounting.ledger", href: "/dashboard/accounting/ledger" },
-      { name: "accounting.statements", href: "/dashboard/accounting/statements" },
+      {
+        name: "accounting.statements",
+        href: "/dashboard/accounting/statements",
+      },
       { name: "accounting.assets", href: "/dashboard/accounting/assets" },
       { name: "accounting.tax", href: "/dashboard/accounting/tax" },
       { name: "accounting.budget", href: "/dashboard/accounting/budget" },
@@ -249,7 +270,10 @@ const sidebarItems = [
       { name: "employees.profile", href: "/dashboard/employees/profile" },
       { name: "employees.attendance", href: "/dashboard/employees/attendance" },
       { name: "employees.evaluation", href: "/dashboard/employees/evaluation" },
-      { name: "employees.communication", href: "/dashboard/employees/communication" },
+      {
+        name: "employees.communication",
+        href: "/dashboard/employees/communication",
+      },
     ],
   },
 ];
@@ -287,18 +311,18 @@ export function ResizableSidebar({ children }) {
 
     const stopDrag = () => {
       setIsResizing(false);
-      document.removeEventListener('mousemove', doDrag);
-      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener("mousemove", doDrag);
+      document.removeEventListener("mouseup", stopDrag);
     };
 
-    document.addEventListener('mousemove', doDrag);
-    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener("mousemove", doDrag);
+    document.addEventListener("mouseup", stopDrag);
   };
 
   return (
     <div className="flex min-h-screen w-full">
       {/* 사이드바 */}
-      <aside 
+      <aside
         className="bg-white dark:bg-gray-800 shadow-lg relative h-screen flex flex-col"
         style={{ width: `${sidebarWidth}px` }}
       >
@@ -306,9 +330,11 @@ export function ResizableSidebar({ children }) {
           {/* 회사 로고 */}
           <div className="mb-8">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              {t('sidebar.companyName')}
+              {t("sidebar.companyName")}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t('sidebar.subTitle')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t("sidebar.subTitle")}
+            </p>
           </div>
 
           <nav className="space-y-2">
@@ -323,7 +349,9 @@ export function ResizableSidebar({ children }) {
                   <div className="flex items-center">
                     <Link
                       href={item.href}
-                      ref={itemIsActive || submenuIsActive ? activeMenuRef : null}
+                      ref={
+                        itemIsActive || submenuIsActive ? activeMenuRef : null
+                      }
                       className={`
                         flex items-center flex-1 px-4 py-3 text-sm font-medium rounded-lg
                         transition-all duration-300 ease-in-out group
@@ -378,7 +406,7 @@ export function ResizableSidebar({ children }) {
                     <div
                       className={`
                       overflow-hidden transition-all duration-300 ease-in-out
-                      ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}
+                      ${isExpanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}
                     `}
                     >
                       <div className="ml-6 mt-2 space-y-1">
@@ -416,7 +444,7 @@ export function ResizableSidebar({ children }) {
           className={`
             absolute top-0 right-0 w-1 h-full cursor-col-resize
             bg-gray-300 hover:bg-blue-500 transition-colors duration-200
-            ${isResizing ? 'bg-blue-500' : ''}
+            ${isResizing ? "bg-blue-500" : ""}
           `}
           onMouseDown={startResizing}
         >
@@ -427,14 +455,10 @@ export function ResizableSidebar({ children }) {
       </aside>
 
       {/* 메인 콘텐츠 */}
-      <div className="flex-1 overflow-auto">
-        {children}
-      </div>
+      <div className="flex-1 overflow-auto">{children}</div>
 
       {/* 리사이즈 중 오버레이 */}
-      {isResizing && (
-        <div className="fixed inset-0 cursor-col-resize z-50" />
-      )}
+      {isResizing && <div className="fixed inset-0 cursor-col-resize z-50" />}
     </div>
   );
 }
@@ -449,8 +473,8 @@ export function Sidebar({ isOpen, onToggle }) {
   useEffect(() => {
     if (isOpen && activeMenuRef.current) {
       activeMenuRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
+        behavior: "smooth",
+        block: "nearest",
       });
     }
   }, [isOpen]);
@@ -488,7 +512,7 @@ export function Sidebar({ isOpen, onToggle }) {
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {t('sidebar.menuTitle')}
+            {t("sidebar.menuTitle")}
           </h2>
           <button
             onClick={onToggle}
@@ -512,7 +536,9 @@ export function Sidebar({ isOpen, onToggle }) {
                   <div className="flex items-center">
                     <Link
                       href={item.href}
-                      ref={itemIsActive || submenuIsActive ? activeMenuRef : null}
+                      ref={
+                        itemIsActive || submenuIsActive ? activeMenuRef : null
+                      }
                       onClick={() => onToggle()}
                       className={`
                         flex items-center flex-1 px-4 py-3 text-sm font-medium rounded-lg
