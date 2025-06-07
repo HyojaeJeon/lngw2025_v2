@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,8 +39,8 @@ export default function LoginPage() {
 
   // 페이지 로드 시 저장된 rememberMe 상태 복원
   useEffect(() => {
-    const savedRememberMe = localStorage.getItem('rememberMe');
-    if (savedRememberMe === 'true') {
+    const savedRememberMe = localStorage.getItem("rememberMe");
+    if (savedRememberMe === "true") {
       setRememberMe(true);
     }
   }, []);
@@ -68,17 +68,19 @@ export default function LoginPage() {
 
       if (data?.login?.token) {
         // Redux에 사용자 데이터 저장
-        dispatch(setCredentials({
-          user: data.login.user,
-          token: data.login.token,
-          rememberMe: rememberMe
-        }));
+        dispatch(
+          setCredentials({
+            user: data.login.user,
+            token: data.login.token,
+            rememberMe: rememberMe,
+          }),
+        );
 
         toast({
           title: t("login.success"),
           description: t("login.success.description"),
         });
-        
+
         // Use setTimeout to ensure Redux state is updated before navigation
         setTimeout(() => {
           router.push("/dashboard");
@@ -108,7 +110,7 @@ export default function LoginPage() {
               LN Partners
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <div className="relative">
@@ -130,7 +132,7 @@ export default function LoginPage() {
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? (
+              {theme === "dark" ? (
                 <Sun className="w-5 h-5 text-yellow-500" />
               ) : (
                 <Moon className="w-5 h-5 text-gray-600" />
@@ -141,161 +143,168 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content */}
-      <div className="flex items-center justify-center p-4 transition-all duration-500" style={{ minHeight: 'calc(100vh - 80px)' }}>
+      <div
+        className="flex items-center justify-center p-4 transition-all duration-500"
+        style={{ minHeight: "calc(100vh - 80px)" }}
+      >
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-      <Card
-        className="w-full max-w-md transform transition-all duration-500 
+        <Card
+          className="w-full max-w-md transform transition-all duration-500 
                        shadow-xl hover:shadow-2xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
-      >
-        <CardHeader className="text-center pb-6">
-          <div
-            className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 
+        >
+          <CardHeader className="text-center pb-6">
+            <div
+              className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 
                           rounded-full flex items-center justify-center mb-4 
                           animate-pulse shadow-lg"
-          >
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </div>
-          <CardTitle
-            className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
-                               bg-clip-text text-transparent"
-          >
-            {t("login.title")}
-          </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-300 mt-2">
-            {t("login.description")}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                {t("login.email")}
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder={t("login.email")}
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="transition-all duration-300 focus:scale-105 focus:shadow-md
-                          border-gray-300 dark:border-gray-600 focus:border-blue-500"
-              />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
             </div>
+            <CardTitle
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                               bg-clip-text text-transparent"
+            >
+              {t("login.title")}
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-300 mt-2">
+              {t("login.description")}
+            </CardDescription>
+          </CardHeader>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                {t("login.password")}
-              </Label>
-              <div className="relative">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {t("login.email")}
+                </Label>
                 <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t("login.password")}
-                  value={formData.password}
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder={t("login.email")}
+                  value={formData.email}
                   onChange={handleChange}
                   required
                   className="transition-all duration-300 focus:scale-105 focus:shadow-md
-                            border-gray-300 dark:border-gray-600 focus:border-blue-500 pr-10"
+                          border-gray-300 dark:border-gray-600 focus:border-blue-500"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
-            </div>
 
-            <div className="flex items-center space-x-2 mb-4">
-              <input
-                id="rememberMe"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <Label
-                htmlFor="rememberMe"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-              >
-                {t("login.rememberMe")}
-              </Label>
-            </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {t("login.password")}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t("login.password")}
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="transition-all duration-300 focus:scale-105 focus:shadow-md
+                            border-gray-300 dark:border-gray-600 focus:border-blue-500 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600
+              <div className="flex items-center space-x-2 mb-4">
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <Label
+                  htmlFor="rememberMe"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                >
+                  {t("login.rememberMe")}
+                </Label>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600
                         transition-all duration-300 transform hover:shadow-lg
                         disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  {t("login.loading")}
-                </div>
-              ) : (
-                t("login.submit")
-              )}
-            </Button>
-
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => router.push("/register")}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                          transition-colors duration-300 hover:underline"
+                disabled={isLoading}
               >
-                {t("login.register.link")}
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    {t("login.loading")}
+                  </div>
+                ) : (
+                  t("login.submit")
+                )}
               </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => router.push("/register")}
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                          transition-colors duration-300 hover:underline"
+                >
+                  {t("login.register.link")}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
