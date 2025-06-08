@@ -614,19 +614,7 @@ export default function MarketingPlanDetailPage() {
     setHistory((prev) => [newHistoryItem, ...prev]);
   };
 
-  // 목표 접기/펼치기
-  const toggleObjective = (objectiveId) => {
-    setCollapsedObjectives((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(objectiveId)) {
-        newSet.delete(objectiveId);
-      } else {
-        newSet.add(objectiveId);
-      }
-      return newSet;
-    });
-  };
-
+ 
   // 목표 삭제/복원
   const handleDeleteObjective = (objectiveId) => {
     setDeletedObjectives((prev) => {
@@ -807,10 +795,22 @@ export default function MarketingPlanDetailPage() {
 
   // 목표 토글 함수
   const toggleObjective = (objectiveId) => {
-    setExpandedObjectives(prev => ({
+    setExpandedObjectives((prev) => ({
       ...prev,
-      [objectiveId]: !prev[objectiveId]
+      [objectiveId]: !prev[objectiveId],
     }));
+  };
+  // 목표 접기/펼치기
+  const toggleObjective = (objectiveId) => {
+    setCollapsedObjectives((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(objectiveId)) {
+        newSet.delete(objectiveId);
+      } else {
+        newSet.add(objectiveId);
+      }
+      return newSet;
+    });
   };
 
   // 목표 삭제 함수
@@ -821,17 +821,21 @@ export default function MarketingPlanDetailPage() {
 
   // 목표 복원 함수
   const restoreObjective = (objectiveId) => {
-    setObjectives(prev => prev.map(obj => 
-      obj.id === objectiveId ? { ...obj, deleted: false } : obj
-    ));
+    setObjectives((prev) =>
+      prev.map((obj) =>
+        obj.id === objectiveId ? { ...obj, deleted: false } : obj,
+      ),
+    );
   };
 
   // 삭제 확인 함수
   const confirmDelete = () => {
     if (objectiveToDelete) {
-      setObjectives(prev => prev.map(obj => 
-        obj.id === objectiveToDelete ? { ...obj, deleted: true } : obj
-      ));
+      setObjectives((prev) =>
+        prev.map((obj) =>
+          obj.id === objectiveToDelete ? { ...obj, deleted: true } : obj,
+        ),
+      );
     }
     setShowDeleteModal(false);
     setObjectiveToDelete(null);
@@ -841,18 +845,25 @@ export default function MarketingPlanDetailPage() {
   const calculateObjectiveProgress = (keyResults) => {
     if (!keyResults || keyResults.length === 0) return 0;
 
-    const validResults = keyResults.filter(kr => {
-      if (kr.measurementType === 'checklist') {
+    const validResults = keyResults.filter((kr) => {
+      if (kr.measurementType === "checklist") {
         return kr.checklist && kr.checklist.length > 0;
       }
-      return kr.current !== null && !isNaN(kr.current) && kr.target !== null && !isNaN(kr.target);
+      return (
+        kr.current !== null &&
+        !isNaN(kr.current) &&
+        kr.target !== null &&
+        !isNaN(kr.target)
+      );
     });
 
     if (validResults.length === 0) return 0;
 
     const totalProgress = validResults.reduce((sum, kr) => {
-      if (kr.measurementType === 'checklist') {
-        const completed = kr.checklist ? kr.checklist.filter(item => item.completed).length : 0;
+      if (kr.measurementType === "checklist") {
+        const completed = kr.checklist
+          ? kr.checklist.filter((item) => item.completed).length
+          : 0;
         const total = kr.checklist ? kr.checklist.length : 1;
         return sum + (completed / total) * 100;
       }
@@ -870,69 +881,85 @@ export default function MarketingPlanDetailPage() {
 
   // Key Result 측정 방법 업데이트
   const updateKeyResultMeasurement = (keyResultId, field, value) => {
-    setObjectives(prev => prev.map(obj => ({
-      ...obj,
-      keyResults: obj.keyResults.map(kr => 
-        kr.id === keyResultId ? { ...kr, [field]: value } : kr
-      )
-    })));
+    setObjectives((prev) =>
+      prev.map((obj) => ({
+        ...obj,
+        keyResults: obj.keyResults.map((kr) =>
+          kr.id === keyResultId ? { ...kr, [field]: value } : kr,
+        ),
+      })),
+    );
 
     // 선택된 Key Result도 업데이트
     if (selectedKeyResult && selectedKeyResult.id === keyResultId) {
-      setSelectedKeyResult(prev => ({ ...prev, [field]: value }));
+      setSelectedKeyResult((prev) => ({ ...prev, [field]: value }));
     }
   };
 
   // 체크리스트 항목 토글
   const toggleChecklistItem = (keyResultId, itemId) => {
-    setObjectives(prev => prev.map(obj => ({
-      ...obj,
-      keyResults: obj.keyResults.map(kr => 
-        kr.id === keyResultId ? {
-          ...kr,
-          checklist: kr.checklist.map(item => 
-            item.id === itemId ? { ...item, completed: !item.completed } : item
-          )
-        } : kr
-      )
-    })));
+    setObjectives((prev) =>
+      prev.map((obj) => ({
+        ...obj,
+        keyResults: obj.keyResults.map((kr) =>
+          kr.id === keyResultId
+            ? {
+                ...kr,
+                checklist: kr.checklist.map((item) =>
+                  item.id === itemId
+                    ? { ...item, completed: !item.completed }
+                    : item,
+                ),
+              }
+            : kr,
+        ),
+      })),
+    );
   };
 
   // 체크리스트 항목 추가
   const addChecklistItem = (keyResultId) => {
-    const newItemText = prompt('새로운 체크리스트 항목을 입력하세요:');
+    const newItemText = prompt("새로운 체크리스트 항목을 입력하세요:");
     if (newItemText && newItemText.trim()) {
-      setObjectives(prev => prev.map(obj => ({
-        ...obj,
-        keyResults: obj.keyResults.map(kr => 
-          kr.id === keyResultId ? {
-            ...kr,
-            checklist: [
-              ...(kr.checklist || []),
-              {
-                id: Date.now(),
-                text: newItemText.trim(),
-                completed: false
-              }
-            ]
-          } : kr
-        )
-      })));
+      setObjectives((prev) =>
+        prev.map((obj) => ({
+          ...obj,
+          keyResults: obj.keyResults.map((kr) =>
+            kr.id === keyResultId
+              ? {
+                  ...kr,
+                  checklist: [
+                    ...(kr.checklist || []),
+                    {
+                      id: Date.now(),
+                      text: newItemText.trim(),
+                      completed: false,
+                    },
+                  ],
+                }
+              : kr,
+          ),
+        })),
+      );
     }
   };
 
   // 체크리스트 항목 삭제
   const deleteChecklistItem = (keyResultId, itemId) => {
-    if (confirm('이 체크리스트 항목을 삭제하시겠습니까?')) {
-      setObjectives(prev => prev.map(obj => ({
-        ...obj,
-        keyResults: obj.keyResults.map(kr => 
-          kr.id === keyResultId ? {
-            ...kr,
-            checklist: kr.checklist.filter(item => item.id !== itemId)
-          } : kr
-        )
-      })));
+    if (confirm("이 체크리스트 항목을 삭제하시겠습니까?")) {
+      setObjectives((prev) =>
+        prev.map((obj) => ({
+          ...obj,
+          keyResults: obj.keyResults.map((kr) =>
+            kr.id === keyResultId
+              ? {
+                  ...kr,
+                  checklist: kr.checklist.filter((item) => item.id !== itemId),
+                }
+              : kr,
+          ),
+        })),
+      );
     }
   };
 
@@ -951,11 +978,16 @@ export default function MarketingPlanDetailPage() {
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         {objectives.map((objective) => (
-          <div key={objective.id} className={`relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:shadow-lg ${objective.deleted ? 'opacity-50' : ''}`}>
+          <div
+            key={objective.id}
+            className={`relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:shadow-lg ${objective.deleted ? "opacity-50" : ""}`}
+          >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4 flex-1">
                 <button
-                  onClick={() => !objective.deleted && toggleObjective(objective.id)}
+                  onClick={() =>
+                    !objective.deleted && toggleObjective(objective.id)
+                  }
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded"
                   disabled={objective.deleted}
                 >
@@ -970,7 +1002,10 @@ export default function MarketingPlanDetailPage() {
                     Objective: {objective.title}
                   </h4>
                   {objective.deleted && (
-                    <Badge variant="secondary" className="text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                    >
                       삭제됨
                     </Badge>
                   )}
@@ -980,7 +1015,9 @@ export default function MarketingPlanDetailPage() {
               {/* Progress Section with proper spacing */}
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체 달성률</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    전체 달성률
+                  </div>
                   <div className="text-lg font-bold text-gray-900 dark:text-white">
                     {calculateObjectiveProgress(objective.keyResults)}%
                   </div>
@@ -988,13 +1025,17 @@ export default function MarketingPlanDetailPage() {
 
                 {/* Delete/Restore button with proper margin */}
                 <button
-                  onClick={() => objective.deleted ? restoreObjective(objective.id) : deleteObjective(objective.id)}
+                  onClick={() =>
+                    objective.deleted
+                      ? restoreObjective(objective.id)
+                      : deleteObjective(objective.id)
+                  }
                   className={`p-2 rounded-lg transition-all duration-200 ${
-                    objective.deleted 
-                      ? 'text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' 
-                      : 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    objective.deleted
+                      ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      : "text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   }`}
-                  title={objective.deleted ? '복원' : '삭제'}
+                  title={objective.deleted ? "복원" : "삭제"}
                 >
                   {objective.deleted ? (
                     <RotateCcw className="w-5 h-5" />
@@ -1008,9 +1049,11 @@ export default function MarketingPlanDetailPage() {
             {/* Enhanced Progress bar */}
             <div className="mb-6">
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
-                <div 
-                  className="h-3 rounded-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-600 transition-all duration-700 shadow-sm" 
-                  style={{width: `${calculateObjectiveProgress(objective.keyResults)}%`}}
+                <div
+                  className="h-3 rounded-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-600 transition-all duration-700 shadow-sm"
+                  style={{
+                    width: `${calculateObjectiveProgress(objective.keyResults)}%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -1024,10 +1067,15 @@ export default function MarketingPlanDetailPage() {
                   </span>
                 </div>
                 {objective.keyResults.map((kr) => (
-                  <div key={kr.id} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:shadow-sm transition-shadow">
+                  <div
+                    key={kr.id}
+                    className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:shadow-sm transition-shadow"
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{kr.text}</span>
-                      <button 
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {kr.text}
+                      </span>
+                      <button
                         className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1 rounded transition-colors"
                         onClick={() => openMeasurementModal(kr)}
                         title="성과 달성 옵션 설정"
@@ -1036,34 +1084,51 @@ export default function MarketingPlanDetailPage() {
                       </button>
                     </div>
 
-                    {kr.measurementType === 'checklist' ? (
+                    {kr.measurementType === "checklist" ? (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                          <span>진행률: {kr.checklist ? kr.checklist.filter(item => item.completed).length : 0} / {kr.checklist ? kr.checklist.length : 0}</span>
+                          <span>
+                            진행률:{" "}
+                            {kr.checklist
+                              ? kr.checklist.filter((item) => item.completed)
+                                  .length
+                              : 0}{" "}
+                            / {kr.checklist ? kr.checklist.length : 0}
+                          </span>
                           <Badge variant="outline" className="text-xs">
                             체크리스트
                           </Badge>
                         </div>
-                        {kr.checklist && kr.checklist.map((item) => (
-                          <div key={item.id} className="flex items-center gap-3 p-2 bg-white dark:bg-gray-800 rounded border">
-                            <input
-                              type="checkbox"
-                              checked={item.completed}
-                              onChange={() => toggleChecklistItem(kr.id, item.id)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                            <span className={`text-sm flex-1 ${item.completed ? 'line-through text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-                              {item.text}
-                            </span>
-                            <button
-                              onClick={() => deleteChecklistItem(kr.id, item.id)}
-                              className="text-red-400 hover:text-red-600 p-1 rounded transition-colors"
-                              title="삭제"
+                        {kr.checklist &&
+                          kr.checklist.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-3 p-2 bg-white dark:bg-gray-800 rounded border"
                             >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
+                              <input
+                                type="checkbox"
+                                checked={item.completed}
+                                onChange={() =>
+                                  toggleChecklistItem(kr.id, item.id)
+                                }
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
+                              />
+                              <span
+                                className={`text-sm flex-1 ${item.completed ? "line-through text-gray-500" : "text-gray-700 dark:text-gray-300"}`}
+                              >
+                                {item.text}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  deleteChecklistItem(kr.id, item.id)
+                                }
+                                className="text-red-400 hover:text-red-600 p-1 rounded transition-colors"
+                                title="삭제"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
                         <button
                           onClick={() => addChecklistItem(kr.id)}
                           className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-sm font-medium p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full justify-center border-2 border-dashed border-blue-300 dark:border-blue-600"
@@ -1076,16 +1141,23 @@ export default function MarketingPlanDetailPage() {
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500">
-                            달성률: {kr.current !== null ? Math.round((kr.current / kr.target) * 100) : '측정 대기'}%
+                            달성률:{" "}
+                            {kr.current !== null
+                              ? Math.round((kr.current / kr.target) * 100)
+                              : "측정 대기"}
+                            %
                           </span>
                           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                            {kr.current !== null ? kr.current : '측정 대기'} / {kr.target}
+                            {kr.current !== null ? kr.current : "측정 대기"} /{" "}
+                            {kr.target}
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 shadow-inner">
-                          <div 
-                            className="h-2 rounded-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 shadow-sm" 
-                            style={{width: `${kr.current !== null ? Math.min((kr.current / kr.target) * 100, 100) : 0}%`}}
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 shadow-sm"
+                            style={{
+                              width: `${kr.current !== null ? Math.min((kr.current / kr.target) * 100, 100) : 0}%`,
+                            }}
                           ></div>
                         </div>
                         {kr.dataSource && (
@@ -1121,7 +1193,10 @@ export default function MarketingPlanDetailPage() {
             <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
               아니오
             </Button>
-            <Button onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+            <Button
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
               예
             </Button>
           </div>
@@ -1167,13 +1242,23 @@ export default function MarketingPlanDetailPage() {
                     type="radio"
                     name="measurementType"
                     value="automatic"
-                    checked={selectedKeyResult.measurementType === 'automatic'}
-                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    checked={selectedKeyResult.measurementType === "automatic"}
+                    onChange={(e) =>
+                      updateKeyResultMeasurement(
+                        selectedKeyResult.id,
+                        "measurementType",
+                        e.target.value,
+                      )
+                    }
                     className="w-4 h-4 text-blue-600"
                   />
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">SNS 채널 연결</div>
-                    <div className="text-sm text-gray-500">소셜 미디어 플랫폼에서 자동으로 데이터 수집</div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      SNS 채널 연결
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      소셜 미디어 플랫폼에서 자동으로 데이터 수집
+                    </div>
                   </div>
                 </label>
 
@@ -1182,13 +1267,23 @@ export default function MarketingPlanDetailPage() {
                     type="radio"
                     name="measurementType"
                     value="manual"
-                    checked={selectedKeyResult.measurementType === 'manual'}
-                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    checked={selectedKeyResult.measurementType === "manual"}
+                    onChange={(e) =>
+                      updateKeyResultMeasurement(
+                        selectedKeyResult.id,
+                        "measurementType",
+                        e.target.value,
+                      )
+                    }
                     className="w-4 h-4 text-blue-600"
                   />
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">수동 입력</div>
-                    <div className="text-sm text-gray-500">직접 수치를 입력하여 관리</div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      수동 입력
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      직접 수치를 입력하여 관리
+                    </div>
                   </div>
                 </label>
 
@@ -1197,26 +1292,42 @@ export default function MarketingPlanDetailPage() {
                     type="radio"
                     name="measurementType"
                     value="checklist"
-                    checked={selectedKeyResult.measurementType === 'checklist'}
-                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    checked={selectedKeyResult.measurementType === "checklist"}
+                    onChange={(e) =>
+                      updateKeyResultMeasurement(
+                        selectedKeyResult.id,
+                        "measurementType",
+                        e.target.value,
+                      )
+                    }
                     className="w-4 h-4 text-blue-600"
                   />
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">체크리스트</div>
-                    <div className="text-sm text-gray-500">작업 항목을 체크하여 진행률 관리</div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      체크리스트
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      작업 항목을 체크하여 진행률 관리
+                    </div>
                   </div>
                 </label>
               </div>
             </div>
 
-            {selectedKeyResult.measurementType === 'automatic' && (
+            {selectedKeyResult.measurementType === "automatic" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   데이터 소스 선택
                 </label>
                 <select
-                  value={selectedKeyResult.dataSource || ''}
-                  onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'dataSource', e.target.value)}
+                  value={selectedKeyResult.dataSource || ""}
+                  onChange={(e) =>
+                    updateKeyResultMeasurement(
+                      selectedKeyResult.id,
+                      "dataSource",
+                      e.target.value,
+                    )
+                  }
                   className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
                 >
                   <option value="">데이터 소스를 선택하세요</option>
@@ -1230,7 +1341,7 @@ export default function MarketingPlanDetailPage() {
               </div>
             )}
 
-            {selectedKeyResult.measurementType === 'manual' && (
+            {selectedKeyResult.measurementType === "manual" && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1238,8 +1349,14 @@ export default function MarketingPlanDetailPage() {
                   </label>
                   <Input
                     type="number"
-                    value={selectedKeyResult.target || ''}
-                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'target', parseFloat(e.target.value))}
+                    value={selectedKeyResult.target || ""}
+                    onChange={(e) =>
+                      updateKeyResultMeasurement(
+                        selectedKeyResult.id,
+                        "target",
+                        parseFloat(e.target.value),
+                      )
+                    }
                     placeholder="목표값"
                   />
                 </div>
@@ -1249,8 +1366,14 @@ export default function MarketingPlanDetailPage() {
                   </label>
                   <Input
                     type="number"
-                    value={selectedKeyResult.current || ''}
-                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'current', parseFloat(e.target.value))}
+                    value={selectedKeyResult.current || ""}
+                    onChange={(e) =>
+                      updateKeyResultMeasurement(
+                        selectedKeyResult.id,
+                        "current",
+                        parseFloat(e.target.value),
+                      )
+                    }
                     placeholder="현재값"
                   />
                 </div>
@@ -1259,12 +1382,13 @@ export default function MarketingPlanDetailPage() {
           </div>
 
           <div className="flex gap-3 justify-end mt-6 pt-4 border-t">
-            <Button variant="outline" onClick={() => setShowMeasurementModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowMeasurementModal(false)}
+            >
               취소
             </Button>
-            <Button onClick={() => setShowMeasurementModal(false)}>
-              저장
-            </Button>
+            <Button onClick={() => setShowMeasurementModal(false)}>저장</Button>
           </div>
         </div>
       </div>
@@ -1771,7 +1895,8 @@ export default function MarketingPlanDetailPage() {
                 </span>
               </div>
               <p className="text-gray-700 dark:text-gray-300">
-                {comment.message              </p>
+                {comment.message}{" "}
+              </p>
             </div>
           ))}
 
