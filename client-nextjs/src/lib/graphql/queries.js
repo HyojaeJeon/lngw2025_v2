@@ -9,21 +9,34 @@ export const GET_ME = gql`
       role
       department
       position
-      employeeId
-      joinDate
       phoneNumber
-      address
       nationality
+      joinDate
       birthDate
+      address
+      employeeId
       visaStatus
+      avatar
       emergencyContact {
+        id
         name
         relationship
         phoneNumber
       }
       skills {
+        id
         name
+        level
       }
+      experiences {
+        id
+        company
+        position
+        period
+        description
+      }
+      createdAt
+      updatedAt
     }
   }
 `;

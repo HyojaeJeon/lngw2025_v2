@@ -202,7 +202,28 @@ const authResolvers = {
         const { emergencyContact, skills, ...userData } = input;
 
         // Update user basic data
-        await models.User.update(userData, {
+        const allowedFields = [
+        "name",
+        "phoneNumber",
+        "address",
+        "nationality",
+        "department",
+        "position",
+        "employeeId",
+        "joinDate",
+        "birthDate",
+        "visaStatus",
+        "avatar",
+      ];
+
+        const updates = {};
+        allowedFields.forEach(field => {
+          if (userData.hasOwnProperty(field)) {
+            updates[field] = userData[field];
+          }
+        });
+
+        await models.User.update(updates, {
           where: { id: context.user.userId },
         });
 

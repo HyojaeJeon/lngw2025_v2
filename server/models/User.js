@@ -67,7 +67,12 @@ module.exports = (sequelize, DataTypes) => {
       visaStatus: {
         type: DataTypes.STRING,
         allowNull: true,
-        comment: "비자연한자",
+        comment: "비자 상태",
+      },
+      avatar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "프로필 이미지 URL",
       },
     },
     {

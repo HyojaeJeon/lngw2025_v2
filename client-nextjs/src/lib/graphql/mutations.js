@@ -332,6 +332,7 @@ export const UPDATE_USER_PROFILE = gql`
       address
       employeeId
       visaStatus
+      avatar
       emergencyContact {
         id
         name

@@ -69,32 +69,56 @@ const authTypeDefs = gql`
 
   input UserUpdateInput {
     name: String
-    department: String
-    position: String
-    employeeId: String
-    joinDate: Date
     phoneNumber: String
     address: String
     nationality: String
-    birthDate: Date
+    department: String
+    position: String
+    employeeId: String
+    joinDate: String
+    birthDate: String
     visaStatus: String
+    avatar: String
     emergencyContact: [EmergencyContactInput]
     skills: [SkillInput]
   }
 
   input UpdateUserProfileInput {
     name: String
-    department: String
-    position: String
-    employeeId: String
-    joinDate: Date
     phoneNumber: String
     address: String
     nationality: String
-    birthDate: Date
+    department: String
+    position: String
+    employeeId: String
+    joinDate: String
+    birthDate: String
     visaStatus: String
+    avatar: String
     emergencyContact: [EmergencyContactInput]
     skills: [SkillInput]
+  }
+
+  type User {
+    id: ID!
+    email: String!
+    name: String
+    role: String
+    department: String
+    position: String
+    phoneNumber: String
+    nationality: String
+    joinDate: String
+    birthDate: String
+    address: String
+    employeeId: String
+    visaStatus: String
+    avatar: String
+    emergencyContact: [EmergencyContact]
+    skills: [Skill]
+    experiences: [Experience]
+    createdAt: String
+    updatedAt: String
   }
 
   extend type Query {

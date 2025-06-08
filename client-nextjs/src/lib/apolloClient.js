@@ -10,8 +10,7 @@ import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 
 const CURSOR_URL = "http://localhost:5000/graphql";
-const REPLIT_URL =
-  "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
+const REPLIT_URL = "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
 
 const httpLink = createHttpLink({
   uri:

@@ -27,6 +27,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import imageCompression from "browser-image-compression";
 
 export default function ProfileSettingsPage() {
   const { t, language } = useLanguage();
@@ -69,7 +70,7 @@ export default function ProfileSettingsPage() {
             ? new Date(userData.birthDate).toISOString().split("T")[0]
             : "",
           visaStatus: userData.visaStatus || "",
-          avatar: null,
+          avatar: userData.avatar || null,
         });
         setEmergencyContacts(userData.emergencyContact || []);
         setSkills(userData.skills?.map((skill) => skill.name) || []);
@@ -121,14 +122,58 @@ export default function ProfileSettingsPage() {
     setSecuritySettings(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAvatarUpload = (e) => {
+  const handleAvatarUpload = async (e) => {
+    if (!isEditing) {
+      toast({
+        title: "알림",
+        description: "편집 모드에서만 사진을 변경할 수 있습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileData(prev => ({ ...prev, avatar: e.target.result }));
-      };
-      reader.readAsDataURL(file);
+      setIsLoading(true);
+      try {
+        // 이미지 압축
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 500,
+          useWebWorker: true,
+        };
+
+        const compressedFile = await imageCompression(file, options);
+
+        // 서버에 업로드
+        const formData = new FormData();
+        formData.append("file", compressedFile);
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setProfileData(prev => ({ ...prev, avatar: result.url }));
+          toast({
+            title: "성공",
+            description: "프로필 사진이 업로드되었습니다.",
+          });
+        } else {
+          throw new Error("업로드 실패");
+        }
+      } catch (error) {
+        console.error("이미지 업로드 오류:", error);
+        toast({
+          title: "오류",
+          description: "이미지 업로드에 실패했습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -169,7 +214,7 @@ export default function ProfileSettingsPage() {
       // 기존 유저 정보와 비교
       const changedFields = {};
       Object.keys(profileData).forEach((key) => {
-        if (key === "email" || key === "avatar") return; // email과 avatar는 제외
+        if (key === "email") return; // email만 제외
         if (profileData[key] !== user[key]) {
           changedFields[key] = profileData[key];
         }
@@ -262,12 +307,17 @@ export default function ProfileSettingsPage() {
               type="file"
               accept="image/*"
               onChange={handleAvatarUpload}
+              disabled={!isEditing}
               className="hidden"
               id="avatar-upload"
             />
             <label
               htmlFor="avatar-upload"
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 cursor-pointer"
+              className={`px-4 py-2 rounded-lg ${
+                isEditing 
+                  ? "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
             >
               사진 변경
             </label>
