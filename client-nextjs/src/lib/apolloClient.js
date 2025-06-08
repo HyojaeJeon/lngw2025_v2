@@ -11,7 +11,7 @@ import { onError } from "@apollo/client/link/error";
 
 const CURSOR_URL = "http://localhost:5000/graphql";
 const REPLIT_URL =
-  "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql";
+  "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
 // https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/
 const httpLink = createHttpLink({
   uri:
@@ -25,7 +25,9 @@ const authLink = setContext((_, { headers }) => {
 
   if (typeof window !== "undefined") {
     // localStorage 또는 sessionStorage에서 토큰 조회
-    token = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+    token =
+      localStorage.getItem("auth_token") ||
+      sessionStorage.getItem("auth_token");
   }
 
   return {
