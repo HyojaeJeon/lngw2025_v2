@@ -178,8 +178,12 @@ export default function MarketingPlanningProcessPage() {
   const [newProcess, setNewProcess] = useState({
     name: "",
     description: "",
-    steps: [{ name: "", assignee: "", duration: "" }]
+    status: "활성화",
+    steps: [{ id: 1, name: "", assignee: "", duration: 1 }]
   });
+
+  // 드래그 앤 드롭 상태
+  const [draggedStep, setDraggedStep] = useState(null);
 
   // 상태별 배지 색상
   const getStatusBadge = (status) => {
@@ -1185,6 +1189,324 @@ export default function MarketingPlanningProcessPage() {
     );
   };
 
+  // 새 프로세스 생성 모달
+  const renderCreateProcessModal = () => {
+    const addStep = () => {
+      const newId = Math.max(...newProcess.steps.map(s => s.id), 0) + 1;
+      setNewProcess(prev => ({
+        ...prev,
+        steps: [...prev.steps, { id: newId, name: "", assignee: "", duration: 1 }]
+      }));
+    };
+
+    const removeStep = (stepId) => {
+      if (newProcess.steps.length > 1) {
+        setNewProcess(prev => ({
+          ...prev,
+          steps: prev.steps.filter(step => step.id !== stepId)
+        }));
+      }
+    };
+
+    const updateStep = (stepId, field, value) => {
+      setNewProcess(prev => ({
+        ...prev,
+        steps: prev.steps.map(step => 
+          step.id === stepId ? { ...step, [field]: value } : step
+        )
+      }));
+    };
+
+    const handleDragStart = (e, stepId) => {
+      setDraggedStep(stepId);
+      e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e, targetStepId) => {
+      e.preventDefault();
+      
+      if (draggedStep === targetStepId) return;
+
+      const draggedIndex = newProcess.steps.findIndex(step => step.id === draggedStep);
+      const targetIndex = newProcess.steps.findIndex(step => step.id === targetStepId);
+      
+      const newSteps = [...newProcess.steps];
+      const draggedStepData = newSteps[draggedIndex];
+      
+      newSteps.splice(draggedIndex, 1);
+      newSteps.splice(targetIndex, 0, draggedStepData);
+      
+      setNewProcess(prev => ({ ...prev, steps: newSteps }));
+      setDraggedStep(null);
+    };
+
+    const resetProcessForm = () => {
+      setNewProcess({
+        name: "",
+        description: "",
+        status: "활성화",
+        steps: [{ id: 1, name: "", assignee: "", duration: 1 }]
+      });
+    };
+
+    const handleSaveProcess = () => {
+      if (!newProcess.name.trim()) {
+        alert('프로세스명을 입력해주세요.');
+        return;
+      }
+
+      if (newProcess.steps.some(step => !step.name.trim())) {
+        alert('모든 단계의 이름을 입력해주세요.');
+        return;
+      }
+
+      const newId = processes.length + 1;
+      const newProcessData = {
+        id: newId,
+        name: newProcess.name,
+        description: newProcess.description,
+        status: newProcess.status,
+        usageCount: 0,
+        lastUsed: new Date().toISOString().split('T')[0],
+        steps: newProcess.steps.map((step, index) => ({
+          id: step.id,
+          name: step.name,
+          assignee: step.assignee || "미지정",
+          duration: `${step.duration}일`,
+          status: index === 0 ? "active" : "pending"
+        }))
+      };
+
+      setProcesses(prev => [...prev, newProcessData]);
+      setShowProcessModal(false);
+      resetProcessForm();
+    };
+
+    const isFormValid = newProcess.name.trim() && newProcess.steps.every(step => step.name.trim());
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          {/* 헤더 */}
+          <div className="sticky top-0 bg-white dark:bg-gray-800 p-6 border-b border-gray-200 dark:border-gray-700 z-10">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                새 프로세스 생성
+              </h2>
+              <Button variant="outline" onClick={() => { setShowProcessModal(false); resetProcessForm(); }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-8">
+            {/* 섹션 1: 프로세스 기본 정보 */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                1. 프로세스 기본 정보
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    프로세스명 <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={newProcess.name}
+                    onChange={(e) => setNewProcess(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="예: 인플루언서 협업 및 계약 프로세스"
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    프로세스 설명
+                  </label>
+                  <textarea
+                    value={newProcess.description}
+                    onChange={(e) => setNewProcess(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="이 프로세스가 언제, 왜 사용되는지에 대한 간단한 설명을 기입하세요"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    상태
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setNewProcess(prev => ({ 
+                        ...prev, 
+                        status: prev.status === "활성화" ? "비활성화" : "활성화" 
+                      }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        newProcess.status === "활성화" ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-600"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          newProcess.status === "활성화" ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {newProcess.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    활성화 시 다른 메뉴에서 이 프로세스를 즉시 사용할 수 있습니다
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 섹션 2: 프로세스 단계 설정 */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                2. 프로세스 단계 설정
+              </h3>
+
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  단계를 드래그하여 순서를 변경할 수 있습니다
+                </p>
+                
+                <div className="space-y-3">
+                  {newProcess.steps.map((step, index) => (
+                    <div
+                      key={step.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, step.id)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, step.id)}
+                      className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border-2 border-dashed transition-all cursor-move ${
+                        draggedStep === step.id 
+                          ? "border-blue-500 opacity-50" 
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* 드래그 핸들 */}
+                        <div className="flex-shrink-0 text-gray-400 cursor-move">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                            <circle cx="2" cy="2" r="1"/>
+                            <circle cx="6" cy="2" r="1"/>
+                            <circle cx="10" cy="2" r="1"/>
+                            <circle cx="2" cy="6" r="1"/>
+                            <circle cx="6" cy="6" r="1"/>
+                            <circle cx="10" cy="6" r="1"/>
+                            <circle cx="2" cy="10" r="1"/>
+                            <circle cx="6" cy="10" r="1"/>
+                            <circle cx="10" cy="10" r="1"/>
+                          </svg>
+                        </div>
+
+                        {/* 단계 번호 */}
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium text-sm">
+                          {index + 1}
+                        </div>
+
+                        {/* 단계명 */}
+                        <div className="flex-1 min-w-0">
+                          <Input
+                            value={step.name}
+                            onChange={(e) => updateStep(step.id, 'name', e.target.value)}
+                            placeholder="단계명을 입력하세요 (예: 아이디어 기획)"
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* 예상 소요 시간 */}
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0.5"
+                            step="0.5"
+                            value={step.duration}
+                            onChange={(e) => updateStep(step.id, 'duration', parseFloat(e.target.value) || 1)}
+                            className="w-20 text-center"
+                          />
+                          <span className="text-sm text-gray-500">일</span>
+                        </div>
+
+                        {/* 담당자 지정 */}
+                        <div className="min-w-0">
+                          <select
+                            value={step.assignee}
+                            onChange={(e) => updateStep(step.id, 'assignee', e.target.value)}
+                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm min-w-[120px]"
+                          >
+                            <option value="">담당자 선택</option>
+                            <option value="마케팅팀">마케팅팀</option>
+                            <option value="디자인팀">디자인팀</option>
+                            <option value="콘텐츠 담당자">콘텐츠 담당자</option>
+                            <option value="팀장">팀장</option>
+                            <option value="마케팅 총괄">마케팅 총괄</option>
+                            <option value="마케팅 분석가">마케팅 분석가</option>
+                            <option value="크리에이티브팀">크리에이티브팀</option>
+                            <option value="미디어 플래너">미디어 플래너</option>
+                          </select>
+                        </div>
+
+                        {/* 삭제 버튼 */}
+                        {newProcess.steps.length > 1 && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => removeStep(step.id)}
+                            className="flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={addStep}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Plus className="w-4 h-4" />
+                  새 단계 추가
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => { setShowProcessModal(false); resetProcessForm(); }}
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={handleSaveProcess}
+                disabled={!isFormValid}
+                className={`${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                저장
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-none space-y-6 animate-fadeIn">
       {/* 헤더 */}
@@ -1235,6 +1557,7 @@ export default function MarketingPlanningProcessPage() {
       {selectedPlan && renderPlanDetailModal()}
       {selectedProcess && renderProcessDetailModal()}
       {showCreateModal && renderCreatePlanModal()}
+      {showProcessModal && renderCreateProcessModal()}
     </div>
   );
 }
