@@ -170,7 +170,7 @@ export default function MarketingPlanningProcessPage() {
     targetPersona: "",
     coreMessage: "",
     channels: [],
-    objectives: [{ title: "", keyResults: [""] }],
+    objectives: [{ title: "", keyResults: [{ description: "", target: "" }] }],
     initiatives: [{ name: "", status: "계획됨" }]
   });
 
@@ -668,7 +668,7 @@ export default function MarketingPlanningProcessPage() {
     const addObjective = () => {
       setNewPlan(prev => ({
         ...prev,
-        objectives: [...prev.objectives, { title: "", keyResults: [""] }]
+        objectives: [...prev.objectives, { title: "", keyResults: [{ description: "", target: "" }] }]
       }));
     };
 
@@ -693,7 +693,7 @@ export default function MarketingPlanningProcessPage() {
         ...prev,
         objectives: prev.objectives.map((obj, i) => 
           i === objectiveIndex 
-            ? { ...obj, keyResults: [...obj.keyResults, ""] }
+            ? { ...obj, keyResults: [...obj.keyResults, { description: "", target: "" }] }
             : obj
         )
       }));
@@ -710,7 +710,7 @@ export default function MarketingPlanningProcessPage() {
       }));
     };
 
-    const updateKeyResult = (objectiveIndex, keyResultIndex, value) => {
+    const updateKeyResult = (objectiveIndex, keyResultIndex, field, value) => {
       setNewPlan(prev => ({
         ...prev,
         objectives: prev.objectives.map((obj, i) => 
@@ -718,7 +718,7 @@ export default function MarketingPlanningProcessPage() {
             ? { 
                 ...obj, 
                 keyResults: obj.keyResults.map((kr, ki) => 
-                  ki === keyResultIndex ? value : kr
+                  ki === keyResultIndex ? { ...kr, [field]: value } : kr
                 )
               }
             : obj
@@ -808,7 +808,7 @@ export default function MarketingPlanningProcessPage() {
         targetPersona: "",
         coreMessage: "",
         channels: [],
-        objectives: [{ title: "", keyResults: [""] }],
+        objectives: [{ title: "", keyResults: [{ description: "", target: "" }] }],
         initiatives: [{ name: "", campaignId: null, campaignName: "" }]
       });
     };
@@ -833,7 +833,10 @@ export default function MarketingPlanningProcessPage() {
         endDate: newPlan.endDate,
         manager: newPlan.manager,
         description: newPlan.description,
-        objectives: newPlan.objectives.filter(obj => obj.title.trim()),
+        objectives: newPlan.objectives.filter(obj => obj.title.trim()).map(obj => ({
+          ...obj,
+          keyResults: obj.keyResults.filter(kr => kr.description.trim() && kr.target.trim()).map(kr => `${kr.description} (${kr.target})`)
+        })),
         targetPersona: newPlan.targetPersona,
         coreMessage: newPlan.coreMessage,
         channels: newPlan.channels,
@@ -852,26 +855,43 @@ export default function MarketingPlanningProcessPage() {
     const isFormValid = newPlan.title && newPlan.startDate && newPlan.endDate && newPlan.manager;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
           {/* 헤더 */}
-          <div className="sticky top-0 bg-white dark:bg-gray-800 p-6 border-b border-gray-200 dark:border-gray-700 z-10">
+          <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 z-10">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                새 마케팅 계획 작성
-              </h2>
-              <Button variant="outline" onClick={() => { setShowCreateModal(false); resetForm(); }}>
-                <X className="w-4 h-4" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">새 마케팅 계획 작성</h2>
+                  <p className="text-blue-100 text-sm">전략적 마케팅 계획을 수립하세요</p>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => { setShowCreateModal(false); resetForm(); }}
+                className="text-white hover:bg-white/20 border-white/30"
+              >
+                <X className="w-5 h-5" />
               </Button>
             </div>
           </div>
 
-          <div className="p-6 space-y-8">
+          <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
+            <div className="p-8 space-y-10">
             {/* 섹션 1: 계획 기본 정보 */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                1. 계획 기본 정보
-              </h3>
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-gradient-to-r from-blue-500 to-purple-500">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white font-bold flex items-center justify-center text-sm">
+                  1
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  계획 기본 정보
+                </h3>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -960,59 +980,94 @@ export default function MarketingPlanningProcessPage() {
 
             {/* 섹션 2: 목표 설정 (OKRs) */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                2. 목표 설정 (OKRs)
-              </h3>
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-gradient-to-r from-green-500 to-blue-500">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full text-white font-bold flex items-center justify-center text-sm">
+                  2
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  목표 설정 (OKRs)
+                </h3>
+              </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {newPlan.objectives.map((objective, objIndex) => (
-                  <div key={objIndex} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div key={objIndex} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 p-6 rounded-2xl border border-blue-200 dark:border-gray-600 shadow-lg">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white font-bold flex items-center justify-center text-xs">
+                        O
+                      </div>
                       <Input
                         value={objective.title}
                         onChange={(e) => updateObjective(objIndex, 'title', e.target.value)}
                         placeholder="목표를 입력하세요 (예: Z세대 인지도 확보)"
-                        className="flex-1"
+                        className="flex-1 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 focus:border-blue-500 focus:ring-blue-200 text-lg font-medium"
                       />
                       {newPlan.objectives.length > 1 && (
                         <Button 
                           size="sm" 
                           variant="outline"
                           onClick={() => removeObjective(objIndex)}
+                          className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
 
-                    <div className="space-y-2 ml-4">
-                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                        핵심 결과 (Key Results)
-                      </label>
+                    <div className="space-y-4 ml-8">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-teal-500 rounded text-white font-bold flex items-center justify-center text-xs">
+                          KR
+                        </div>
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          핵심 결과 (Key Results)
+                        </label>
+                      </div>
                       {objective.keyResults.map((kr, krIndex) => (
-                        <div key={krIndex} className="flex items-center gap-2">
-                          <Input
-                            value={kr}
-                            onChange={(e) => updateKeyResult(objIndex, krIndex, e.target.value)}
-                            placeholder="핵심 결과를 입력하세요 (예: 틱톡 팔로워 5만 달성)"
-                            className="flex-1"
-                          />
-                          {objective.keyResults.length > 1 && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => removeKeyResult(objIndex, krIndex)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                        <div key={krIndex} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                핵심 결과
+                              </label>
+                              <Input
+                                value={kr.description}
+                                onChange={(e) => updateKeyResult(objIndex, krIndex, 'description', e.target.value)}
+                                placeholder="예: 틱톡 팔로워 증가"
+                                className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
+                              />
+                            </div>
+                            <div className="flex items-end gap-2">
+                              <div className="flex-1">
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                  목표 수치
+                                </label>
+                                <Input
+                                  value={kr.target}
+                                  onChange={(e) => updateKeyResult(objIndex, krIndex, 'target', e.target.value)}
+                                  placeholder="예: 5만명, 20%, 100건"
+                                  className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
+                                />
+                              </div>
+                              {objective.keyResults.length > 1 && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => removeKeyResult(objIndex, krIndex)}
+                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ))}
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => addKeyResult(objIndex)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600 hover:bg-green-100 dark:hover:bg-green-900/30"
                       >
                         <Plus className="w-4 h-4" />
                         핵심 결과(Key Result) 추가
@@ -1024,9 +1079,9 @@ export default function MarketingPlanningProcessPage() {
                 <Button
                   variant="outline"
                   onClick={addObjective}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full py-6 text-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-dashed border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                   목표(Objective) 추가
                 </Button>
               </div>
@@ -1034,9 +1089,14 @@ export default function MarketingPlanningProcessPage() {
 
             {/* 섹션 3: 전략 개요 */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                3. 전략 개요
-              </h3>
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-gradient-to-r from-purple-500 to-pink-500">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold flex items-center justify-center text-sm">
+                  3
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  전략 개요
+                </h3>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1099,9 +1159,14 @@ export default function MarketingPlanningProcessPage() {
 
             {/* 섹션 4: 주요 활동 */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                4. 주요 활동 (Key Initiatives)
-              </h3>
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-gradient-to-r from-orange-500 to-red-500">
+                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-white font-bold flex items-center justify-center text-sm">
+                  4
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  주요 활동 (Key Initiatives)
+                </h3>
+              </div>
 
               <div className="space-y-4">
                 {newPlan.initiatives.map((initiative, index) => (
@@ -1166,22 +1231,36 @@ export default function MarketingPlanningProcessPage() {
             </div>
           </div>
 
+          </div>
+
           {/* Footer */}
-          <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => { setShowCreateModal(false); resetForm(); }}
-              >
-                취소
-              </Button>
-              <Button 
-                onClick={handleSave}
-                disabled={!isFormValid}
-                className={`${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                저장
-              </Button>
+          <div className="sticky bottom-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 p-6">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  자동 저장 활성화
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => { setShowCreateModal(false); resetForm(); }}
+                  className="px-6"
+                >
+                  취소
+                </Button>
+                <Button 
+                  size="lg"
+                  onClick={handleSave}
+                  disabled={!isFormValid}
+                  className={`px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 ${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  계획 저장
+                </Button>
+              </div>
             </div>
           </div>
         </div>
