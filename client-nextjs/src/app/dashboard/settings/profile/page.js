@@ -1,11 +1,10 @@
-
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery } from "@apollo/client";
+import { useSelector, useDispatch } from "react-redux";
 import { useLanguage } from "@/contexts/languageContext.js";
-import { UPDATE_USER_PROFILE } from "@/lib/graphql/mutations.js";
+import { UPDATE_USER_PROFILE, VERIFY_CURRENT_PASSWORD, CHANGE_PASSWORD } from "@/lib/graphql/mutations.js";
 import { GET_ME } from "@/lib/graphql/queries.js";
 import { setUser } from "@/store/slices/authSlice.js";
 import { useToast } from "@/hooks/useToast.js";
@@ -34,14 +33,17 @@ export default function ProfileSettingsPage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { toast } = useToast();
-  
+
   const [activeTab, setActiveTab] = useState("profile");
   const [showPassword, setShowPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
+    const [currentPasswordVerified, setCurrentPasswordVerified] = useState(null);
+    const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [profileData, setProfileData] = useState({});
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [skills, setSkills] = useState([]);
@@ -87,7 +89,9 @@ export default function ProfileSettingsPage() {
     },
   });
 
-  const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
+    const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
+    const [verifyCurrentPassword] = useMutation(VERIFY_CURRENT_PASSWORD);
+    const [changePassword] = useMutation(CHANGE_PASSWORD);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -103,6 +107,90 @@ export default function ProfileSettingsPage() {
     allowMultipleSessions: false,
   });
 
+    // 비밀번호 강도 검증 함수
+    const checkPasswordStrength = (password) => {
+        const hasMinLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        const conditionsMet = [hasMinLength, hasUppercase, hasLowercase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+
+        let score = 0;
+        let label = "";
+
+        if (conditionsMet >= 4 && hasMinLength && hasUppercase && hasSpecialChar) {
+            score = 3;
+            label = "강함";
+        } else if (conditionsMet >= 3 && hasMinLength) {
+            score = 2;
+            label = "보통";
+        } else if (conditionsMet >= 1) {
+            score = 1;
+            label = "약함";
+        }
+
+        return {
+            score,
+            label,
+            hasMinLength,
+            hasUppercase,
+            hasLowercase,
+            hasNumbers,
+            hasSpecialChar,
+            isMatching: passwordData.newPassword === passwordData.confirmPassword && passwordData.confirmPassword !== ""
+        };
+    };
+
+    const passwordStrength = checkPasswordStrength(passwordData.newPassword);
+
+    // 비밀번호 변경 버튼 활성화 조건
+    const canChangePassword =
+        currentPasswordVerified === true &&
+        passwordStrength.score >= 2 &&
+        passwordStrength.hasMinLength &&
+        passwordStrength.hasUppercase &&
+        passwordStrength.hasSpecialChar &&
+        passwordStrength.isMatching;
+
+    // 현재 비밀번호 검증 (debounced)
+    const debouncedVerifyPassword = useCallback(
+        debounce(async (password) => {
+            if (!password || password.length < 1) {
+                setCurrentPasswordVerified(null);
+                return;
+            }
+
+            setIsVerifyingPassword(true);
+            try {
+                const { data } = await verifyCurrentPassword({
+                    variables: { currentPassword: password }
+                });
+                setCurrentPasswordVerified(data.verifyCurrentPassword);
+            } catch (error) {
+                console.error("Password verification error:", error);
+                setCurrentPasswordVerified(false);
+            } finally {
+                setIsVerifyingPassword(false);
+            }
+        }, 500),
+        [verifyCurrentPassword]
+    );
+
+    // Debounce 함수
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
   const tabs = [
     { id: "profile", name: "기본 정보", icon: User },
     { id: "password", name: "비밀번호 변경", icon: Lock },
@@ -115,7 +203,10 @@ export default function ProfileSettingsPage() {
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({ ...prev, [field]: value }));
+        setPasswordData(prev => ({ ...prev, [field]: value }));
+        if (field === "currentPassword") {
+            debouncedVerifyPassword(value);
+        }
   };
 
   const handleSecurityChange = (field, value) => {
@@ -602,71 +693,101 @@ export default function ProfileSettingsPage() {
   );
 
   const renderPasswordTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          비밀번호 변경
-        </h3>
-        <div className="space-y-4 max-w-md">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              현재 비밀번호
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={passwordData.currentPassword}
-                onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
-                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+        <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    비밀번호 변경
+                </h3>
+                <div className="space-y-4 max-w-md">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            현재 비밀번호
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={passwordData.currentPassword}
+                                onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
+                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        {currentPasswordVerified === false && (
+                            <p className="text-red-500 text-sm mt-1">현재 비밀번호가 일치하지 않습니다.</p>
+                        )}
+                        {currentPasswordVerified === true && (
+                            <p className="text-green-500 text-sm mt-1">현재 비밀번호가 확인되었습니다.</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            새 비밀번호
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showNewPassword ? "text" : "password"}
+                                value={passwordData.newPassword}
+                                onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
+                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            새 비밀번호 확인
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                value={passwordData.confirmPassword}
+                                onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
+                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <div className="flex items-start space-x-2">
+                            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                                <p className="font-medium mb-1">비밀번호 요구사항:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li>최소 8자 이상</li>
+                                    <li>대문자, 소문자, 숫자, 특수문자 포함</li>
+                                    <li>이전 비밀번호와 다른 비밀번호</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        disabled={!canChangePassword}
+                        className={`bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2 disabled:opacity-50`}
+                    >
+                        {isLoading ? "저장중..." : "비밀번호 변경"}
+                    </button>
+                </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              새 비밀번호
-            </label>
-            <input
-              type="password"
-              value={passwordData.newPassword}
-              onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              새 비밀번호 확인
-            </label>
-            <input
-              type="password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-              <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                <p className="font-medium mb-1">비밀번호 요구사항:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>최소 8자 이상</li>
-                  <li>대문자, 소문자, 숫자, 특수문자 포함</li>
-                  <li>이전 비밀번호와 다른 비밀번호</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 
   const renderSecurityTab = () => (
     <div className="space-y-6">
@@ -769,7 +890,7 @@ export default function ProfileSettingsPage() {
             {twoFactorEnabled ? "활성화됨" : "비활성화됨"}
           </div>
         </div>
-        
+
         {!twoFactorEnabled ? (
           <div>
             <p className="text-gray-600 dark:text-gray-400 mb-4">

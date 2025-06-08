@@ -354,3 +354,15 @@ export const UPDATE_USER_PROFILE = gql`
     }
   }
 `;
+
+export const VERIFY_CURRENT_PASSWORD = gql`
+  mutation VerifyCurrentPassword($currentPassword: String!) {
+    verifyCurrentPassword(currentPassword: $currentPassword)
+  }
+`;
+
+export const CHANGE_PASSWORD = gql`
+  mutation ChangePassword($input: ChangePasswordInput!) {
+    changePassword(input: $input)
+  }
+`;

@@ -129,6 +129,13 @@ const authTypeDefs = gql`
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
     updateUserProfile(input: UpdateUserProfileInput!): User!
+    verifyCurrentPassword(currentPassword: String!): Boolean
+    changePassword(input: ChangePasswordInput!): Boolean
+  }
+
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
   }
 `;
 

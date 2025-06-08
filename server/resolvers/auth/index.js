@@ -275,6 +275,58 @@ const authResolvers = {
         throw new Error(`Failed to update profile: ${error.message}`);
       }
     },
+
+    verifyCurrentPassword: async (_, { currentPassword }, context) => {
+      if (!context.user) {
+        throw new Error("Not authenticated");
+      }
+
+      try {
+        const user = await models.User.findByPk(context.user.userId);
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        return isPasswordValid;
+      } catch (error) {
+        console.error("Verify password error:", error);
+        throw new Error(`Failed to verify password: ${error.message}`);
+      }
+    },
+
+    changePassword: async (_, { input }, context) => {
+      if (!context.user) {
+        throw new Error("Not authenticated");
+      }
+
+      try {
+        const { currentPassword, newPassword } = input;
+        
+        const user = await models.User.findByPk(context.user.userId);
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+          throw new Error("Current password is incorrect");
+        }
+
+        const saltRounds = 12;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        await models.User.update(
+          { password: hashedNewPassword },
+          { where: { id: context.user.userId } }
+        );
+
+        return true;
+      } catch (error) {
+        console.error("Change password error:", error);
+        throw new Error(`Failed to change password: ${error.message}`);
+      }
+    },
   },
 };
 
