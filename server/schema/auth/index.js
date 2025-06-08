@@ -75,8 +75,8 @@ const authTypeDefs = gql`
     department: String
     position: String
     employeeId: String
-    joinDate: String
-    birthDate: String
+    joinDate: Date
+    birthDate: Date
     visaStatus: String
     avatar: String
     emergencyContact: [EmergencyContactInput]
@@ -91,8 +91,8 @@ const authTypeDefs = gql`
     department: String
     position: String
     employeeId: String
-    joinDate: String
-    birthDate: String
+    joinDate: Date
+    birthDate: Date
     visaStatus: String
     avatar: String
     emergencyContact: [EmergencyContactInput]
@@ -108,8 +108,8 @@ const authTypeDefs = gql`
     position: String
     phoneNumber: String
     nationality: String
-    joinDate: String
-    birthDate: String
+    joinDate: Date
+    birthDate: Date
     address: String
     employeeId: String
     visaStatus: String
@@ -117,8 +117,8 @@ const authTypeDefs = gql`
     emergencyContact: [EmergencyContact]
     skills: [Skill]
     experiences: [Experience]
-    createdAt: String
-    updatedAt: String
+    createdAt: Date
+    updatedAt: Date
   }
 
   extend type Query {

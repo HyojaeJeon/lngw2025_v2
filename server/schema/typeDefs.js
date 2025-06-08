@@ -14,26 +14,7 @@ const baseTypeDefs = gql`
     _empty: String
   }
 
-  type User {
-    id: ID!
-    email: String!
-    name: String!
-    role: String!
-    department: String
-    position: String
-    employeeId: String
-    joinDate: Date
-    phoneNumber: String
-    address: String
-    nationality: String
-    birthDate: Date
-    visaStatus: String
-    experiences: [Experience]
-    emergencyContact: [EmergencyContact]
-    skills: [Skill]
-    createdAt: Date!
-    updatedAt: Date!
-  }
+  
 
   type EmergencyContact {
     id: ID!
