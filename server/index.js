@@ -24,27 +24,24 @@ const whitelist =
         "http://localhost:3003",
         "http://localhost:3001",
         "http://localhost:3201",
-        // 포트 :3001 포함
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3001",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev/graphql",
+        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3000",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3001",
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002",
-        "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
+        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3003",
       ];
 
 async function startServer() {
   const app = express();
   app.get("/", (req, res) => {
-    // 예: Replit 내부에서 Next.js dev 서버가 포트 3001에서 돌고 있다면:
-    if (process.env.REPLIT) {
+    // Replit 환경에서 Next.js로 리다이렉트
+    if (process.env.REPLIT_DB_URL || process.env.REPLIT) {
       return res.redirect(
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3003/",
+        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002/",
       );
     }
 
-    // 보통 개발(로컬) 모드
+    // 로컬 개발 모드
     if (process.env.NODE_ENV !== "production") {
       return res.redirect("http://localhost:3000");
     }
