@@ -156,7 +156,7 @@ async function startServer() {
     if (process.env.NODE_ENV === "development") {
       // 데이터베이스 동기화
       console.log("Syncing database...");
-      await models.sequelize.sync({ force: false }); // 테이블을 완전히 재생성
+      await models.sequelize.sync({ force: false, alter: true }); // 테이블을 완전히 재생성
       console.log("Database synced successfully.");
       const userCount = await models.User.count();
       if (userCount === 0) {
