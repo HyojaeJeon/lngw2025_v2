@@ -116,6 +116,7 @@ const translations = {
     "settings.dataManagement": "데이터 관리",
     "settings.auditLogs": "감사 로그",
     "settings.billing": "결제 및 구독",
+    "settings.snsIntegration": "SNS 채널 연동 관리",
 
     // 접근제어 관련 번역
     "accessControl.title": "접근제어 관리",
