@@ -61,15 +61,16 @@ export default function MarketingPlanDetailPage() {
   // 상태 관리
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [history, setHistory] = useState([]);
   const [editingField, setEditingField] = useState(null);
   const [editingValue, setEditingValue] = useState("");
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showDataConnectionModal, setShowDataConnectionModal] = useState(false);
+  const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [selectedKR, setSelectedKR] = useState(null);
-  const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newChecklistItem, setNewChecklistItem] = useState("");
 
   // 샘플 데이터 (실제로는 API에서 가져올 데이터)
   useEffect(() => {
@@ -96,24 +97,41 @@ export default function MarketingPlanDetailPage() {
               text: "틱톡 팔로워 5만 달성",
               target: 50000,
               current: 40000,
+              measurementType: "automatic", // automatic, manual, checklist
               dataConnected: true,
               dataSource: "인사이트 > TikTok 채널 > 팔로워 수",
+              checklist: [],
             },
             {
               id: 2,
               text: "브랜드 인지도 20% 증가",
               target: 20,
               current: 13,
+              measurementType: "manual",
               dataConnected: false,
               dataSource: null,
+              checklist: [],
             },
             {
               id: 3,
               text: "UGC 콘텐츠 100건 수집",
-              target: 100,
-              current: 70,
-              dataConnected: true,
-              dataSource: "참여도 관리 > UGC 수집",
+              target: 10,
+              current: 7,
+              measurementType: "checklist",
+              dataConnected: false,
+              dataSource: null,
+              checklist: [
+                { id: 1, text: "인스타그램 인플루언서 A", completed: true },
+                { id: 2, text: "틱톡 챌린지 이벤트", completed: true },
+                { id: 3, text: "블로그 체험단 모집", completed: false },
+                { id: 4, text: "유튜브 언박싱 영상", completed: true },
+                { id: 5, text: "네이버 블로그 체험단", completed: true },
+                { id: 6, text: "인스타그램 스토리 이벤트", completed: true },
+                { id: 7, text: "트위터 해시태그 캠페인", completed: true },
+                { id: 8, text: "페이스북 그룹 프로모션", completed: true },
+                { id: 9, text: "카카오톡 플러스친구 이벤트", completed: false },
+                { id: 10, text: "틱톡 댄스 챌린지", completed: false },
+              ],
             },
           ],
         },
@@ -126,16 +144,20 @@ export default function MarketingPlanDetailPage() {
               text: "온라인 매출 30% 증가",
               target: 30,
               current: 18,
+              measurementType: "manual",
               dataConnected: false,
               dataSource: null,
+              checklist: [],
             },
             {
               id: 5,
               text: "전환율 3.5% 달성",
               target: 3.5,
               current: 2.8,
+              measurementType: "automatic",
               dataConnected: true,
               dataSource: "인사이트 > 웹사이트 > 전환율",
+              checklist: [],
             },
           ],
         },
@@ -360,6 +382,8 @@ export default function MarketingPlanDetailPage() {
           current: 0,
           dataConnected: false,
           dataSource: null,
+          measurementType: "automatic",
+          checklist: [],
         },
       ],
     };
@@ -389,6 +413,8 @@ export default function MarketingPlanDetailPage() {
       current: 0,
       dataConnected: false,
       dataSource: null,
+      measurementType: "automatic",
+      checklist: [],
     };
 
     setPlan((prev) => ({
@@ -539,6 +565,214 @@ export default function MarketingPlanDetailPage() {
     );
   };
 
+  // 측정 방식 설정 모달
+  const MeasurementModal = () => {
+    if (!showMeasurementModal || !selectedKR) return null;
+
+    const handleMeasurementTypeChange = (type) => {
+      setPlan((prev) => {
+        const newPlan = { ...prev };
+        newPlan.objectives = newPlan.objectives.map((obj) => {
+          obj.keyResults = obj.keyResults.map((kr) => {
+            if (kr.id === selectedKR.id) {
+              kr.measurementType = type;
+            }
+            return kr;
+          });
+          return obj;
+        });
+        return newPlan;
+      });
+      setShowMeasurementModal(false);
+    };
+
+    const handleInputChange = (e) => {
+        setPlan((prev) => {
+            const newPlan = { ...prev };
+            newPlan.objectives = newPlan.objectives.map((obj) => {
+                obj.keyResults = obj.keyResults.map((kr) => {
+                    if (kr.id === selectedKR.id) {
+                        kr.current = parseFloat(e.target.value);
+                    }
+                    return kr;
+                });
+                return obj;
+            });
+            return newPlan;
+        });
+    };
+
+    const handleChecklistItemAdd = () => {
+      if (!newChecklistItem.trim()) return;
+
+      const newItem = {
+        id: Date.now(),
+        text: newChecklistItem,
+        completed: false,
+      };
+
+      setPlan((prev) => {
+        const newPlan = { ...prev };
+        newPlan.objectives = newPlan.objectives.map((obj) => {
+          obj.keyResults = obj.keyResults.map((kr) => {
+            if (kr.id === selectedKR.id) {
+              kr.checklist = [...kr.checklist, newItem];
+            }
+            return kr;
+          });
+          return obj;
+        });
+        return newPlan;
+      });
+
+      setNewChecklistItem("");
+    };
+
+    const handleChecklistItemToggle = (itemId) => {
+      setPlan((prev) => {
+        const newPlan = { ...prev };
+        newPlan.objectives = newPlan.objectives.map((obj) => {
+          obj.keyResults = obj.keyResults.map((kr) => {
+            if (kr.id === selectedKR.id) {
+              kr.checklist = kr.checklist.map((item) =>
+                item.id === itemId ? { ...item, completed: !item.completed } : item,
+              );
+            }
+            return kr;
+          });
+          return obj;
+        });
+        return newPlan;
+      });
+    };
+
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">
+                성과 측정 방식 설정
+              </h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowMeasurementModal(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div>
+              <h4 className="font-medium mb-2">핵심 결과</h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                {selectedKR.text}
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-medium mb-2">
+                이 핵심 결과(KR)의 달성도를 어떻게 측정하시겠습니까?
+              </h4>
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleMeasurementTypeChange("automatic")}
+                >
+                  <span className="flex-1 text-left">
+                    자동 데이터 연결 (권장)
+                  </span>
+                  <TrendingUp className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleMeasurementTypeChange("manual")}
+                >
+                  <span className="flex-1 text-left">직접 수동 입력</span>
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleMeasurementTypeChange("checklist")}
+                >
+                  <span className="flex-1 text-left">체크리스트 달성</span>
+                  <CheckCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {selectedKR.measurementType === "manual" && (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            현재 값
+                        </label>
+                        <Input
+                            type="number"
+                            value={selectedKR.current}
+                            onChange={handleInputChange}
+                            placeholder="현재 달성 값을 입력하세요"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {selectedKR.measurementType === "checklist" && (
+              <div className="space-y-4">
+                <ul className="space-y-2">
+                  {selectedKR.checklist.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center justify-between"
+                    >
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={item.completed}
+                          onChange={() => handleChecklistItemToggle(item.id)}
+                        />
+                        {item.text}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="새 체크리스트 항목 추가"
+                    value={newChecklistItem}
+                    onChange={(e) => setNewChecklistItem(e.target.value)}
+                  />
+                  <Button size="sm" onClick={handleChecklistItemAdd}>
+                    추가
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowMeasurementModal(false)}
+            >
+              취소
+            </Button>
+            <Button onClick={() => setShowMeasurementModal(false)}>
+              설정 저장
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // 계획 수정 모달
   const EditPlanModal = () => {
     if (!showEditModal || !plan) return null;
@@ -652,6 +886,11 @@ export default function MarketingPlanDetailPage() {
     );
   };
 
+  // 편집 모달 렌더링 함수
+  const renderEditModal = () => {
+    return <EditPlanModal />;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -728,6 +967,7 @@ export default function MarketingPlanDetailPage() {
             </div>
 
             {/* 편집 버튼 */}
+```python
             <Button variant="outline" onClick={() => setShowEditModal(true)}>
               <Edit className="w-4 h-4" />
             </Button>
@@ -926,19 +1166,67 @@ export default function MarketingPlanDetailPage() {
                               )
                             </span>
                           </div>
+                          {kr.measurementType === "checklist" && (
+                            <ul className="mt-2 space-y-1">
+                              {kr.checklist.map((item) => (
+                                <li
+                                  key={item.id}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={item.completed}
+                                    onChange={() => {
+                                      setPlan((prev) => {
+                                        const newPlan = { ...prev };
+                                        newPlan.objectives = newPlan.objectives.map(
+                                          (obj) => {
+                                            obj.keyResults = obj.keyResults.map(
+                                              (k) => {
+                                                if (k.id === kr.id) {
+                                                  k.checklist =
+                                                    k.checklist.map((i) =>
+                                                      i.id === item.id
+                                                        ? {
+                                                            ...i,
+                                                            completed:
+                                                              !i.completed,
+                                                          }
+                                                        : i,
+                                                    );
+                                                }
+                                                return k;
+                                              },
+                                            );
+                                            return obj;
+                                          },
+                                        );
+                                        return newPlan;
+                                      });
+                                    }}
+                                  />
+                                  <span>{item.text}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
 
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
                             <div
                               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                               style={{
-                                width: `${Math.min((kr.current / kr.target) * 100, 100)}%`,
+                                width: `${Math.min(
+                                  (kr.current / kr.target) * 100,
+                                  100,
+                                )}%`,
                               }}
                             ></div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 ml-4">
-                          {kr.dataConnected ? (
+                          {kr.measurementType === "automatic" &&
+                          kr.dataConnected ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -946,10 +1234,33 @@ export default function MarketingPlanDetailPage() {
                                 setSelectedKR(kr);
                                 setShowDataConnectionModal(true);
                               }}
-                              className="text-green-600 border-green-200 hover:bg-green-50"
+                              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
                             >
-                              <Database className="w-4 h-4 mr-1" />
-                              연결됨
+                              📈 연결됨
+                            </Button>
+                          ) : kr.measurementType === "manual" ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedKR(kr);
+                                setShowMeasurementModal(true);
+                              }}
+                              className="text-xs bg-green-50 text-green-700 border-green-200"
+                            >
+                              ✍️ 수동 입력
+                            </Button>
+                          ) : kr.measurementType === "checklist" ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedKR(kr);
+                                setShowMeasurementModal(true);
+                              }}
+                              className="text-xs bg-purple-50 text-purple-700 border-purple-200"
+                            >
+                              ✔️ 체크리스트
                             </Button>
                           ) : (
                             <Button
@@ -957,11 +1268,11 @@ export default function MarketingPlanDetailPage() {
                               variant="outline"
                               onClick={() => {
                                 setSelectedKR(kr);
-                                setShowDataConnectionModal(true);
+                                setShowMeasurementModal(true);
                               }}
+                              className="text-xs"
                             >
-                              <Link className="w-4 h-4 mr-1" />
-                              데이터 연결
+                              ⚙️ 성과 측정 방식 설정
                             </Button>
                           )}
                         </div>
@@ -1245,8 +1556,9 @@ export default function MarketingPlanDetailPage() {
       </div>
 
       {/* 모달들 */}
+      {renderEditModal()}
+      <MeasurementModal />
       <DataConnectionModal />
-      <EditPlanModal />
     </div>
   );
 }
