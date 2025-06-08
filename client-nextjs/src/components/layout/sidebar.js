@@ -189,6 +189,10 @@ const sidebarItems = [
         name: "marketing.marketAnalysis",
         href: "/dashboard/marketing/market-analysis",
       },
+      {
+        name: "marketing.planningProcess",
+        href: "/dashboard/marketing/planning-process",
+      },
       { name: "marketing.trends", href: "/dashboard/marketing/trends" },
       
       // Phase 2: 기획 및 준비 (Planning & Preparation)
