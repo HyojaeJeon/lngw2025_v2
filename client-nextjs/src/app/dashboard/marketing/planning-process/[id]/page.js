@@ -847,9 +847,6 @@ export default function MarketingPlanDetailPage() {
     setShowDeleteModal(false);
     setObjectiveToDelete(null);
   };
-      if (kr.measurementType === "checklist") {
-        return kr.checklist && kr.checklist.length > 0;
-      }
       return (
         kr.current !== null &&
         !isNaN(kr.current) &&
