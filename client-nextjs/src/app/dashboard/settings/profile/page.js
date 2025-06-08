@@ -1,8 +1,14 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useMutation, useQuery } from "@apollo/client";
 import { useLanguage } from "@/contexts/languageContext.js";
+import { UPDATE_USER_PROFILE } from "@/lib/graphql/mutations.js";
+import { GET_ME } from "@/lib/graphql/queries.js";
+import { setUser } from "@/store/slices/authSlice.js";
+import { useToast } from "@/hooks/useToast.js";
 import {
   User,
   Lock,
@@ -17,24 +23,70 @@ import {
   X,
   AlertTriangle,
   QrCode,
+  Edit,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 export default function ProfileSettingsPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { toast } = useToast();
+  
   const [activeTab, setActiveTab] = useState("profile");
   const [showPassword, setShowPassword] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const [profileData, setProfileData] = useState({
-    name: "김관리자",
-    email: "admin@company.com",
-    phone: "010-1234-5678",
-    department: "IT팀",
-    position: "시스템 관리자",
-    bio: "시스템 관리 및 개발을 담당하고 있습니다.",
-    avatar: null,
+  const [profileData, setProfileData] = useState({});
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [skills, setSkills] = useState([]);
+
+  const {
+    loading: queryLoading,
+    error: queryError,
+    refetch,
+  } = useQuery(GET_ME, {
+    onCompleted: (data) => {
+      if (data?.me) {
+        const userData = data.me;
+        setProfileData({
+          name: userData.name || "",
+          email: userData.email || "",
+          phoneNumber: userData.phoneNumber || "",
+          address: userData.address || "",
+          nationality: userData.nationality || "",
+          department: userData.department || "",
+          position: userData.position || "",
+          employeeId: userData.employeeId || "",
+          joinDate: userData.joinDate
+            ? new Date(userData.joinDate).toISOString().split("T")[0]
+            : "",
+          birthDate: userData.birthDate
+            ? new Date(userData.birthDate).toISOString().split("T")[0]
+            : "",
+          visaStatus: userData.visaStatus || "",
+          avatar: null,
+        });
+        setEmergencyContacts(userData.emergencyContact || []);
+        setSkills(userData.skills?.map((skill) => skill.name) || []);
+        dispatch(setUser(userData));
+      }
+    },
+    onError: (error) => {
+      console.error("Error fetching user data:", error);
+      toast({
+        title: "오류",
+        description: "사용자 정보를 불러오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    },
   });
+
+  const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -80,18 +132,129 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const handleEmergencyContactChange = (index, field, value) => {
+    const updated = [...emergencyContacts];
+    updated[index] = { ...updated[index], [field]: value };
+    setEmergencyContacts(updated);
+  };
+
+  const addEmergencyContact = () => {
+    setEmergencyContacts([
+      ...emergencyContacts,
+      { name: "", relationship: "", phoneNumber: "" },
+    ]);
+  };
+
+  const removeEmergencyContact = (index) => {
+    setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index));
+  };
+
+  const handleSkillChange = (index, value) => {
+    const updated = [...skills];
+    updated[index] = value;
+    setSkills(updated);
+  };
+
+  const addSkill = () => {
+    setSkills([...skills, ""]);
+  };
+
+  const removeSkill = (index) => {
+    setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      // 기존 유저 정보와 비교
+      const changedFields = {};
+      Object.keys(profileData).forEach((key) => {
+        if (key === "email" || key === "avatar") return; // email과 avatar는 제외
+        if (profileData[key] !== user[key]) {
+          changedFields[key] = profileData[key];
+        }
+      });
+
+      // emergencyContact, skills도 비교해서 변경된 경우만 추가
+      if (JSON.stringify(emergencyContacts) !== JSON.stringify(user.emergencyContact)) {
+        changedFields.emergencyContact = emergencyContacts.filter(
+          (contact) => contact.name && contact.relationship && contact.phoneNumber,
+        );
+      }
+      if (JSON.stringify(skills.map((s) => s.trim()).filter(Boolean)) !== JSON.stringify((user.skills || []).map((s) => s.name))) {
+        changedFields.skills = skills
+          .filter((skill) => skill.trim() !== "")
+          .map((skill) => ({ name: skill }));
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        toast({
+          title: "정보",
+          description: "변경된 내용이 없습니다.",
+        });
+        setIsEditing(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data } = await updateUserProfile({
+        variables: { input: changedFields },
+      });
+
+      if (data?.updateUserProfile) {
+        dispatch(setUser(data.updateUserProfile));
+        setIsEditing(false);
+        toast({
+          title: "성공",
+          description: "프로필이 성공적으로 업데이트되었습니다.",
+        });
+        refetch();
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast({
+        title: "오류",
+        description: "프로필 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 옵션 데이터
+  const nationalityOptions = [
+    { value: "vietnam", label: { ko: "베트남", en: "Vietnam", vi: "Việt Nam" } },
+    { value: "korea", label: { ko: "한국", en: "South Korea", vi: "Hàn Quốc" } },
+    { value: "usa", label: { ko: "미국", en: "United States", vi: "Hoa Kỳ" } },
+    { value: "japan", label: { ko: "일본", en: "Japan", vi: "Nhật Bản" } },
+    { value: "china", label: { ko: "중국", en: "China", vi: "Trung Quốc" } },
+    { value: "thailand", label: { ko: "태국", en: "Thailand", vi: "Thái Lan" } },
+    { value: "other", label: { ko: "기타", en: "Other", vi: "Khác" } },
+  ];
+
+  const departmentOptions = [
+    { value: "sales", label: { ko: "영업", en: "Sales", vi: "Bán hàng" } },
+    { value: "inventory", label: { ko: "재고/배송", en: "Inventory/Shipping", vi: "Kho/Vận chuyển" } },
+    { value: "marketing", label: { ko: "마케팅", en: "Marketing", vi: "Marketing" } },
+    { value: "accounting", label: { ko: "회계", en: "Accounting", vi: "Kế toán" } },
+    { value: "support", label: { ko: "고객지원", en: "Customer Support", vi: "Hỗ trợ khách hàng" } },
+    { value: "other", label: { ko: "기타", en: "Other", vi: "Khác" } },
+  ];
+
   const renderProfileTab = () => (
     <div className="space-y-6">
+      {/* 프로필 사진 */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           프로필 사진
         </h3>
         <div className="flex items-center space-x-6">
-          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
             {profileData.avatar ? (
               <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-12 h-12 text-gray-400" />
+              profileData.name?.charAt(0).toUpperCase() || "U"
             )}
           </div>
           <div>
@@ -115,77 +278,274 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
 
+      {/* 개인 정보 */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          기본 정보
+          개인 정보
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              이름
+              이름 <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={profileData.name}
+              value={profileData.name || ""}
               onChange={(e) => handleProfileChange("name", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              이메일
+              이메일 <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
-              value={profileData.email}
+              value={profileData.email || ""}
               onChange={(e) => handleProfileChange("email", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              disabled={true}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              전화번호
+              전화번호 <span className="text-red-500">*</span>
             </label>
             <input
               type="tel"
-              value={profileData.phone}
-              onChange={(e) => handleProfileChange("phone", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              value={profileData.phoneNumber || ""}
+              onChange={(e) => handleProfileChange("phoneNumber", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              부서
+              생년월일 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={profileData.birthDate || ""}
+              onChange={(e) => handleProfileChange("birthDate", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              국적 <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={profileData.nationality || ""}
+              onChange={(e) => handleProfileChange("nationality", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            >
+              <option value="">선택하세요</option>
+              {nationalityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label[language] || option.label.ko}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              비자 상태
             </label>
             <input
               type="text"
-              value={profileData.department}
-              onChange={(e) => handleProfileChange("department", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              value={profileData.visaStatus || ""}
+              onChange={(e) => handleProfileChange("visaStatus", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
           </div>
           <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              주소
+            </label>
+            <input
+              type="text"
+              value={profileData.address || ""}
+              onChange={(e) => handleProfileChange("address", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 직장 정보 */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          직장 정보
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              부서 <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={profileData.department || ""}
+              onChange={(e) => handleProfileChange("department", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            >
+              <option value="">선택하세요</option>
+              {departmentOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label[language] || option.label.ko}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               직책
             </label>
             <input
               type="text"
-              value={profileData.position}
+              value={profileData.position || ""}
               onChange={(e) => handleProfileChange("position", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
           </div>
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              자기소개
+              사원번호
             </label>
-            <textarea
-              value={profileData.bio}
-              onChange={(e) => handleProfileChange("bio", e.target.value)}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            <input
+              type="text"
+              value={profileData.employeeId || ""}
+              onChange={(e) => handleProfileChange("employeeId", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              입사일 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={profileData.joinDate || ""}
+              onChange={(e) => handleProfileChange("joinDate", e.target.value)}
+              disabled={!isEditing}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 스킬 */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            스킬
+          </h3>
+          {isEditing && (
+            <button
+              onClick={addSkill}
+              className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 text-sm flex items-center space-x-1"
+            >
+              <span>+</span>
+              <span>추가</span>
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {skills.map((skill, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={skill}
+                onChange={(e) => handleSkillChange(index, e.target.value)}
+                disabled={!isEditing}
+                placeholder="스킬을 입력하세요"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+              />
+              {isEditing && (
+                <button
+                  onClick={() => removeSkill(index)}
+                  className="bg-red-500 text-white px-2 py-2 rounded-lg hover:bg-red-600 text-sm"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+          ))}
+          {skills.length === 0 && (
+            <p className="text-gray-500 text-sm">등록된 스킬이 없습니다.</p>
+          )}
+        </div>
+      </div>
+
+      {/* 비상 연락처 */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            비상 연락처
+          </h3>
+          {isEditing && (
+            <button
+              onClick={addEmergencyContact}
+              className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 text-sm flex items-center space-x-1"
+            >
+              <span>+</span>
+              <span>추가</span>
+            </button>
+          )}
+        </div>
+        <div className="space-y-4">
+          {emergencyContacts.map((contact, index) => (
+            <div key={index} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg space-y-3">
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium text-gray-900 dark:text-white">
+                  비상 연락처 {index + 1}
+                </h4>
+                {isEditing && (
+                  <button
+                    onClick={() => removeEmergencyContact(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600 text-sm"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder="이름"
+                  value={contact.name || ""}
+                  onChange={(e) => handleEmergencyContactChange(index, "name", e.target.value)}
+                  disabled={!isEditing}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+                <input
+                  type="text"
+                  placeholder="관계"
+                  value={contact.relationship || ""}
+                  onChange={(e) => handleEmergencyContactChange(index, "relationship", e.target.value)}
+                  disabled={!isEditing}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+                <input
+                  type="tel"
+                  placeholder="전화번호"
+                  value={contact.phoneNumber || ""}
+                  onChange={(e) => handleEmergencyContactChange(index, "phoneNumber", e.target.value)}
+                  disabled={!isEditing}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+              </div>
+            </div>
+          ))}
+          {emergencyContacts.length === 0 && (
+            <p className="text-gray-500 text-sm">등록된 비상 연락처가 없습니다.</p>
+          )}
         </div>
       </div>
     </div>
@@ -430,6 +790,17 @@ export default function ProfileSettingsPage() {
     </div>
   );
 
+  if (queryLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* 헤더 */}
@@ -437,21 +808,40 @@ export default function ProfileSettingsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {t("profileSettings.title")}
+              프로필 설정
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              {t("profileSettings.description")}
+              개인정보, 보안 설정 및 계정 관리
             </p>
           </div>
           <div className="flex space-x-2">
-            <button className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center space-x-2">
-              <RotateCcw className="w-4 h-4" />
-              <span>초기화</span>
-            </button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-              <Save className="w-4 h-4" />
-              <span>저장</span>
-            </button>
+            {!isEditing ? (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+              >
+                <Edit className="w-4 h-4" />
+                <span>편집</span>
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center space-x-2"
+                >
+                  <X className="w-4 h-4" />
+                  <span>취소</span>
+                </button>
+                <button 
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isLoading ? "저장중..." : "저장"}</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
