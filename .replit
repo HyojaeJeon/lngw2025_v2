@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start Full Stack"
+runButton = "Clean Start Full Stack"
 
 [[workflows.workflow]]
 name = "Project"
@@ -241,6 +241,35 @@ mode = "parallel"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd server && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3000"
+
+[[workflows.workflow]]
+name = "Clean Start Full Stack"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"next dev\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node index.js\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 2"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm run dev &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 5"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
