@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -55,6 +56,7 @@ import {
 
 export default function MarketingPlanningProcessPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("planning");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showProcessModal, setShowProcessModal] = useState(false);
@@ -259,7 +261,11 @@ export default function MarketingPlanningProcessPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setSelectedPlan(plan)}>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => router.push(`/dashboard/marketing/planning-process/${plan.id}`)}
+                  >
                     <Eye className="w-4 h-4" />
                   </Button>
                   <Button size="sm" variant="outline">
