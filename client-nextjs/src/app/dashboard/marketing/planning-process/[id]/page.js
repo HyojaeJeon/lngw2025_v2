@@ -71,6 +71,7 @@ export default function MarketingPlanDetailPage() {
   const [selectedKR, setSelectedKR] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState("");
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   // 샘플 데이터 (실제로는 API에서 가져올 데이터)
   useEffect(() => {
@@ -587,19 +588,19 @@ export default function MarketingPlanDetailPage() {
     };
 
     const handleInputChange = (e) => {
-        setPlan((prev) => {
-            const newPlan = { ...prev };
-            newPlan.objectives = newPlan.objectives.map((obj) => {
-                obj.keyResults = obj.keyResults.map((kr) => {
-                    if (kr.id === selectedKR.id) {
-                        kr.current = parseFloat(e.target.value);
-                    }
-                    return kr;
-                });
-                return obj;
-            });
-            return newPlan;
+      setPlan((prev) => {
+        const newPlan = { ...prev };
+        newPlan.objectives = newPlan.objectives.map((obj) => {
+          obj.keyResults = obj.keyResults.map((kr) => {
+            if (kr.id === selectedKR.id) {
+              kr.current = parseFloat(e.target.value);
+            }
+            return kr;
+          });
+          return obj;
         });
+        return newPlan;
+      });
     };
 
     const handleChecklistItemAdd = () => {
@@ -635,7 +636,9 @@ export default function MarketingPlanDetailPage() {
           obj.keyResults = obj.keyResults.map((kr) => {
             if (kr.id === selectedKR.id) {
               kr.checklist = kr.checklist.map((item) =>
-                item.id === itemId ? { ...item, completed: !item.completed } : item,
+                item.id === itemId
+                  ? { ...item, completed: !item.completed }
+                  : item,
               );
             }
             return kr;
@@ -646,15 +649,12 @@ export default function MarketingPlanDetailPage() {
       });
     };
 
-
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">
-                성과 측정 방식 설정
-              </h3>
+              <h3 className="text-lg font-semibold">성과 측정 방식 설정</h3>
               <Button
                 variant="outline"
                 onClick={() => setShowMeasurementModal(false)}
@@ -707,19 +707,19 @@ export default function MarketingPlanDetailPage() {
             </div>
 
             {selectedKR.measurementType === "manual" && (
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            현재 값
-                        </label>
-                        <Input
-                            type="number"
-                            value={selectedKR.current}
-                            onChange={handleInputChange}
-                            placeholder="현재 달성 값을 입력하세요"
-                        />
-                    </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    현재 값
+                  </label>
+                  <Input
+                    type="number"
+                    value={selectedKR.current}
+                    onChange={handleInputChange}
+                    placeholder="현재 달성 값을 입력하세요"
+                  />
                 </div>
+              </div>
             )}
 
             {selectedKR.measurementType === "checklist" && (
@@ -965,9 +965,8 @@ export default function MarketingPlanDetailPage() {
                 </div>
               )}
             </div>
-
             {/* 편집 버튼 */}
-```python
+            ```python
             <Button variant="outline" onClick={() => setShowEditModal(true)}>
               <Edit className="w-4 h-4" />
             </Button>
@@ -1179,13 +1178,13 @@ export default function MarketingPlanDetailPage() {
                                     onChange={() => {
                                       setPlan((prev) => {
                                         const newPlan = { ...prev };
-                                        newPlan.objectives = newPlan.objectives.map(
-                                          (obj) => {
+                                        newPlan.objectives =
+                                          newPlan.objectives.map((obj) => {
                                             obj.keyResults = obj.keyResults.map(
                                               (k) => {
                                                 if (k.id === kr.id) {
-                                                  k.checklist =
-                                                    k.checklist.map((i) =>
+                                                  k.checklist = k.checklist.map(
+                                                    (i) =>
                                                       i.id === item.id
                                                         ? {
                                                             ...i,
@@ -1193,14 +1192,13 @@ export default function MarketingPlanDetailPage() {
                                                               !i.completed,
                                                           }
                                                         : i,
-                                                    );
+                                                  );
                                                 }
                                                 return k;
                                               },
                                             );
                                             return obj;
-                                          },
-                                        );
+                                          });
                                         return newPlan;
                                       });
                                     }}
