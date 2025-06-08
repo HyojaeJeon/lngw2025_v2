@@ -227,14 +227,14 @@ export default function MarketingPlanDetailPage() {
         kr.target !== null && 
         !isNaN(kr.target)
       );
-  
+
       if (validResults.length === 0) return 0;
-  
+
       const totalProgress = validResults.reduce((sum, kr) => {
         const progress = Math.min((kr.current / kr.target) * 100, 100);
         return sum + progress;
       }, 0);
-  
+
       return Math.round(totalProgress / validResults.length);
     };
 
@@ -280,7 +280,7 @@ export default function MarketingPlanDetailPage() {
     // 코멘트 추가
     const addComment = () => {
       if (!newComment.trim()) return;
-  
+
       const comment = {
         id: comments.length + 1,
         author: "김마케팅", // 현재 사용자
@@ -288,7 +288,7 @@ export default function MarketingPlanDetailPage() {
         timestamp: new Date().toLocaleString(),
         objectiveId: null
       };
-  
+
       setComments(prev => [...prev, comment]);
       setNewComment("");
     };
@@ -603,7 +603,7 @@ export default function MarketingPlanDetailPage() {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-      
+
                 {/* 코멘트 목록 */}
                 <div className="space-y-3">
                   {comments.map((comment) => (
@@ -624,7 +624,7 @@ export default function MarketingPlanDetailPage() {
                 </div>
               </CardContent>
             </Card>
-      
+
             {/* 변경 이력 섹션 */}
             <Card>
               <CardHeader>
@@ -662,21 +662,15 @@ export default function MarketingPlanDetailPage() {
 
       {/* 목표 모달 */}
       {showObjectiveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingObjective ? "목표 수정" : "새 목표 추가"}
-            </h3>
-            <Input
-              placeholder="목표를 입력하세요"
-              className="mb-4"
-            />
-            <div className="flex gap-3">
-              <Button onClick={() => setShowObjectiveModal(false)}>취소</Button>
-              <Button>저장</Button>
-            </div>
-          </div>
-        </div>
+        <ObjectiveModal 
+          editingObjective={editingObjective}
+          objectives={objectives}
+          setObjectives={setObjectives}
+          onClose={() => {
+            setShowObjectiveModal(false);
+            setEditingObjective(null);
+          }}
+        />
       )}
 
       {/* 삭제 확인 모달 */}
@@ -698,6 +692,115 @@ export default function MarketingPlanDetailPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ObjectiveModal 컴포넌트
+function ObjectiveModal({ editingObjective, objectives, setObjectives, onClose }) {
+  const [title, setTitle] = useState(editingObjective?.title || "");
+  const [keyResults, setKeyResults] = useState(editingObjective?.keyResults || []);
+
+  useEffect(() => {
+    setTitle(editingObjective?.title || "");
+    setKeyResults(editingObjective?.keyResults || []);
+  }, [editingObjective]);
+
+  const addKeyResult = () => {
+    setKeyResults(prev => [...prev, { id: Date.now(), title: "", target: 0, current: 0, unit: "", type: "number", isActive: true }]);
+  };
+
+  const updateKeyResult = (id, field, value) => {
+    setKeyResults(prev =>
+      prev.map(kr =>
+        kr.id === id ? { ...kr, [field]: value } : kr
+      )
+    );
+  };
+
+  const deleteKeyResult = (id) => {
+    setKeyResults(prev => prev.filter(kr => kr.id !== id));
+  };
+
+  const saveObjective = () => {
+    if (editingObjective) {
+      // 목표 수정
+      setObjectives(prev =>
+        prev.map(obj =>
+          obj.id === editingObjective.id ? { ...obj, title, keyResults } : obj
+        )
+      );
+    } else {
+      // 새 목표 추가
+      const newObjective = {
+        id: Date.now(),
+        title,
+        progress: 0,
+        confidence: "On Track",
+        isActive: true,
+        keyResults
+      };
+      setObjectives(prev => [...prev, newObjective]);
+    }
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4">
+          {editingObjective ? "목표 수정" : "새 목표 추가"}
+        </h3>
+        <Input
+          placeholder="목표를 입력하세요"
+          className="mb-4"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
+        <h4 className="text-md font-semibold mb-2">핵심 결과</h4>
+        {keyResults.map((kr) => (
+          <div key={kr.id} className="mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <Input
+              placeholder="핵심 결과 제목"
+              className="mb-2"
+              value={kr.title}
+              onChange={(e) => updateKeyResult(kr.id, "title", e.target.value)}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="목표 수치"
+                type="number"
+                value={kr.target}
+                onChange={(e) => updateKeyResult(kr.id, "target", parseFloat(e.target.value))}
+              />
+              <Input
+                placeholder="현재 수치"
+                type="number"
+                value={kr.current}
+                onChange={(e) => updateKeyResult(kr.id, "current", parseFloat(e.target.value))}
+              />
+            </div>
+            <Input
+              placeholder="단위"
+              className="mt-2"
+              value={kr.unit}
+              onChange={(e) => updateKeyResult(kr.id, "unit", e.target.value)}
+            />
+            <Button variant="destructive" size="sm" className="mt-2" onClick={() => deleteKeyResult(kr.id)}>
+              삭제
+            </Button>
+          </div>
+        ))}
+        <Button variant="secondary" size="sm" onClick={addKeyResult}>
+          핵심 결과 추가
+        </Button>
+
+        <div className="flex gap-3 mt-4">
+          <Button onClick={onClose}>취소</Button>
+          <Button onClick={saveObjective}>저장</Button>
+        </div>
+      </div>
     </div>
   );
 }
