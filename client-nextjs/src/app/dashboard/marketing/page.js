@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { useLanguage } from "@/contexts/languageContext.js";
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   Users,
@@ -52,6 +53,7 @@ import {
   Megaphone,
   TrendingDown,
   Star,
+  User,
 } from "lucide-react";
 
 import {
@@ -63,6 +65,7 @@ import {
 export default function MarketingDashboardPage() {
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState("30일");
+  const router = useRouter();
 
   // GraphQL 쿼리
   const {
@@ -96,34 +99,46 @@ export default function MarketingDashboardPage() {
     avgEngagementRate: { value: "6.5%", change: 0.3, trend: "up" },
   };
 
-  const activeCampaigns = [
+  const activeMarketingPlans = [
     {
-      id: "CAM001",
-      name: "여름 휴가 시즌 프로모션",
-      period: "2025-06-01 ~ 2025-06-30",
-      budget: 5000000,
-      spent: 3200000,
-      progress: 64,
+      id: "MP001",
+      title: "2025년 1분기 마케팅 계획",
+      manager: "김마케팅",
+      period: "2025-01-01 ~ 03-31",
+      progress: 72,
+      objectives: ["Z세대 인지도 확보", "온라인 매출 증대"],
       status: "진행중",
+      keyResults: {
+        completed: 8,
+        total: 12
+      }
     },
     {
-      id: "CAM002", 
-      name: "신제품 런칭 캠페인",
-      period: "2025-06-15 ~ 2025-07-15",
-      budget: 8000000,
-      spent: 2400000,
-      progress: 30,
+      id: "MP002", 
+      title: "신제품 런칭 마케팅 전략",
+      manager: "박기획",
+      period: "2025-04-01 ~ 06-30",
+      progress: 25,
+      objectives: ["신제품 시장 점유율 10% 달성"],
       status: "진행중",
+      keyResults: {
+        completed: 2,
+        total: 8
+      }
     },
     {
-      id: "CAM003",
-      name: "브랜드 인지도 향상",
-      period: "2025-06-01 ~ 2025-08-31",
-      budget: 12000000,
-      spent: 4800000,
-      progress: 40,
-      status: "진행중",
-    },
+      id: "MP003",
+      title: "글로벌 브랜드 확장 계획",
+      manager: "최전략",
+      period: "2025-07-01 ~ 12-31",
+      progress: 5,
+      objectives: ["해외 시장 진출", "글로벌 브랜드 인지도 구축"],
+      status: "계획됨",
+      keyResults: {
+        completed: 1,
+        total: 15
+      }
+    }
   ];
 
   const upcomingContent = [
@@ -416,60 +431,106 @@ export default function MarketingDashboardPage() {
 
       {/* 영역 2: 캠페인 및 콘텐츠 현황 (메인 영역) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 진행 중인 캠페인 */}
-        <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <Megaphone className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              진행 중인 캠페인
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {activeCampaigns.map((campaign) => (
-                <div
-                  key={campaign.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
-                  onClick={() => window.location.href = '/dashboard/marketing/campaign-calendar'}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        {campaign.name}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {campaign.period}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {campaign.status}
+        {/* 진행 중인 마케팅 계획 */}
+              <Card className="shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-t-lg">
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    <span className="flex items-center">
+                      <Target className="w-5 h-5 mr-2" />
+                      진행 중인 마케팅 계획
+                    </span>
+                    <Badge variant="secondary" className="bg-white/20 text-white">
+                      {activeMarketingPlans.filter(p => p.status === "진행중").length}개
                     </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">예산 사용률</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {campaign.progress}% (₩{campaign.spent.toLocaleString()} / ₩{campaign.budget.toLocaleString()})
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {activeMarketingPlans.slice(0, 3).map((plan) => (
                       <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          campaign.progress > 80 
-                            ? 'bg-red-500' 
-                            : campaign.progress > 60 
-                              ? 'bg-yellow-500' 
-                              : 'bg-green-500'
-                        }`}
-                        style={{ width: `${campaign.progress}%` }}
-                      ></div>
-                    </div>
+                        key={plan.id}
+                        className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer group"
+                        onClick={() => router.push(`/dashboard/marketing/planning-process/${plan.id}`)}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors mb-1">
+                              {plan.title}
+                            </h4>
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              <span className="flex items-center mr-4">
+                                <User className="w-3 h-3 mr-1" />
+                                담당자: {plan.manager}
+                              </span>
+                              <span className="flex items-center">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                기간: {plan.period}
+                              </span>
+                            </div>
+                            {getStatusBadge(plan.status)}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* 전체 진행률 바 */}
+                        <div className="mb-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600 dark:text-gray-400">전체 진행률</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {plan.progress}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div
+                              className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                              style={{ width: `${plan.progress}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 주요 목표(OKRs) 요약 */}
+                        <div className="mb-3">
+                          <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">주요 목표:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {plan.objectives.map((objective, index) => (
+                              <Badge 
+                                key={index} 
+                                variant="outline" 
+                                className="text-xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300"
+                              >
+                                {objective}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Key Results 진행 상황 */}
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="flex items-center">
+                            <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                            핵심 결과: {plan.keyResults.completed}/{plan.keyResults.total} 완료
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button
+                      variant="outline"
+                      className="w-full mt-4 hover:shadow-md transition-all duration-300"
+                      onClick={() => router.push('/dashboard/marketing/planning-process')}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      새 마케팅 계획 수립
+                    </Button>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
 
         {/* 다가오는 콘텐츠 발행 일정 */}
         <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
