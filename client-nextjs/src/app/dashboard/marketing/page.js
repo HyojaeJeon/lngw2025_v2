@@ -44,6 +44,14 @@ import {
   Bot,
   XCircle,
   Edit,
+  ArrowUp,
+  ArrowDown,
+  DollarSign,
+  PlayCircle,
+  ChevronRight,
+  Megaphone,
+  TrendingDown,
+  Star,
 } from "lucide-react";
 
 import {
@@ -54,16 +62,7 @@ import {
 
 export default function MarketingDashboardPage() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // State for modals
-  const [showTodayPostsModal, setShowTodayPostsModal] = useState(false);
-  const [showPendingModal, setShowPendingModal] = useState(false);
-  const [showErrorsModal, setShowErrorsModal] = useState(false);
-  const [showScheduledModal, setShowScheduledModal] = useState(false);
-  const [showContentPreview, setShowContentPreview] = useState(false);
-  const [selectedContent, setSelectedContent] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState("30일");
 
   // GraphQL 쿼리
   const {
@@ -78,7 +77,7 @@ export default function MarketingDashboardPage() {
     GET_CONTENTS,
     {
       variables: {
-        limit: 5,
+        limit: 10,
         offset: 0,
       },
     },
@@ -89,1653 +88,566 @@ export default function MarketingDashboardPage() {
 
   const isLoading = statsLoading || contentsLoading || platformsLoading;
 
-  const stats = statsData?.marketingStats || {
-    totalPosts: { today: 0, week: 0, month: 0 },
-    pendingApproval: 0,
-    errors: 0,
-    abTestGroups: { active: 0, completed: 0 },
-    trendingKeywords: 0,
+  // Mock 데이터 (실제 GraphQL 데이터로 대체 가능)
+  const kpiData = {
+    totalReach: { value: "2.4M", change: 12, trend: "up" },
+    totalEngagement: { value: "156K", change: 8, trend: "up" },
+    totalSpend: { value: "₩4,250,000", change: 15, trend: "up" },
+    avgEngagementRate: { value: "6.5%", change: 0.3, trend: "up" },
   };
 
-  const recentContent = contentsData?.contents || [];
-  const platformPerformance = platformsData?.platformStats || [];
+  const activeCampaigns = [
+    {
+      id: "CAM001",
+      name: "여름 휴가 시즌 프로모션",
+      period: "2025-06-01 ~ 2025-06-30",
+      budget: 5000000,
+      spent: 3200000,
+      progress: 64,
+      status: "진행중",
+    },
+    {
+      id: "CAM002", 
+      name: "신제품 런칭 캠페인",
+      period: "2025-06-15 ~ 2025-07-15",
+      budget: 8000000,
+      spent: 2400000,
+      progress: 30,
+      status: "진행중",
+    },
+    {
+      id: "CAM003",
+      name: "브랜드 인지도 향상",
+      period: "2025-06-01 ~ 2025-08-31",
+      budget: 12000000,
+      spent: 4800000,
+      progress: 40,
+      status: "진행중",
+    },
+  ];
 
-  // Mock data for UI components
-  const overviewStats = {
-    trendingKeywords: ["#여행", "#뷰티", "#음식", "#패션", "#건강"],
+  const upcomingContent = [
+    {
+      id: "UC001",
+      title: "여름 휴가지 TOP 5 추천",
+      scheduledDate: "2025-06-09",
+      channel: "Instagram",
+      status: "승인대기",
+      channelIcon: "📸",
+    },
+    {
+      id: "UC002",
+      title: "신제품 언박싱 영상",
+      scheduledDate: "2025-06-10",
+      channel: "TikTok",
+      status: "예약완료",
+      channelIcon: "🎵",
+    },
+    {
+      id: "UC003",
+      title: "주말 특가 이벤트 안내",
+      scheduledDate: "2025-06-11",
+      channel: "Facebook",
+      status: "승인대기",
+      channelIcon: "👍",
+    },
+    {
+      id: "UC004",
+      title: "고객 후기 컴필레이션",
+      scheduledDate: "2025-06-12",
+      channel: "YouTube",
+      status: "예약완료",
+      channelIcon: "▶️",
+    },
+    {
+      id: "UC005",
+      title: "브랜드 스토리 시리즈 #3",
+      scheduledDate: "2025-06-13",
+      channel: "Instagram",
+      status: "제작중",
+      channelIcon: "📸",
+    },
+  ];
+
+  const channelPerformance = [
+    { name: "Instagram", engagement: 45000, percentage: 35, color: "bg-pink-500" },
+    { name: "Facebook", engagement: 38000, percentage: 30, color: "bg-blue-500" },
+    { name: "TikTok", engagement: 28000, percentage: 22, color: "bg-black" },
+    { name: "YouTube", engagement: 17000, percentage: 13, color: "bg-red-500" },
+  ];
+
+  const topContent = [
+    {
+      id: "TC001",
+      title: "베트남 다낭 여행 가이드",
+      thumbnail: "🏖️",
+      views: "1.5M",
+      engagement: "98K",
+      platform: "Instagram",
+    },
+    {
+      id: "TC002",
+      title: "신제품 첫 인상 리뷰",
+      thumbnail: "📱",
+      views: "892K",
+      engagement: "67K",
+      platform: "TikTok",
+    },
+    {
+      id: "TC003",
+      title: "여름 패션 트렌드 2025",
+      thumbnail: "👗",
+      views: "654K",
+      engagement: "43K",
+      platform: "YouTube",
+    },
+  ];
+
+  const notifications = [
+    {
+      id: "N001",
+      type: "approval",
+      message: "콘텐츠 승인 요청: 3건",
+      time: "5분 전",
+      urgent: true,
+      action: "/dashboard/marketing/content",
+    },
+    {
+      id: "N002",
+      type: "comment",
+      message: "응답 필요한 댓글: 12건",
+      time: "15분 전",
+      urgent: false,
+      action: "/dashboard/marketing/engagement",
+    },
+    {
+      id: "N003",
+      type: "budget",
+      message: "'여름 캠페인' 예산의 90% 소진",
+      time: "1시간 전",
+      urgent: true,
+      action: "/dashboard/marketing/budget-expense",
+    },
+    {
+      id: "N004",
+      type: "integration",
+      message: "TikTok 채널 연동이 해제되었습니다",
+      time: "2시간 전",
+      urgent: true,
+      action: "/dashboard/settings/sns-integration",
+    },
+    {
+      id: "N005",
+      type: "performance",
+      message: "Instagram 참여율이 평균보다 25% 상승",
+      time: "3시간 전",
+      urgent: false,
+      action: "/dashboard/marketing/insights",
+    },
+  ];
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "approval": return <CheckCircle className="w-4 h-4 text-orange-500" />;
+      case "comment": return <MessageSquare className="w-4 h-4 text-blue-500" />;
+      case "budget": return <DollarSign className="w-4 h-4 text-red-500" />;
+      case "integration": return <Globe className="w-4 h-4 text-purple-500" />;
+      case "performance": return <TrendingUp className="w-4 h-4 text-green-500" />;
+      default: return <Bell className="w-4 h-4 text-gray-500" />;
+    }
   };
 
-  const contentStatus = {
-    approved: 67,
-    pending: 10,
-    rejected: 3,
-    scheduled: 20,
-  };
-
-  const pendingContent = [
-    {
-      id: "C001",
-      title: "신상품 런칭 콘텐츠",
-      mode: "Auto",
-      createdAt: "2025-01-31 14:30",
-      mediaType: "image",
-      keywords: "#신상품 #런칭",
-      description: "새로운 상품 런칭을 위한 홍보 콘텐츠입니다.",
-      status: "pending",
-      content: "신상품 런칭! 놓치지 마세요!",
-    },
-    {
-      id: "C002",
-      title: "겨울 캠핑 추천",
-      mode: "Manual",
-      createdAt: "2025-02-15 10:00",
-      mediaType: "video",
-      keywords: "#캠핑 #겨울여행",
-      description: "겨울에 떠나기 좋은 캠핑장 추천 영상입니다.",
-      status: "pending",
-      content: "따뜻한 겨울 캠핑을 떠나보세요!",
-    },
-  ];
-
-  const scheduledPosts = [
-    {
-      id: "S001",
-      content: "오늘의 특가 상품을 확인하세요!",
-      scheduledTime: "2025-02-01 18:00",
-      platform: "Instagram",
-      status: "active",
-    },
-  ];
-
-  const platformStats = [
-    {
-      name: "Facebook",
-      posts: 45,
-      success: 42,
-      failed: 3,
-      errorRate: 6.7,
-    },
-    {
-      name: "Instagram",
-      posts: 32,
-      success: 32,
-      failed: 0,
-      errorRate: 0,
-    },
-    {
-      name: "TikTok",
-      posts: 28,
-      success: 25,
-      failed: 3,
-      errorRate: 10.7,
-    },
-    {
-      name: "Twitter",
-      posts: 52,
-      success: 50,
-      failed: 2,
-      errorRate: 3.8,
-    },
-    {
-      name: "Threads",
-      posts: 18,
-      success: 18,
-      failed: 0,
-      errorRate: 0,
-    },
-  ];
-
-  const abTestGroups = [
-    {
-      id: "AB001",
-      name: "제품 소개 콘텐츠 A/B 테스트",
-      status: "running",
-      createdAt: "2025-01-30 10:00",
-      variants: 2,
-    },
-  ];
-
-  const todayPosts = [
-    {
-      id: "TP001",
-      title: "오늘의 추천 상품",
-      description: "오늘의 특가 상품을 소개합니다.",
-      createdAt: new Date(),
-      mediaType: "image",
-      aiGenerated: true,
-      status: "approved",
-      content: "오늘의 특가 상품! 놓치지 마세요!",
-    },
-    {
-      id: "TP002",
-      title: "주말 나들이 추천 장소",
-      description: "주말에 가기 좋은 나들이 장소를 추천합니다.",
-      createdAt: new Date(),
-      mediaType: "video",
-      aiGenerated: false,
-      status: "approved",
-      content: "이번 주말, 어디로 떠나볼까요?",
-    },
-  ];
-
-  const mockErrorLogs = [
-    {
-      id: "EL001",
-      platform: "Facebook",
-      error: "API 호출 실패 - 인증 오류",
-      postedAt: new Date(),
-    },
-    {
-      id: "EL002",
-      platform: "Instagram",
-      error: "이미지 업로드 실패 - 파일 손상",
-      postedAt: new Date(),
-    },
-  ];
-
-  const mockScheduledPosts = [
-    {
-      id: "SP001",
-      content: "다음 주 신제품 출시!",
-      platform: "Facebook",
-      scheduledAt: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-    },
-    {
-      id: "SP002",
-      content: "여름 휴가 이벤트 진행!",
-      platform: "Instagram",
-      scheduledAt: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-    },
-  ];
-
-  const handleContentClick = (content) => {
-    setSelectedContent(content);
-    setShowContentPreview(true);
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "승인대기":
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">승인대기</Badge>;
+      case "예약완료":
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">예약완료</Badge>;
+      case "제작중":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">제작중</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   return (
     <div className="w-full max-w-none space-y-8 animate-fadeIn overflow-x-hidden">
       {/* 헤더 섹션 */}
-      <div
-        className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 
-                        rounded-xl p-6 transform transition-all duration-500 hover:scale-105 shadow-lg"
-      >
-        <h1
-          className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 
-                         bg-clip-text text-transparent"
-        >
-          {t("marketing.dashboard")}
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
-          콘텐츠 생성부터 성과 분석까지 통합 관리
-        </p>
-        <div className="flex gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            새로고침
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            설정
-          </Button>
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 transform transition-all duration-500 hover:scale-105 shadow-lg">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {t("marketing.dashboard")}
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              마케팅 활동의 핵심 지표를 한눈에 파악하고 관리하세요
+            </p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <select 
+              value={selectedPeriod} 
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="7일">지난 7일</option>
+              <option value="30일">지난 30일</option>
+              <option value="이번달">이번 달</option>
+              <option value="사용자설정">사용자 설정</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchStats()}
+              className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              새로고침
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* 탭 네비게이션 */}
-      <Card className="shadow-lg border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
-        <CardContent className="p-0">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex space-x-8 px-6">
-              {[
-                { id: "overview", label: "개요", icon: BarChart3 },
-                { id: "content", label: "콘텐츠 관리", icon: MessageSquare },
-                { id: "posting", label: "게시 모니터링", icon: Globe },
-                { id: "performance", label: "성과 분석", icon: TrendingUp },
-                { id: "abtest", label: "A/B 테스트", icon: Target },
-                { id: "trends", label: "트렌드 분석", icon: Hash },
-              ].map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === id
-                      ? "border-purple-500 text-purple-600 dark:text-purple-400 shadow-sm"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 개요 탭 */}
-      {activeTab === "overview" && (
-        <div className="space-y-6">
-          {/* 통계 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card
-              className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-              onClick={() => setShowTodayPostsModal(true)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      오늘 게시
-                    </p>
-                    <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                      {todayPosts.length}
-                    </p>
-                  </div>
-                  <Activity className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card
-              className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-              onClick={() => setShowPendingModal(true)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
-                      승인 대기
-                    </p>
-                    <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
-                      {pendingContent.length}
-                    </p>
-                  </div>
-                  <Clock className="h-8 w-8 text-orange-600 dark:text-orange-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-              onClick={() => setShowErrorsModal(true)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      오류 발생
-                    </p>
-                    <p className="text-3xl font-bold text-red-900 dark:text-red-100">
-                      {mockErrorLogs.length}
-                    </p>
-                  </div>
-                  <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-              onClick={() => setShowScheduledModal(true)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                      예약된 게시물
-                    </p>
-                    <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                      {mockScheduledPosts.length}
-                    </p>
-                  </div>
-                  <Calendar className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 실행 상태 알림 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                실행 상태 알림
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                <div>
-                  <p className="font-medium text-green-800 dark:text-green-300">
-                    자동 워크플로우 정상 실행
-                  </p>
-                  <p className="text-sm text-green-600 dark:text-green-400">
-                    오늘 09:00 - 콘텐츠 12건 생성 완료
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
-                <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="font-medium text-blue-800 dark:text-blue-300">
-                    새로운 콘텐츠 생성 완료
-                  </p>
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    3건의 콘텐츠가 승인 대기 중입니다
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
-                <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                <div>
-                  <p className="font-medium text-yellow-800 dark:text-yellow-300">
-                    API Rate Limit 경고
-                  </p>
-                  <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                    TikTok API - 잠시 후 재시도 필요
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* 콘텐츠 관리 탭 */}
-      {activeTab === "content" && (
-        <div className="space-y-6">
-          {/* 콘텐츠 상태 현황 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">
-                  승인 대기 목록
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="콘텐츠 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm shadow-sm"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="hover:shadow-md transition-all duration-300"
-                  >
-                    <Filter className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {pendingContent.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              variant="outline"
-                              className="border-purple-300 text-purple-700 dark:border-purple-500 dark:text-purple-300"
-                            >
-                              {item.id}
-                            </Badge>
-                            <Badge
-                              variant={
-                                item.mode === "Auto" ? "default" : "secondary"
-                              }
-                              className={
-                                item.mode === "Auto"
-                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                                  : ""
-                              }
-                            >
-                              {item.mode}
-                            </Badge>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              {item.createdAt}
-                            </span>
-                          </div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">
-                            {item.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {item.mediaType} • {item.keywords}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                          >
-                            미리보기
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                          >
-                            승인
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                          >
-                            거절
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">
-                  콘텐츠 상태 현황
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      승인됨
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
-                          style={{ width: "67%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {contentStatus.approved}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      대기 중
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full"
-                          style={{ width: "10%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {contentStatus.pending}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      거절됨
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full"
-                          style={{ width: "3%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {contentStatus.rejected}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      예약됨
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full"
-                          style={{ width: "20%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {contentStatus.scheduled}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 예약 게시 대기 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                예약 게시 대기
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {scheduledPosts.map((post) => (
-                  <div
-                    key={post?.id}
-                    className="flex justify-between items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {post?.content}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <span>{post?.scheduledTime}</span>
-                        <Badge
-                          variant="outline"
-                          className="border-blue-300 text-blue-700 dark:border-blue-500 dark:text-blue-300"
-                        >
-                          {post?.platform}
-                        </Badge>
-                        <Badge
-                          variant={
-                            post?.status === "active" ? "default" : "secondary"
-                          }
-                          className={
-                            post?.status === "active"
-                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                              : ""
-                          }
-                        >
-                          {post?.status === "active" ? "활성" : "일시정지"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                      >
-                        편집
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                      >
-                        <Pause className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* 게시 모니터링 탭 */}
-      {activeTab === "posting" && (
-        <div className="space-y-6">
-          {/* 플랫폼별 게시 현황 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {platformStats.map((platform) => (
-              <Card
-                key={platform.name}
-                className="shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700"
-              >
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                      {platform.name}
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                          {platform.posts}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          오늘 게시
-                        </p>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-green-600 dark:text-green-400">
-                          성공 {platform.success}
-                        </span>
-                        <span className="text-red-600 dark:text-red-400">
-                          실패 {platform.failed}
-                        </span>
-                      </div>
-                      <div className="text-sm">
-                        <span
-                          className={`font-medium px-2 py-1 rounded-full ${platform.errorRate < 5 ? "bg-green-100 text-green-600 dark:bg-green-800 dark:text-green-100" : "bg-red-100 text-red-600 dark:bg-red-800 dark:text-red-100"}`}
-                        >
-                          실패율 {platform.errorRate}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 실시간 로그 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                <RefreshCw className="w-5 h-5 text-green-600 dark:text-green-400" />
-                실시간 로그
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm shadow-inner">
-                <div className="space-y-1 text-green-400">
-                  <p>
-                    [2025-05-31 15:42:30]{" "}
-                    <span className="text-blue-400">INFO:</span> Facebook API
-                    호출 성공 - 게시물 ID: FB_001
-                  </p>
-                  <p>
-                    [2025-05-31 15:42:25]{" "}
-                    <span className="text-blue-400">INFO:</span> 콘텐츠 C003
-                    자동 생성 완료
-                  </p>
-                  <p>
-                    [2025-05-31 15:42:20]{" "}
-                    <span className="text-yellow-400">WARN:</span> TikTok API
-                    Rate Limit 경고 - 잠시 후 재시도
-                  </p>
-                  <p>
-                    [2025-05-31 15:42:15]{" "}
-                    <span className="text-blue-400">INFO:</span> Instagram 게시
-                    성공 - 조회수 1,250
-                  </p>
-                  <p>
-                    [2025-05-31 15:42:10]{" "}
-                    <span className="text-blue-400">INFO:</span> A/B 테스트 그룹
-                    AB001 생성 완료
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* 성과 분석 탭 */}
-      {activeTab === "performance" && (
-        <div className="space-y-6">
-          {/* 기본 성과 KPI */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      총 도달
-                    </p>
-                    <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                      2.4M
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      +12% vs 지난주
-                    </p>
-                  </div>
-                  <Eye className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      총 반응
-                    </p>
-                    <p className="text-3xl font-bold text-red-900 dark:text-red-100">
-                      156K
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      +8% vs 지난주
-                    </p>
-                  </div>
-                  <Heart className="h-8 w-8 text-red-600 dark:text-red-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                      참여율
-                    </p>
-                    <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                      6.5%
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      +0.3% vs 지난주
-                    </p>
-                  </div>
-                  <Share2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                      클릭률
-                    </p>
-                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                      3.8%
-                    </p>
-                    <p className="text-xs text-red-600 dark:text-red-400">
-                      -0.2% vs 지난주
-                    </p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 플랫폼별 성과 테이블 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                플랫폼별 세부 성과
-              </CardTitle>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  내보내기
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        콘텐츠 ID
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        게시 일시
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        플랫폼
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        도달
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        반응
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        조회수
-                      </th>
-                      <th className="text-left p-3 font-medium text-gray-900 dark:text-white">
-                        CTR
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {platformPerformance.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
-                      >
-                        <td className="p-3 text-gray-900 dark:text-white font-medium">
-                          {item.id}
-                        </td>
-                        <td className="p-3 text-gray-600 dark:text-gray-400">
-                          {item.postedAt}
-                        </td>
-                        <td className="p-3">
-                          <Badge
-                            variant="outline"
-                            className="border-blue-300 text-blue-700 dark:border-blue-500 dark:text-blue-300"
-                          >
-                            {item.platform}
-                          </Badge>
-                        </td>
-                        <td className="p-3 text-gray-900 dark:text-white">
-                          {item?.reach?.toLocaleString()}
-                        </td>
-                        <td className="p-3 text-gray-900 dark:text-white">
-                          {item?.engagement?.toLocaleString()}
-                        </td>
-                        <td className="p-3 text-gray-900 dark:text-white">
-                          {item?.views?.toLocaleString()}
-                        </td>
-                        <td className="p-3 text-gray-900 dark:text-white font-medium">
-                          {item?.ctr}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* A/B 테스트 탭 */}
-      {activeTab === "abtest" && (
-        <div className="space-y-6">
-          {/* A/B 테스트 개요 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                    진행 중인 테스트
-                  </p>
-                  <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">
-                    {stats?.abTestGroups.active}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                    완료된 테스트
-                  </p>
-                  <p className="text-4xl font-bold text-green-900 dark:text-green-100">
-                    {stats.abTestGroups.completed}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                    평균 승률
-                  </p>
-                  <p className="text-4xl font-bold text-purple-900 dark:text-purple-100">
-                    68%
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* A/B 테스트 목록 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                A/B 테스트 목록
-              </CardTitle>
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-md transition-all duration-300 transform hover:scale-105">
-                <Target className="w-4 h-4 mr-2" />새 테스트 생성
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {abTestGroups.map((group) => (
-                  <div
-                    key={group.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-900 dark:text-white">
-                            {group.name}
-                          </h4>
-                          <Badge
-                            variant={
-                              group.status === "running"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className={
-                              group.status === "running"
-                                ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                                : ""
-                            }
-                          >
-                            {group.status === "running" ? "진행 중" : "완료"}
-                          </Badge>
-                          {group.winner && (
-                            <Badge
-                              variant="outline"
-                              className="text-green-600 border-green-600 dark:border-green-400 dark:text-green-400"
-                            >
-                              🏆 {group.winner}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          <span>그룹 ID: {group.id}</span>
-                          <span className="mx-2">•</span>
-                          <span>생성: {group.createdAt}</span>
-                          <span className="mx-2">•</span>
-                          <span>변형: {group.variants}개</span>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                      >
-                        상세 보기
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* 트렌드 분석 탭 */}
-      {activeTab === "trends" && (
-        <div className="space-y-6">
-          {/* 트렌드 키워드 클라우드 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                <Hash className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                실시간 트렌드 키워드
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4 justify-center p-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
-                {[
-                  {
-                    keyword: "#여행",
-                    size: "text-4xl",
-                    color: "text-blue-600 dark:text-blue-400",
-                  },
-                  {
-                    keyword: "#뷰티",
-                    size: "text-3xl",
-                    color: "text-pink-600 dark:text-pink-400",
-                  },
-                  {
-                    keyword: "#음식",
-                    size: "text-2xl",
-                    color: "text-green-600 dark:text-green-400",
-                  },
-                  {
-                    keyword: "#패션",
-                    size: "text-xl",
-                    color: "text-purple-600 dark:text-purple-400",
-                  },
-                  {
-                    keyword: "#건강",
-                    size: "text-lg",
-                    color: "text-red-600 dark:text-red-400",
-                  },
-                  {
-                    keyword: "#라이프스타일",
-                    size: "text-xl",
-                    color: "text-yellow-600 dark:text-yellow-400",
-                  },
-                  {
-                    keyword: "#기술",
-                    size: "text-lg",
-                    color: "text-gray-600 dark:text-gray-400",
-                  },
-                  {
-                    keyword: "#문화",
-                    size: "text-base",
-                    color: "text-indigo-600 dark:text-indigo-400",
-                  },
-                ].map((item, index) => (
-                  <span
-                    key={index}
-                    className={`${item.size} ${item.color} font-bold cursor-pointer hover:scale-110 transition-transform duration-300 drop-shadow-sm`}
-                  >
-                    {item.keyword}
+      {/* 영역 1: 핵심 성과 지표 (KPI 요약) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  총 도달
+                </p>
+                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+                  {kpiData.totalReach.value}
+                </p>
+                <div className="flex items-center mt-2">
+                  {kpiData.totalReach.trend === "up" ? (
+                    <ArrowUp className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  <span className={`text-sm ${kpiData.totalReach.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {kpiData.totalReach.change}% vs 지난 기간
                   </span>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 트렌드 요약 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-green-700 dark:text-green-400">
-                  📈 급상승 키워드
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-700 rounded-lg shadow-sm">
-                    <span className="font-medium text-green-800 dark:text-green-200">
-                      #여행
-                    </span>
-                    <span className="text-green-700 dark:text-green-300 font-bold">
-                      +45%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-700 rounded-lg shadow-sm">
-                    <span className="font-medium text-green-800 dark:text-green-200">
-                      #뷰티
-                    </span>
-                    <span className="text-green-700 dark:text-green-300 font-bold">
-                      +32%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-700 rounded-lg shadow-sm">
-                    <span className="font-medium text-green-800 dark:text-green-200">
-                      #건강
-                    </span>
-                    <span className="text-green-700 dark:text-green-300 font-bold">
-                      +28%
-                    </span>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-red-700 dark:text-red-400">
-                  📉 급감 키워드
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 rounded-lg shadow-sm">
-                    <span className="font-medium text-red-800 dark:text-red-200">
-                      #패션
-                    </span>
-                    <span className="text-red-700 dark:text-red-300 font-bold">
-                      -18%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 rounded-lg shadow-sm">
-                    <span className="font-medium text-red-800 dark:text-red-200">
-                      #스포츠
-                    </span>
-                    <span className="text-red-700 dark:text-red-300 font-bold">
-                      -12%
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 트렌드 기반 콘텐츠 추천 */}
-          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                AI 콘텐츠 추천
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  {
-                    topic: "베트남 여름 여행지 TOP 5",
-                    trend: "#여행",
-                    engagement: "예상 참여율 7.2%",
-                  },
-                  {
-                    topic: "2025 뷰티 트렌드 미리보기",
-                    trend: "#뷰티",
-                    engagement: "예상 참여율 6.8%",
-                  },
-                  {
-                    topic: "건강한 여름 식단 관리법",
-                    trend: "#건강",
-                    engagement: "예상 참여율 5.9%",
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700"
-                  >
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">
-                        {item.topic}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          variant="outline"
-                          className="border-purple-300 text-purple-700 dark:border-purple-500 dark:text-purple-300"
-                        >
-                          {item.trend}
-                        </Badge>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.engagement}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                    >
-                      <Zap className="w-4 h-4 mr-2" />
-                      생성하기
-                    </Button>
-                  </div>
-                ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showTodayPostsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[90%] max-w-4xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                오늘 게시된 콘텐츠 ({todayPosts.length})
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTodayPostsModal(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              <Eye className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="space-y-3">
-              {todayPosts.map((post) => (
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                  총 반응
+                </p>
+                <p className="text-3xl font-bold text-green-900 dark:text-green-100">
+                  {kpiData.totalEngagement.value}
+                </p>
+                <div className="flex items-center mt-2">
+                  {kpiData.totalEngagement.trend === "up" ? (
+                    <ArrowUp className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  <span className={`text-sm ${kpiData.totalEngagement.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {kpiData.totalEngagement.change}% vs 지난 기간
+                  </span>
+                </div>
+              </div>
+              <Heart className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                  총 지출
+                </p>
+                <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+                  {kpiData.totalSpend.value}
+                </p>
+                <div className="flex items-center mt-2">
+                  {kpiData.totalSpend.trend === "up" ? (
+                    <ArrowUp className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  <span className={`text-sm ${kpiData.totalSpend.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {kpiData.totalSpend.change}% vs 지난 기간
+                  </span>
+                </div>
+              </div>
+              <DollarSign className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                  평균 참여율
+                </p>
+                <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
+                  {kpiData.avgEngagementRate.value}
+                </p>
+                <div className="flex items-center mt-2">
+                  {kpiData.avgEngagementRate.trend === "up" ? (
+                    <ArrowUp className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  <span className={`text-sm ${kpiData.avgEngagementRate.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {kpiData.avgEngagementRate.change}% vs 지난 기간
+                  </span>
+                </div>
+              </div>
+              <TrendingUp className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 영역 2: 캠페인 및 콘텐츠 현황 (메인 영역) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 진행 중인 캠페인 */}
+        <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+              <Megaphone className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              진행 중인 캠페인
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {activeCampaigns.map((campaign) => (
                 <div
-                  key={post?.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                  onClick={() => handleContentClick(post)}
+                  key={campaign.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+                  onClick={() => window.location.href = '/dashboard/marketing/campaign-calendar'}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{post?.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {post?.description}
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        {campaign.name}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {campaign.period}
                       </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline">{post?.platform}</Badge>
-                        <span className="text-xs text-gray-500">
-                          {new Date(post?.publishedAt).toLocaleTimeString()}
-                        </span>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-right text-sm">
-                        <div className="text-green-600 font-medium">
-                          조회수: {post?.views?.toLocaleString()}
-                        </div>
-                        <div className="text-blue-600">
-                          참여: {post?.engagement?.toLocaleString()}
-                        </div>
-                      </div>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      {campaign.status}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">예산 사용률</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {campaign.progress}% (₩{campaign.spent.toLocaleString()} / ₩{campaign.budget.toLocaleString()})
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          campaign.progress > 80 
+                            ? 'bg-red-500' 
+                            : campaign.progress > 60 
+                              ? 'bg-yellow-500' 
+                              : 'bg-green-500'
+                        }`}
+                        style={{ width: `${campaign.progress}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
+          </CardContent>
+        </Card>
 
-      {/* 승인 대기 모달 */}
-      {showPendingModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <Clock className="w-7 h-7" />
-                    승인 대기 콘텐츠
-                  </h3>
-                  <p className="text-orange-100 mt-1">
-                    총 {pendingContent.length}개의 콘텐츠가 승인 대기 중
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowPendingModal(false)}
-                  className="text-white hover:bg-orange-400/20 rounded-full p-2"
+        {/* 다가오는 콘텐츠 발행 일정 */}
+        <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              다가오는 콘텐츠 발행 일정
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingContent.map((content) => (
+                <div
+                  key={content.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+                  onClick={() => {
+                    if (content.status === "승인대기") {
+                      window.location.href = '/dashboard/marketing/content';
+                    }
+                  }}
                 >
-                  <X className="w-6 h-6" />
-                </Button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {pendingContent.length === 0 ? (
-                <div className="text-center py-12">
-                  <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
-                    승인 대기 중인 콘텐츠가 없습니다
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingContent.map((content) => (
-                    <div
-                      key={content.id}
-                      className="border border-orange-200 dark:border-orange-700/50 rounded-xl p-4 bg-orange-50/50 dark:bg-orange-900/10 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 transition-all duration-200 cursor-pointer"
-                      onClick={() => handleContentClick(content)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">
-                              {content.title}
-                            </h4>
-                            <Badge
-                              variant="secondary"
-                              className="bg-orange-100 text-orange-700"
-                            >
-                              대기중
-                            </Badge>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                            {content.description}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(content.createdAt).toLocaleDateString()}
-                            </span>
-                            <span>{content.keywords}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            승인
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            거절
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 오류 발생 모달 */}
-      {showErrorsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <AlertTriangle className="w-7 h-7" />
-                    오류 발생 현황
-                  </h3>
-                  <p className="text-red-100 mt-1">
-                    총 {mockErrorLogs.length}개의 오류 발생
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowErrorsModal(false)}
-                  className="text-white hover:bg-red-400/20 rounded-full p-2"
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {mockErrorLogs.length === 0 ? (
-                <div className="text-center py-12">
-                  <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
-                    발생한 오류가 없습니다
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {mockErrorLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="border border-red-200 dark:border-red-700/50 rounded-xl p-4 bg-red-50/50 dark:bg-red-900/10"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertCircle className="w-5 h-5 text-red-500" />
-                            <h4 className="font-semibold text-gray-900 dark:text-white">
-                              {log.platform} 오류
-                            </h4>
-                            <Badge variant="destructive" className="text-xs">
-                              Error
-                            </Badge>
-                          </div>
-                          <p className="text-red-600 dark:text-red-400 text-sm mb-2">
-                            {log.error}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(log.postedAt)?.toLocaleString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Globe className="w-4 h-4" />
-                              {log.platform}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600"
-                        >
-                          재시도
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 예약된 게시물 모달 */}
-      {showScheduledModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <Calendar className="w-7 h-7" />
-                    예약된 게시물
-                  </h3>
-                  <p className="text-green-100 mt-1">
-                    총 {mockScheduledPosts.length}개의 게시물 예약됨
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowScheduledModal(false)}
-                  className="text-white hover:bg-green-400/20 rounded-full p-2"
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {mockScheduledPosts.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
-                    예약된 게시물이 없습니다
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {mockScheduledPosts.map((post) => (
-                    <div
-                      key={post?.id}
-                      className="border border-green-200 dark:border-green-700/50 rounded-xl p-4 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-all duration-200"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">
-                              {post?.content}
-                            </h4>
-                            <Badge
-                              variant="outline"
-                              className="bg-green-100 text-green-700"
-                            >
-                              예약됨
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                            <span className="flex items-center gap-1">
-                              <Globe className="w-4 h-4" />
-                              {post?.platform}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {new Date(post?.scheduledAt)?.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600"
-                          >
-                            <Pause className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 콘텐츠 상세 미리보기 모달 */}
-      {showContentPreview && selectedContent && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <FileText className="w-7 h-7" />
-                    콘텐츠 상세보기
-                  </h3>
-                  <p className="text-purple-100 mt-1">
-                    콘텐츠 ID: {selectedContent.id}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowContentPreview(false)}
-                  className="text-white hover:bg-purple-400/20 rounded-full p-2"
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[70vh]">
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <h4 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {selectedContent.title}
-                    </h4>
-                    <Badge
-                      variant={
-                        selectedContent.status === "approved"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className={
-                        selectedContent.status === "approved"
-                          ? "bg-green-100 text-green-800"
-                          : selectedContent.status === "pending"
-                            ? "bg-orange-100 text-orange-800"
-                            : "bg-red-100 text-red-800"
-                      }
-                    >
-                      {selectedContent.status === "approved"
-                        ? "승인됨"
-                        : selectedContent.status === "pending"
-                          ? "대기중"
-                          : "거절됨"}
-                    </Badge>
-                    {selectedContent.aiGenerated && (
-                      <Badge
-                        variant="outline"
-                        className="border-purple-300 text-purple-700"
-                      >
-                        <Bot className="w-3 h-3 mr-1" />
-                        AI 생성
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    {selectedContent.description}
-                  </p>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    콘텐츠 내용
-                  </h5>
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap leading-relaxed">
-                      {selectedContent.content}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-                  <div>
-                    <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
-                      메타데이터
-                    </h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">미디어 타입:</span>
-                        <Badge variant="outline">
-                          {selectedContent.mediaType}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">모드:</span>
-                        <Badge
-                          variant={
-                            selectedContent.mode === "Auto"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {selectedContent.mode}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">키워드:</span>
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {selectedContent.keywords}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">플랫폼:</span>
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {selectedContent.platforms?.join(", ") || "없음"}
-                        </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{content.channelIcon}</span>
+                    <div>
+                      <h5 className="font-medium text-gray-900 dark:text-white">
+                        {content.title}
+                      </h5>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span>{content.scheduledDate}</span>
+                        <span>•</span>
+                        <span>{content.channel}</span>
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
-                      타임스탬프
-                    </h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-500">생성:</span>
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {new Date(
-                            selectedContent.createdAt,
-                          )?.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-500">수정:</span>
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {new Date(
-                            selectedContent.updatedAt,
-                          )?.toLocaleString()}
-                        </span>
-                      </div>
-                      {selectedContent.approvedAt && (
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-gray-500">승인:</span>
-                          <span className="text-gray-700 dark:text-gray-300">
-                            {new Date(
-                              selectedContent.approvedAt,
-                            )?.toLocaleString()}
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(content.status)}
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 영역 3 & 4: 채널별 성과와 알림 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 영역 3: 채널별 성과 하이라이트 */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* 채널별 반응 수 비교 */}
+          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                채널별 반응 수 비교
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {channelPerformance.map((channel) => (
+                  <div key={channel.name} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {channel.name}
+                      </span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">
+                        {channel.engagement.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                      <div
+                        className={`h-3 rounded-full transition-all duration-500 ${channel.color}`}
+                        style={{ width: `${channel.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 최고 성과 콘텐츠 Top 3 */}
+          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                최고 성과 콘텐츠 Top 3
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {topContent.map((content, index) => (
+                  <div
+                    key={content.id}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-300 cursor-pointer"
+                    onClick={() => window.location.href = '/dashboard/marketing/insights'}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-3">{content.thumbnail}</div>
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">
+                        {content.title}
+                      </h5>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">조회수</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {content.views}
                           </span>
                         </div>
-                      )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">반응</span>
+                          <span className="font-bold text-green-600 dark:text-green-400">
+                            {content.engagement}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="mt-2 text-xs">
+                        {content.platform}
+                      </Badge>
                     </div>
                   </div>
-                </div>
-
-                {selectedContent.status === "pending" && (
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <div className="flex gap-3">
-                      <Button className="flex-1 bg-green-600 hover:bg-green-700">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        승인
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1 text-red-600 border-red-200"
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        거절
-                      </Button>
-                      <Button variant="outline">
-                        <Edit className="w-4 h-4 mr-2" />
-                        편집
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      )}
+
+        {/* 영역 4: 알림 및 할 일 */}
+        <div className="space-y-6">
+          <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <Bell className="w-5 h-5 text-red-600 dark:text-red-400" />
+                알림 및 할 일
+                <Badge variant="destructive" className="ml-2">
+                  {notifications.filter(n => n.urgent).length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      notification.urgent
+                        ? 'border-red-200 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50'
+                    }`}
+                    onClick={() => window.location.href = notification.action}
+                  >
+                    <div className="flex items-start gap-3">
+                      {getNotificationIcon(notification.type)}
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${
+                          notification.urgent 
+                            ? 'text-red-900 dark:text-red-100' 
+                            : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {notification.message}
+                        </p>
+                        <p className={`text-xs ${
+                          notification.urgent 
+                            ? 'text-red-600 dark:text-red-400' 
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {notification.time}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
