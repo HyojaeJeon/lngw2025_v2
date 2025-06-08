@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -268,7 +267,7 @@ export default function MarketingPlanningProcessPage() {
                   </Button>
                 </div>
               </div>
-              
+
               {/* 진행률 바 */}
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
@@ -277,7 +276,7 @@ export default function MarketingPlanningProcessPage() {
                 ></div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {/* 목표 요약 */}
               <div>
@@ -392,7 +391,7 @@ export default function MarketingPlanningProcessPage() {
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent>
               {/* 프로세스 단계 미리보기 */}
               <div className="space-y-3">
@@ -591,7 +590,7 @@ export default function MarketingPlanningProcessPage() {
               <Workflow className="w-5 h-5 text-blue-500" />
               프로세스 플로우
             </h3>
-            
+
             {/* 프로세스 시각화 */}
             <div className="space-y-4">
               {selectedProcess.steps.map((step, index) => (
@@ -600,7 +599,7 @@ export default function MarketingPlanningProcessPage() {
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium">
                     {index + 1}
                   </div>
-                  
+
                   {/* 단계 정보 */}
                   <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                     <div className="flex items-center justify-between">
@@ -622,7 +621,7 @@ export default function MarketingPlanningProcessPage() {
                       {getStepIcon(step.status)}
                     </div>
                   </div>
-                  
+
                   {/* 연결선 */}
                   {index < selectedProcess.steps.length - 1 && (
                     <div className="flex-shrink-0 w-8 flex justify-center">
@@ -646,6 +645,532 @@ export default function MarketingPlanningProcessPage() {
               <Button variant="outline" className="flex items-center gap-2">
                 <Edit className="w-4 h-4" />
                 수정하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 새 계획 작성 모달
+  const renderCreatePlanModal = () => {
+    const addObjective = () => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: [...prev.objectives, { title: "", keyResults: [""] }]
+      }));
+    };
+
+    const removeObjective = (index) => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: prev.objectives.filter((_, i) => i !== index)
+      }));
+    };
+
+    const updateObjective = (index, field, value) => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: prev.objectives.map((obj, i) => 
+          i === index ? { ...obj, [field]: value } : obj
+        )
+      }));
+    };
+
+    const addKeyResult = (objectiveIndex) => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: prev.objectives.map((obj, i) => 
+          i === objectiveIndex 
+            ? { ...obj, keyResults: [...obj.keyResults, ""] }
+            : obj
+        )
+      }));
+    };
+
+    const removeKeyResult = (objectiveIndex, keyResultIndex) => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: prev.objectives.map((obj, i) => 
+          i === objectiveIndex 
+            ? { ...obj, keyResults: obj.keyResults.filter((_, ki) => ki !== keyResultIndex) }
+            : obj
+        )
+      }));
+    };
+
+    const updateKeyResult = (objectiveIndex, keyResultIndex, value) => {
+      setNewPlan(prev => ({
+        ...prev,
+        objectives: prev.objectives.map((obj, i) => 
+          i === objectiveIndex 
+            ? { 
+                ...obj, 
+                keyResults: obj.keyResults.map((kr, ki) => 
+                  ki === keyResultIndex ? value : kr
+                )
+              }
+            : obj
+        )
+      }));
+    };
+
+    const addInitiative = () => {
+      setNewPlan(prev => ({
+        ...prev,
+        initiatives: [...prev.initiatives, { name: "", campaignId: null, campaignName: "" }]
+      }));
+    };
+
+    const removeInitiative = (index) => {
+      setNewPlan(prev => ({
+        ...prev,
+        initiatives: prev.initiatives.filter((_, i) => i !== index)
+      }));
+    };
+
+    const updateInitiative = (index, field, value) => {
+      setNewPlan(prev => ({
+        ...prev,
+        initiatives: prev.initiatives.map((init, i) => 
+          i === index ? { ...init, [field]: value } : init
+        )
+      }));
+    };
+
+    const handleChannelInput = (e) => {
+      if (e.key === 'Enter' && e.target.value.trim()) {
+        const newChannel = e.target.value.trim();
+        if (!newPlan.channels.includes(newChannel)) {
+          setNewPlan(prev => ({
+            ...prev,
+            channels: [...prev.channels, newChannel]
+          }));
+        }
+        e.target.value = '';
+      }
+    };
+
+    const removeChannel = (channelToRemove) => {
+      setNewPlan(prev => ({
+        ...prev,
+        channels: prev.channels.filter(channel => channel !== channelToRemove)
+      }));
+    };
+
+    const setDatePreset = (preset) => {
+      const now = new Date();
+      const year = now.getFullYear();
+      let startDate, endDate;
+
+      switch(preset) {
+        case 'Q1':
+          startDate = `${year}-01-01`;
+          endDate = `${year}-03-31`;
+          break;
+        case 'Q2':
+          startDate = `${year}-04-01`;
+          endDate = `${year}-06-30`;
+          break;
+        case 'Q3':
+          startDate = `${year}-07-01`;
+          endDate = `${year}-09-30`;
+          break;
+        case 'Q4':
+          startDate = `${year}-10-01`;
+          endDate = `${year}-12-31`;
+          break;
+        default:
+          return;
+      }
+
+      setNewPlan(prev => ({ ...prev, startDate, endDate }));
+    };
+
+    const resetForm = () => {
+      setNewPlan({
+        title: "",
+        startDate: "",
+        endDate: "",
+        manager: "",
+        description: "",
+        targetPersona: "",
+        coreMessage: "",
+        channels: [],
+        objectives: [{ title: "", keyResults: [""] }],
+        initiatives: [{ name: "", campaignId: null, campaignName: "" }]
+      });
+    };
+
+    const handleSave = () => {
+      // 필수 필드 검증
+      if (!newPlan.title || !newPlan.startDate || !newPlan.endDate || !newPlan.manager) {
+        alert('필수 필드를 모두 입력해주세요.');
+        return;
+      }
+
+      // 새 계획 추가 로직
+      const newId = plans.length + 1;
+      const newPlanData = {
+        id: newId,
+        title: newPlan.title,
+        status: "계획됨",
+        progress: 0,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
+        startDate: newPlan.startDate,
+        endDate: newPlan.endDate,
+        manager: newPlan.manager,
+        description: newPlan.description,
+        objectives: newPlan.objectives.filter(obj => obj.title.trim()),
+        targetPersona: newPlan.targetPersona,
+        coreMessage: newPlan.coreMessage,
+        channels: newPlan.channels,
+        initiatives: newPlan.initiatives.filter(init => init.name.trim()).map(init => ({
+          ...init,
+          status: "계획됨",
+          linkedToCampaign: !!init.campaignId
+        }))
+      };
+
+      setPlans(prev => [...prev, newPlanData]);
+      setShowCreateModal(false);
+      resetForm();
+    };
+
+    const isFormValid = newPlan.title && newPlan.startDate && newPlan.endDate && newPlan.manager;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          {/* 헤더 */}
+          <div className="sticky top-0 bg-white dark:bg-gray-800 p-6 border-b border-gray-200 dark:border-gray-700 z-10">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                새 마케팅 계획 작성
+              </h2>
+              <Button variant="outline" onClick={() => { setShowCreateModal(false); resetForm(); }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-8">
+            {/* 섹션 1: 계획 기본 정보 */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                1. 계획 기본 정보
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    계획명 <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={newPlan.title}
+                    onChange={(e) => setNewPlan(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="예: 2025년 2분기 신제품 런칭 계획"
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    담당자 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={newPlan.manager}
+                    onChange={(e) => setNewPlan(prev => ({ ...prev, manager: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">담당자를 선택하세요</option>
+                    <option value="김마케팅">김마케팅</option>
+                    <option value="이기획">이기획</option>
+                    <option value="박전략">박전략</option>
+                    <option value="최브랜드">최브랜드</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  계획 기간 <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3">
+                  <div className="flex gap-2 mb-3">
+                    {['Q1', 'Q2', 'Q3', 'Q4'].map(quarter => (
+                      <Button
+                        key={quarter}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDatePreset(quarter)}
+                      >
+                        {quarter}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">시작일</label>
+                      <Input
+                        type="date"
+                        value={newPlan.startDate}
+                        onChange={(e) => setNewPlan(prev => ({ ...prev, startDate: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">종료일</label>
+                      <Input
+                        type="date"
+                        value={newPlan.endDate}
+                        onChange={(e) => setNewPlan(prev => ({ ...prev, endDate: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  계획 설명
+                </label>
+                <textarea
+                  value={newPlan.description}
+                  onChange={(e) => setNewPlan(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="계획의 목표나 배경에 대한 간략한 설명을 기입하세요"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                />
+              </div>
+            </div>
+
+            {/* 섹션 2: 목표 설정 (OKRs) */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                2. 목표 설정 (OKRs)
+              </h3>
+
+              <div className="space-y-4">
+                {newPlan.objectives.map((objective, objIndex) => (
+                  <div key={objIndex} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Input
+                        value={objective.title}
+                        onChange={(e) => updateObjective(objIndex, 'title', e.target.value)}
+                        placeholder="목표를 입력하세요 (예: Z세대 인지도 확보)"
+                        className="flex-1"
+                      />
+                      {newPlan.objectives.length > 1 && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => removeObjective(objIndex)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 ml-4">
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                        핵심 결과 (Key Results)
+                      </label>
+                      {objective.keyResults.map((kr, krIndex) => (
+                        <div key={krIndex} className="flex items-center gap-2">
+                          <Input
+                            value={kr}
+                            onChange={(e) => updateKeyResult(objIndex, krIndex, e.target.value)}
+                            placeholder="핵심 결과를 입력하세요 (예: 틱톡 팔로워 5만 달성)"
+                            className="flex-1"
+                          />
+                          {objective.keyResults.length > 1 && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => removeKeyResult(objIndex, krIndex)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => addKeyResult(objIndex)}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        핵심 결과(Key Result) 추가
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  onClick={addObjective}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  목표(Objective) 추가
+                </Button>
+              </div>
+            </div>
+
+            {/* 섹션 3: 전략 개요 */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                3. 전략 개요
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    타겟 고객
+                  </label>
+                  <Input
+                    value={newPlan.targetPersona}
+                    onChange={(e) => setNewPlan(prev => ({ ...prev, targetPersona: e.target.value }))}
+                    placeholder="예: 20-30대 직장인"
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    핵심 메시지
+                  </label>
+                  <Input
+                    value={newPlan.coreMessage}
+                    onChange={(e) => setNewPlan(prev => ({ ...prev, coreMessage: e.target.value }))}
+                    placeholder="예: 일상을 더 스마트하게, 더 편리하게"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  주요 채널
+                </label>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="채널을 입력하고 Enter를 누르세요 (예: Instagram, TikTok, YouTube)"
+                    onKeyPress={handleChannelInput}
+                    className="w-full"
+                  />
+                  {newPlan.channels.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {newPlan.channels.map((channel, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1"
+                        >
+                          {channel}
+                          <button
+                            onClick={() => removeChannel(channel)}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 섹션 4: 주요 활동 */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                4. 주요 활동 (Key Initiatives)
+              </h3>
+
+              <div className="space-y-4">
+                {newPlan.initiatives.map((initiative, index) => (
+                  <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                          활동명
+                        </label>
+                        <Input
+                          value={initiative.name}
+                          onChange={(e) => updateInitiative(index, 'name', e.target.value)}
+                          placeholder="예: 여름 바캉스 캠페인"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                          캠페인 연동
+                        </label>
+                        <div className="flex gap-2">
+                          <select
+                            value={initiative.campaignId || ""}
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              const selectedName = e.target.options[e.target.selectedIndex].text;
+                              updateInitiative(index, 'campaignId', selectedId || null);
+                              updateInitiative(index, 'campaignName', selectedId ? selectedName : "");
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            <option value="">캠페인을 선택하세요</option>
+                            <option value="camp1">2025 신제품 런칭 캠페인</option>
+                            <option value="camp2">여름 시즌 프로모션</option>
+                            <option value="camp3">브랜드 인지도 향상 캠페인</option>
+                          </select>
+                          {newPlan.initiatives.length > 1 && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => removeInitiative(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  onClick={addInitiative}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  활동 추가
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => { setShowCreateModal(false); resetForm(); }}
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={!isFormValid}
+                className={`${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                저장
               </Button>
             </div>
           </div>
@@ -703,6 +1228,7 @@ export default function MarketingPlanningProcessPage() {
       {/* 모달들 */}
       {selectedPlan && renderPlanDetailModal()}
       {selectedProcess && renderProcessDetailModal()}
+      {showCreateModal && renderCreatePlanModal()}
     </div>
   );
 }
