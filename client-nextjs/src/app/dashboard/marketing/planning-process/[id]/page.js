@@ -75,6 +75,7 @@ export default function MarketingPlanDetailPage() {
           {
             id: 1,
             title: "Z세대 인지도 확보",
+            isActive: true,
             keyResults: [
               {
                 id: 101,
@@ -108,6 +109,7 @@ export default function MarketingPlanDetailPage() {
           {
             id: 2,
             title: "온라인 매출 증대",
+            isActive: true,
             keyResults: [
               {
                 id: 201,
@@ -243,9 +245,12 @@ export default function MarketingPlanDetailPage() {
   const handleDeleteObjective = () => {
     if (!objectiveToDelete) return;
 
+    // 목표를 비활성화
     setPlan((prev) => ({
       ...prev,
-      objectives: prev.objectives.filter((obj) => obj.id !== objectiveToDelete),
+      objectives: prev.objectives.map((obj) =>
+        obj.id === objectiveToDelete ? { ...obj, isActive: false } : obj
+      ),
     }));
     setShowDeleteModal(false);
     setObjectiveToDelete(null);
@@ -310,10 +315,15 @@ export default function MarketingPlanDetailPage() {
     setNewComment("");
   };
 
-  // 목표 모달 렌더링
-  const renderObjectiveModal = () => {
-    const isEditMode = !!editingObjective;
-    const [title, setTitle] = useState(editingObjective?.title || "");
+  // 목표 모달 컴포넌트
+  const ObjectiveModal = ({ isOpen, editingObj, onClose }) => {
+    const isEditMode = !!editingObj;
+    const [title, setTitle] = useState(editingObj?.title || "");
+
+    // editingObj가 변경될 때마다 title 업데이트
+    React.useEffect(() => {
+      setTitle(editingObj?.title || "");
+    }, [editingObj]);
 
     const handleSubmit = () => {
       if (!title.trim()) return;
@@ -323,7 +333,7 @@ export default function MarketingPlanDetailPage() {
         setPlan((prev) => ({
           ...prev,
           objectives: prev.objectives.map((obj) =>
-            obj.id === editingObjective.id ? { ...obj, title } : obj
+            obj.id === editingObj.id ? { ...obj, title } : obj
           ),
         }));
       } else {
@@ -332,6 +342,7 @@ export default function MarketingPlanDetailPage() {
           id: Date.now(),
           title,
           keyResults: [],
+          isActive: true, // 새 목표는 활성화 상태
         };
         setPlan((prev) => ({
           ...prev,
@@ -340,9 +351,10 @@ export default function MarketingPlanDetailPage() {
       }
 
       // 모달 닫기 및 상태 초기화
-      setShowObjectiveModal(false);
-      setEditingObjective(null);
+      onClose();
     };
+
+    if (!isOpen) return null;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -363,10 +375,7 @@ export default function MarketingPlanDetailPage() {
           <div className="flex justify-end gap-3">
             <Button
               variant="outline"
-              onClick={() => {
-                setShowObjectiveModal(false);
-                setEditingObjective(null);
-              }}
+              onClick={onClose}
             >
               취소
             </Button>
@@ -554,6 +563,11 @@ export default function MarketingPlanDetailPage() {
           {plan.objectives?.map((objective, objIndex) => {
             const isExpanded = expandedObjectives[objective.id] || false;
             const objectiveProgress = calculateObjectiveProgress(objective.keyResults);
+
+            // 목표가 비활성화된 경우 렌더링하지 않음
+            if (!objective.isActive) {
+              return null;
+            }
 
             return (
               <div key={objective.id || objIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -780,7 +794,14 @@ export default function MarketingPlanDetailPage() {
       </Card>
 
       {/* 모달들 */}
-      {showObjectiveModal && renderObjectiveModal()}
+       <ObjectiveModal
+        isOpen={showObjectiveModal}
+        editingObj={editingObjective}
+        onClose={() => {
+          setShowObjectiveModal(false);
+          setEditingObjective(null);
+        }}
+      />
       {showDeleteModal && renderDeleteModal()}
     </div>
   );
