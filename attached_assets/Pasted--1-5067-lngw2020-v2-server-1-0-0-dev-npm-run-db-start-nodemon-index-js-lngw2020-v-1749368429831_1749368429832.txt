@@ -1,0 +1,57 @@
+[1] 5067
+
+> lngw2020_v2_server@1.0.0 dev
+> npm run db:start && nodemon index.js
+
+
+> lngw2020_v2_server@1.0.0 db:start
+> mysqld --user=$(whoami) --datadir=/home/runner/workspace/mysql-data --socket=/tmp/mysql.sock --port=3306 &
+
+2025-06-08  7:40:15 0 [Warning] Could not increase number of max_open_files to more than 20971 (request: 32188)
+2025-06-08  7:40:15 0 [Note] Starting MariaDB 10.11.6-MariaDB source revision fecd78b83785d5ae96f2c6ff340375be803cd299 as process 5092
+2025-06-08  7:40:15 0 [Note] InnoDB: Compressed tables use zlib 1.3.1
+2025-06-08  7:40:15 0 [Note] InnoDB: Number of transaction pools: 1
+2025-06-08  7:40:15 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+2025-06-08  7:40:15 0 [Warning] mysqld: io_uring_queue_init() failed with errno 0
+2025-06-08  7:40:15 0 [Warning] InnoDB: liburing disabled: falling back to innodb_use_native_aio=OFF
+2025-06-08  7:40:15 0 [Note] InnoDB: Initializing buffer pool, total size = 128.000MiB, chunk size = 2.000MiB
+2025-06-08  7:40:15 0 [Note] InnoDB: Completed initialization of buffer pool
+2025-06-08  7:40:15 0 [Note] InnoDB: Buffered log writes (block size=512 bytes)
+2025-06-08  7:40:15 0 [Note] InnoDB: Starting crash recovery from checkpoint LSN=46880
+2025-06-08  7:40:15 0 [Note] InnoDB: End of log at LSN=256125
+[nodemon] 2.0.22
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,json
+[nodemon] starting `node index.js`
+2025-06-08  7:40:15 0 [Note] InnoDB: To recover: 117 pages
+2025-06-08  7:40:15 0 [Note] InnoDB: 128 rollback segments are active.
+2025-06-08  7:40:15 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+2025-06-08  7:40:15 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+2025-06-08  7:40:15 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+2025-06-08  7:40:15 0 [Note] InnoDB: log sequence number 256125; transaction id 368
+2025-06-08  7:40:15 0 [Note] Plugin 'FEEDBACK' is disabled.
+2025-06-08  7:40:15 0 [Note] InnoDB: Loading buffer pool(s) from /home/runner/workspace/mysql-data/ib_buffer_pool
+2025-06-08  7:40:15 0 [Note] Server socket created on IP: '0.0.0.0'.
+2025-06-08  7:40:15 0 [Note] Server socket created on IP: '::'.
+2025-06-08  7:40:15 0 [Note] InnoDB: Buffer pool(s) load completed at 250608  7:40:15
+2025-06-08  7:40:15 0 [Note] mysqld: ready for connections.
+Version: '10.11.6-MariaDB'  socket: '/tmp/mysql.sock'  port: 3306  MariaDB Server
+/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/type.js:26
+            throw new Error(`Unable to merge GraphQL type "${node.name.value}": ${e.message}`);
+            ^
+
+Error: Unable to merge GraphQL type "User": Field "joinDate" already defined with a different type. Declared as "Date", but you tried to override with "String"
+    at mergeType (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/type.js:26:19)
+    at mergeGraphQLNodes (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-nodes.js:38:73)
+    at mergeGraphQLTypes (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:72:64)
+    at mergeTypeDefs (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:14:22)
+    at Object.<anonymous> (/home/runner/workspace/server/schema/typeDefs.js:215:18)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Module.require (node:internal/modules/cjs/loader:1311:19)
+
+Node.js v20.18.1
+[nodemon] app crashed - waiting for file changes before starting...
