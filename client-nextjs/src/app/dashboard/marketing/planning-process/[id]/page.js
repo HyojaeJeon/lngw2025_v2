@@ -60,8 +60,94 @@ export default function MarketingPlanDetailPage() {
   const [newComment, setNewComment] = useState("");
   const [history, setHistory] = useState([]);
 
-  // 성과 측정 방식 설정 모달 표시
+  // 상태 관리
+  const [objectives, setObjectives] = useState([
+    {
+      id: 1,
+      title: "Z세대 인지도 확보",
+      deleted: false,
+      keyResults: [
+        {
+          id: 1,
+          text: "틱톡 팔로워 5만 달성",
+          target: 50000,
+          current: 32000,
+          dataConnected: true,
+          dataSource: "TikTok API",
+          measurementType: "automatic",
+        },
+        {
+          id: 2,
+          text: "브랜드 인지도 20% 증가",
+          target: 20,
+          current: null,
+          dataConnected: false,
+          dataSource: null,
+          measurementType: "manual",
+        },
+        {
+          id: 3,
+          text: "UGC 콘텐츠 100건 수집",
+          target: 100,
+          current: 70,
+          dataConnected: false,
+          dataSource: null,
+          measurementType: "checklist",
+          checklist: [
+            { id: 1, text: "인스타그램 인플루언서 A", completed: true },
+            { id: 2, text: "틱톡 챌린지 이벤트", completed: true },
+            { id: 3, text: "블로그 체험단 모집", completed: false },
+          ],
+        },
+      ],
+    },
+    {
+      id: 2,
+      title: "온라인 매출 증대",
+      deleted: false,
+      keyResults: [
+        {
+          id: 4,
+          text: "온라인 매출 30% 증가",
+          target: 30,
+          current: 18,
+          dataConnected: true,
+          dataSource: "Google Analytics",
+          measurementType: "automatic",
+        },
+        {
+          id: 5,
+          text: "전환율 3.5% 달성",
+          target: 3.5,
+          current: null,
+          dataConnected: false,
+          dataSource: null,
+          measurementType: "manual",
+        },
+        {
+          id: 6,
+          text: "고객 생애가치 25% 향상",
+          target: 25,
+          current: 15,
+          dataConnected: false,
+          dataSource: null,
+          measurementType: "manual",
+        },
+      ],
+    },
+  ]);
+
+  const [expandedObjectives, setExpandedObjectives] = useState({
+    1: true,
+    2: true,
+  });
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [objectiveToDelete, setObjectiveToDelete] = useState(null);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
+  const [selectedKeyResult, setSelectedKeyResult] = useState(null);
+
+  // 성과 측정 방식 설정 모달 표시
   const [selectedKr, setSelectedKr] = useState(null);
 
   // 전략 개요 편집 상태
@@ -719,6 +805,472 @@ export default function MarketingPlanDetailPage() {
     setNewComment("");
   };
 
+  // 목표 토글 함수
+  const toggleObjective = (objectiveId) => {
+    setExpandedObjectives(prev => ({
+      ...prev,
+      [objectiveId]: !prev[objectiveId]
+    }));
+  };
+
+  // 목표 삭제 함수
+  const deleteObjective = (objectiveId) => {
+    setObjectiveToDelete(objectiveId);
+    setShowDeleteModal(true);
+  };
+
+  // 목표 복원 함수
+  const restoreObjective = (objectiveId) => {
+    setObjectives(prev => prev.map(obj => 
+      obj.id === objectiveId ? { ...obj, deleted: false } : obj
+    ));
+  };
+
+  // 삭제 확인 함수
+  const confirmDelete = () => {
+    if (objectiveToDelete) {
+      setObjectives(prev => prev.map(obj => 
+        obj.id === objectiveToDelete ? { ...obj, deleted: true } : obj
+      ));
+    }
+    setShowDeleteModal(false);
+    setObjectiveToDelete(null);
+  };
+
+  // 달성률 계산 함수
+  const calculateObjectiveProgress = (keyResults) => {
+    if (!keyResults || keyResults.length === 0) return 0;
+
+    const validResults = keyResults.filter(kr => {
+      if (kr.measurementType === 'checklist') {
+        return kr.checklist && kr.checklist.length > 0;
+      }
+      return kr.current !== null && !isNaN(kr.current) && kr.target !== null && !isNaN(kr.target);
+    });
+
+    if (validResults.length === 0) return 0;
+
+    const totalProgress = validResults.reduce((sum, kr) => {
+      if (kr.measurementType === 'checklist') {
+        const completed = kr.checklist ? kr.checklist.filter(item => item.completed).length : 0;
+        const total = kr.checklist ? kr.checklist.length : 1;
+        return sum + (completed / total) * 100;
+      }
+      return sum + Math.min((kr.current / kr.target) * 100, 100);
+    }, 0);
+
+    return Math.round(totalProgress / validResults.length);
+  };
+
+  // 성과 달성 옵션 모달 열기
+  const openMeasurementModal = (keyResult) => {
+    setSelectedKeyResult(keyResult);
+    setShowMeasurementModal(true);
+  };
+
+  // Key Result 측정 방법 업데이트
+  const updateKeyResultMeasurement = (keyResultId, field, value) => {
+    setObjectives(prev => prev.map(obj => ({
+      ...obj,
+      keyResults: obj.keyResults.map(kr => 
+        kr.id === keyResultId ? { ...kr, [field]: value } : kr
+      )
+    })));
+
+    // 선택된 Key Result도 업데이트
+    if (selectedKeyResult && selectedKeyResult.id === keyResultId) {
+      setSelectedKeyResult(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  // 체크리스트 항목 토글
+  const toggleChecklistItem = (keyResultId, itemId) => {
+    setObjectives(prev => prev.map(obj => ({
+      ...obj,
+      keyResults: obj.keyResults.map(kr => 
+        kr.id === keyResultId ? {
+          ...kr,
+          checklist: kr.checklist.map(item => 
+            item.id === itemId ? { ...item, completed: !item.completed } : item
+          )
+        } : kr
+      )
+    })));
+  };
+
+  // 체크리스트 항목 추가
+  const addChecklistItem = (keyResultId) => {
+    const newItemText = prompt('새로운 체크리스트 항목을 입력하세요:');
+    if (newItemText && newItemText.trim()) {
+      setObjectives(prev => prev.map(obj => ({
+        ...obj,
+        keyResults: obj.keyResults.map(kr => 
+          kr.id === keyResultId ? {
+            ...kr,
+            checklist: [
+              ...(kr.checklist || []),
+              {
+                id: Date.now(),
+                text: newItemText.trim(),
+                completed: false
+              }
+            ]
+          } : kr
+        )
+      })));
+    }
+  };
+
+  // 체크리스트 항목 삭제
+  const deleteChecklistItem = (keyResultId, itemId) => {
+    if (confirm('이 체크리스트 항목을 삭제하시겠습니까?')) {
+      setObjectives(prev => prev.map(obj => ({
+        ...obj,
+        keyResults: obj.keyResults.map(kr => 
+          kr.id === keyResultId ? {
+            ...kr,
+            checklist: kr.checklist.filter(item => item.id !== itemId)
+          } : kr
+        )
+      })));
+    }
+  };
+
+  // 목표 달성도(OKRs) 렌더링
+  const renderObjectives = () => (
+    <Card className="shadow-lg border-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
+      <CardHeader className="bg-white dark:bg-gray-800 rounded-t-lg border-b border-gray-100 dark:border-gray-700">
+        <CardTitle className="flex items-center gap-3">
+          <div className="p-2 bg-blue-500 rounded-lg">
+            <Target className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            목표 달성도 (OKRs)
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6 space-y-6">
+        {objectives.map((objective) => (
+          <div key={objective.id} className={`relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:shadow-lg ${objective.deleted ? 'opacity-50' : ''}`}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4 flex-1">
+                <button
+                  onClick={() => !objective.deleted && toggleObjective(objective.id)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded"
+                  disabled={objective.deleted}
+                >
+                  {expandedObjectives[objective.id] ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </button>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                    Objective: {objective.title}
+                  </h4>
+                  {objective.deleted && (
+                    <Badge variant="secondary" className="text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                      삭제됨
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress Section with proper spacing */}
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체 달성률</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">
+                    {calculateObjectiveProgress(objective.keyResults)}%
+                  </div>
+                </div>
+
+                {/* Delete/Restore button with proper margin */}
+                <button
+                  onClick={() => objective.deleted ? restoreObjective(objective.id) : deleteObjective(objective.id)}
+                  className={`p-2 rounded-lg transition-all duration-200 ${
+                    objective.deleted 
+                      ? 'text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' 
+                      : 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+                  }`}
+                  title={objective.deleted ? '복원' : '삭제'}
+                >
+                  {objective.deleted ? (
+                    <RotateCcw className="w-5 h-5" />
+                  ) : (
+                    <Trash2 className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Enhanced Progress bar */}
+            <div className="mb-6">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
+                <div 
+                  className="h-3 rounded-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-600 transition-all duration-700 shadow-sm" 
+                  style={{width: `${calculateObjectiveProgress(objective.keyResults)}%`}}
+                ></div>
+              </div>
+            </div>
+
+            {expandedObjectives[objective.id] && !objective.deleted && (
+              <div className="space-y-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Key Results
+                  </span>
+                </div>
+                {objective.keyResults.map((kr) => (
+                  <div key={kr.id} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{kr.text}</span>
+                      <button 
+                        className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1 rounded transition-colors"
+                        onClick={() => openMeasurementModal(kr)}
+                        title="성과 달성 옵션 설정"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {kr.measurementType === 'checklist' ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                          <span>진행률: {kr.checklist ? kr.checklist.filter(item => item.completed).length : 0} / {kr.checklist ? kr.checklist.length : 0}</span>
+                          <Badge variant="outline" className="text-xs">
+                            체크리스트
+                          </Badge>
+                        </div>
+                        {kr.checklist && kr.checklist.map((item) => (
+                          <div key={item.id} className="flex items-center gap-3 p-2 bg-white dark:bg-gray-800 rounded border">
+                            <input
+                              type="checkbox"
+                              checked={item.completed}
+                              onChange={() => toggleChecklistItem(kr.id, item.id)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                            <span className={`text-sm flex-1 ${item.completed ? 'line-through text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {item.text}
+                            </span>
+                            <button
+                              onClick={() => deleteChecklistItem(kr.id, item.id)}
+                              className="text-red-400 hover:text-red-600 p-1 rounded transition-colors"
+                              title="삭제"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addChecklistItem(kr.id)}
+                          className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-sm font-medium p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full justify-center border-2 border-dashed border-blue-300 dark:border-blue-600"
+                        >
+                          <Plus className="w-4 h-4" />
+                          체크리스트 항목 추가
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">
+                            달성률: {kr.current !== null ? Math.round((kr.current / kr.target) * 100) : '측정 대기'}%
+                          </span>
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {kr.current !== null ? kr.current : '측정 대기'} / {kr.target}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 shadow-inner">
+                          <div 
+                            className="h-2 rounded-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 shadow-sm" 
+                            style={{width: `${kr.current !== null ? Math.min((kr.current / kr.target) * 100, 100) : 0}%`}}
+                          ></div>
+                        </div>
+                        {kr.dataSource && (
+                          <div className="text-xs text-gray-500 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>연결됨: {kr.dataSource}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+
+  // 삭제 확인 모달
+  const renderDeleteModal = () => {
+    if (!showDeleteModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+          <h3 className="text-lg font-semibold mb-4">목표 삭제 확인</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            정말 이 목표를 삭제하시겠습니까? 삭제된 목표는 복원할 수 있습니다.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              아니오
+            </Button>
+            <Button onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+              예
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 성과 달성 옵션 설정 모달
+  const renderMeasurementModal = () => {
+    if (!showMeasurementModal || !selectedKeyResult) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold">성과 달성 옵션 설정</h3>
+            <button
+              onClick={() => setShowMeasurementModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Key Result
+              </label>
+              <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded">
+                {selectedKeyResult.text}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                달성치 수집 방법
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <input
+                    type="radio"
+                    name="measurementType"
+                    value="automatic"
+                    checked={selectedKeyResult.measurementType === 'automatic'}
+                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">SNS 채널 연결</div>
+                    <div className="text-sm text-gray-500">소셜 미디어 플랫폼에서 자동으로 데이터 수집</div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <input
+                    type="radio"
+                    name="measurementType"
+                    value="manual"
+                    checked={selectedKeyResult.measurementType === 'manual'}
+                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">수동 입력</div>
+                    <div className="text-sm text-gray-500">직접 수치를 입력하여 관리</div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <input
+                    type="radio"
+                    name="measurementType"
+                    value="checklist"
+                    checked={selectedKeyResult.measurementType === 'checklist'}
+                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'measurementType', e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">체크리스트</div>
+                    <div className="text-sm text-gray-500">작업 항목을 체크하여 진행률 관리</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {selectedKeyResult.measurementType === 'automatic' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  데이터 소스 선택
+                </label>
+                <select
+                  value={selectedKeyResult.dataSource || ''}
+                  onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'dataSource', e.target.value)}
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+                >
+                  <option value="">데이터 소스를 선택하세요</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Google Analytics">Google Analytics</option>
+                  <option value="Naver Analytics">Naver Analytics</option>
+                </select>
+              </div>
+            )}
+
+            {selectedKeyResult.measurementType === 'manual' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    목표값
+                  </label>
+                  <Input
+                    type="number"
+                    value={selectedKeyResult.target || ''}
+                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'target', parseFloat(e.target.value))}
+                    placeholder="목표값"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    현재값
+                  </label>
+                  <Input
+                    type="number"
+                    value={selectedKeyResult.current || ''}
+                    onChange={(e) => updateKeyResultMeasurement(selectedKeyResult.id, 'current', parseFloat(e.target.value))}
+                    placeholder="현재값"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 justify-end mt-6 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowMeasurementModal(false)}>
+              취소
+            </Button>
+            <Button onClick={() => setShowMeasurementModal(false)}>
+              저장
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-none space-y-6 animate-fadeIn">
       {/* 뒤로가기 버튼 */}
@@ -808,288 +1360,7 @@ export default function MarketingPlanDetailPage() {
       </Card>
 
       {/* 목표 달성도 (OKRs) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-500" />
-            목표 달성도 (OKRs)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {plan.objectives.map((objective, index) => {
-            const isCollapsed = collapsedObjectives.has(objective.id);
-            const isDeleted = deletedObjectives.has(objective.id);
-            const objectiveProgress = calculateObjectiveProgress(
-              objective.keyResults,
-            );
-
-            return (
-              <div
-                key={objective.id}
-                className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all ${
-                  isDeleted ? "opacity-50 pointer-events-none" : ""
-                }`}
-              >
-                {/* Objective 헤더 */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => toggleObjective(index)}
-                      className="p-1"
-                    >
-                      {collapsedObjectives[index] ? (
-                        <Plus className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      Objective: {objective.title}
-                      {objective.isDeleted && (
-                        <Badge variant="secondary" className="ml-2">
-                          삭제됨
-                        </Badge>
-                      )}
-                    </h4>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {objective.isDeleted ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRestoreObjective(index)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteObjective(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Objective 진행률 바 */}
-                <div className="mb-4">
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${objectiveProgress || 0}%`,
-                        background:
-                          "linear-gradient(to right, #3b82f6, #1e40af)",
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Key Results */}
-                {!collapsedObjectives[index] && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Key Results:
-                    </p>
-                    {objective.keyResults.map((kr, krIndex) => (
-                      <div
-                        key={krIndex}
-                        className={`p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${
-                          objective.isDeleted
-                            ? "opacity-50 pointer-events-none"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {kr.text}
-                          </span>
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {kr.currentValue !== undefined && kr.targetValue
-                              ? `${Math.round(
-                                  (kr.currentValue / kr.targetValue) * 100,
-                                )}%`
-                              : "측정 대기"}
-                          </span>
-                        </div>
-
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
-                          <div
-                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${
-                                kr.currentValue !== undefined && kr.targetValue
-                                  ? Math.min(
-                                      (kr.currentValue / kr.targetValue) * 100,
-                                      100,
-                                    )
-                                  : 0
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-
-                        {kr.measurementType === "manual" && (
-                          <div className="flex items-center gap-2 mb-2">
-                            <Input
-                              type="number"
-                              value={kr.currentValue || 0}
-                              onChange={(e) => {
-                                const newValue = parseInt(e.target.value) || 0;
-                                setPlan((prev) => ({
-                                  ...prev,
-                                  objectives: prev.objectives.map(
-                                    (obj, oIndex) =>
-                                      oIndex === index
-                                        ? {
-                                            ...obj,
-                                            keyResults: obj.keyResults.map(
-                                              (k, kIndex) =>
-                                                kIndex === krIndex
-                                                  ? {
-                                                      ...k,
-                                                      currentValue: newValue,
-                                                    }
-                                                  : k,
-                                            ),
-                                          }
-                                        : obj,
-                                  ),
-                                }));
-                              }}
-                              className="w-20 text-center"
-                            />
-                            <span className="text-sm text-gray-500">
-                              / {kr.targetValue}
-                            </span>
-                          </div>
-                        )}
-
-                        {kr.measurementType === "checklist" && (
-                          <div className="space-y-2 mb-2">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              진행률: {kr.currentValue || 0} /{" "}
-                              {kr.checklistItems?.length || 0}
-                            </div>
-                            {kr.checklistItems?.map((item) => (
-                              <div
-                                key={item.id}
-                                className="flex items-center gap-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={item.completed}
-                                  onChange={() =>
-                                    handleToggleChecklistItem(
-                                      index,
-                                      krIndex,
-                                      item.id,
-                                    )
-                                  }
-                                  className="w-4 h-4"
-                                />
-                                <span
-                                  className={`text-sm ${
-                                    item.completed
-                                      ? "line-through text-gray-500"
-                                      : "text-gray-700 dark:text-gray-300"
-                                  }`}
-                                >
-                                  {item.text}
-                                </span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() =>
-                                    handleDeleteChecklistItem(
-                                      index,
-                                      krIndex,
-                                      item.id,
-                                    )
-                                  }
-                                  className="p-1 text-red-500 hover:text-red-700"
-                                >
-                                  <X className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            ))}
-                            <div className="flex items-center gap-2">
-                              <Input
-                                placeholder="새 항목 추가..."
-                                onKeyPress={(e) => {
-                                  if (
-                                    e.key === "Enter" &&
-                                    e.target.value.trim()
-                                  ) {
-                                    handleAddChecklistItem(
-                                      index,
-                                      krIndex,
-                                      e.target.value,
-                                    );
-                                    e.target.value = "";
-                                  }
-                                }}
-                                className="flex-1"
-                              />
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => {
-                                  const input = e.target.previousElementSibling;
-                                  if (input.value.trim()) {
-                                    handleAddChecklistItem(
-                                      index,
-                                      krIndex,
-                                      input.value,
-                                    );
-                                    input.value = "";
-                                  }
-                                }}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {kr.currentValue !== undefined &&
-                          kr.targetValue &&
-                          kr.measurementType !== "checklist" && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                              {kr.currentValue.toLocaleString()} /{" "}
-                              {kr.targetValue.toLocaleString()}
-                            </div>
-                          )}
-
-                        <div className="flex justify-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleSetMeasurement(index, krIndex)}
-                            className="text-xs"
-                          >
-                            {kr.measurementType === "auto" && "📈 연결됨"}
-                            {kr.measurementType === "manual" && "✍️ 수동 입력"}
-                            {kr.measurementType === "checklist" &&
-                              "✔️ 체크리스트"}
-                            {!kr.measurementType && "성과 측정 방식 설정"}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
+      {renderObjectives()}
 
       {/* 전략 개요 */}
       <Card>
@@ -1500,8 +1771,7 @@ export default function MarketingPlanDetailPage() {
                 </span>
               </div>
               <p className="text-gray-700 dark:text-gray-300">
-                {comment.message}
-              </p>
+                {comment.message              </p>
             </div>
           ))}
 
@@ -1555,34 +1825,9 @@ export default function MarketingPlanDetailPage() {
         </CardContent>
       </Card>
 
-      {/* 삭제 확인 모달 */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">
-              {deletedObjectives.has(showDeleteConfirm)
-                ? "목표를 복원하시겠습니까?"
-                : "정말 삭제하시겠습니까?"}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {deletedObjectives.has(showDeleteConfirm)
-                ? "이 목표가 다시 활성화됩니다."
-                : "이 목표는 비활성화되지만 나중에 복원할 수 있습니다."}
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(null)}
-              >
-                아니오
-              </Button>
-              <Button onClick={() => handleDeleteObjective(showDeleteConfirm)}>
-                예
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 모달들 */}
+      {renderDeleteModal()}
+      {renderMeasurementModal()}
     </div>
   );
 }
