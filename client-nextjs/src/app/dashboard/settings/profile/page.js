@@ -209,6 +209,44 @@ export default function ProfileSettingsPage() {
         }
   };
 
+  const handlePasswordChangeSubmit = async () => {
+        if (!canChangePassword) return;
+
+        setIsLoading(true);
+        try {
+            const { data } = await changePassword({
+                variables: {
+                    input: {
+                        currentPassword: passwordData.currentPassword,
+                        newPassword: passwordData.newPassword
+                    }
+                }
+            });
+
+            if (data?.changePassword) {
+                setPasswordData({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: ""
+                });
+                setCurrentPasswordVerified(null);
+                toast({
+                    title: "성공",
+                    description: "비밀번호가 성공적으로 변경되었습니다.",
+                });
+            }
+        } catch (error) {
+            console.error("Password change error:", error);
+            toast({
+                title: "오류",
+                description: error.message || "비밀번호 변경에 실패했습니다.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+  };
+
   const handleSecurityChange = (field, value) => {
     setSecuritySettings(prev => ({ ...prev, [field]: value }));
   };
@@ -718,6 +756,9 @@ export default function ProfileSettingsPage() {
                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
+                        {isVerifyingPassword && (
+                            <p className="text-blue-500 text-sm mt-1">비밀번호 확인 중...</p>
+                        )}
                         {currentPasswordVerified === false && (
                             <p className="text-red-500 text-sm mt-1">현재 비밀번호가 일치하지 않습니다.</p>
                         )}
@@ -765,24 +806,112 @@ export default function ProfileSettingsPage() {
                             </button>
                         </div>
                     </div>
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                        <div className="flex items-start space-x-2">
-                            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                            <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                                <p className="font-medium mb-1">비밀번호 요구사항:</p>
-                                <ul className="list-disc list-inside space-y-1">
-                                    <li>최소 8자 이상</li>
-                                    <li>대문자, 소문자, 숫자, 특수문자 포함</li>
-                                    <li>이전 비밀번호와 다른 비밀번호</li>
-                                </ul>
+
+                    {/* 비밀번호 강도 및 상태 표시 */}
+                    {(passwordData.newPassword || passwordData.confirmPassword) && (
+                        <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            {/* 비밀번호 강도 */}
+                            {passwordData.newPassword && (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            비밀번호 강도:
+                                        </span>
+                                        <span className={`text-sm font-bold ${
+                                            passwordStrength.label === "강함"
+                                                ? "text-green-600" 
+                                                : passwordStrength.label === "보통" 
+                                                ? "text-yellow-600" 
+                                                : passwordStrength.label === "약함"
+                                                ? "text-red-600"
+                                                : "text-gray-400"
+                                        }`}>
+                                            {passwordStrength.label}
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                        <div 
+                                            className={`h-2 rounded-full transition-all duration-300 ${
+                                                passwordStrength.score === 3 
+                                                    ? "bg-green-500 w-full" 
+                                                    : passwordStrength.score === 2 
+                                                    ? "bg-yellow-500 w-2/3" 
+                                                    : passwordStrength.score === 1
+                                                    ? "bg-red-500 w-1/3"
+                                                    : "bg-gray-300 w-0"
+                                            }`}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 비밀번호 조건 체크리스트 */}
+                            <div className="space-y-1">
+                                <div className={`flex items-center text-xs ${
+                                    passwordStrength.hasMinLength ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                                }`}>
+                                    <span className="mr-2">
+                                        {passwordStrength.hasMinLength ? "✓" : "○"}
+                                    </span>
+                                    최소 8자 이상
+                                </div>
+                                <div className={`flex items-center text-xs ${
+                                    passwordStrength.hasUppercase ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                                }`}>
+                                    <span className="mr-2">
+                                        {passwordStrength.hasUppercase ? "✓" : "○"}
+                                    </span>
+                                    대문자 포함
+                                </div>
+                                <div className={`flex items-center text-xs ${
+                                    passwordStrength.hasLowercase ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                                }`}>
+                                    <span className="mr-2">
+                                        {passwordStrength.hasLowercase ? "✓" : "○"}
+                                    </span>
+                                    소문자 포함
+                                </div>
+                                <div className={`flex items-center text-xs ${
+                                    passwordStrength.hasNumbers ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                                }`}>
+                                    <span className="mr-2">
+                                        {passwordStrength.hasNumbers ? "✓" : "○"}
+                                    </span>
+                                    숫자 포함
+                                </div>
+                                <div className={`flex items-center text-xs ${
+                                    passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                                }`}>
+                                    <span className="mr-2">
+                                        {passwordStrength.hasSpecialChar ? "✓" : "○"}
+                                    </span>
+                                    특수문자 포함
+                                </div>
+                                {passwordData.confirmPassword && (
+                                    <div className={`flex items-center text-xs ${
+                                        passwordStrength.isMatching ? "text-green-600" : "text-red-500"
+                                    }`}>
+                                        <span className="mr-2">
+                                            {passwordStrength.isMatching ? "✓" : "✗"}
+                                        </span>
+                                        비밀번호 일치
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    </div>
+                    )}
+
                     <button
-                        disabled={!canChangePassword}
-                        className={`bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2 disabled:opacity-50`}
+                        onClick={handlePasswordChangeSubmit}
+                        disabled={!canChangePassword || isLoading}
+                        className={`w-full px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+                            canChangePassword && !isLoading 
+                                ? "bg-blue-500 hover:bg-blue-600 text-white" 
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
                     >
-                        {isLoading ? "저장중..." : "비밀번호 변경"}
+                        <Lock className="w-4 h-4" />
+                        <span>{isLoading ? "변경 중..." : "비밀번호 변경"}</span>
                     </button>
                 </div>
             </div>
