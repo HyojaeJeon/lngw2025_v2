@@ -320,7 +320,6 @@ const sidebarItems = [
       { name: "settings.dataManagement", href: "/dashboard/settings/data-management" },
       { name: "settings.auditLogs", href: "/dashboard/settings/audit-logs" },
       { name: "settings.billing", href: "/dashboard/settings/billing" },
-      { name: "settings.snsIntegration", href: "/dashboard/settings/sns-integration" },
     ],
   },
 ];
