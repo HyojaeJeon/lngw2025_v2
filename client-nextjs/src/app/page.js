@@ -13,20 +13,25 @@ export default function Home() {
   const { theme, toggleTheme } = useTheme();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // useEffect(() => {
+  //   // Redux store와 localStorage 모두 확인
+  //   const token = getToken();
+  //   setIsRedirecting(true);
+
+  //   setTimeout(() => {
+  //     if (token) {
+  //       router.push("/dashboard");
+  //     } else {
+  //       router.push("/login");
+  //     }
+  //   }, 1500);
+  // }, [router]);
+
   useEffect(() => {
     // Redux store와 localStorage 모두 확인
-    const token = getToken();
-    setIsRedirecting(true);
 
-    setTimeout(() => {
-      if (token) {
-        router.push("/dashboard");
-      } else {
-        router.push("/login");
-      }
-    }, 1500);
-  }, [router]);
-
+    router.push("/dashboard");
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
