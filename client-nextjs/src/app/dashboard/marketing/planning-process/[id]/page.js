@@ -54,8 +54,6 @@ export default function MarketingPlanDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [editingStrategy, setEditingStrategy] = useState(false);
   const [strategyData, setStrategyData] = useState({});
-  const [showAddActivity, setShowAddActivity] = useState(false);
-  const [newActivity, setNewActivity] = useState({ name: "", campaignId: "", budget: "" });
   const [editingActivity, setEditingActivity] = useState(null);
   const [showActivityDropdown, setShowActivityDropdown] = useState(null);
   const [comments, setComments] = useState([]);
@@ -102,13 +100,14 @@ export default function MarketingPlanDetailPage() {
                   ? {
                       ...kr,
                       measurementType: type,
-                      currentValue: type === "checklist" ? 0 : kr.currentValue || 0,
+                      currentValue:
+                        type === "checklist" ? 0 : kr.currentValue || 0,
                       checklistItems: type === "checklist" ? [] : undefined,
                     }
-                  : kr
+                  : kr,
               ),
             }
-          : obj
+          : obj,
       ),
     }));
 
@@ -139,10 +138,10 @@ export default function MarketingPlanDetailPage() {
                         },
                       ],
                     }
-                  : kr
+                  : kr,
               ),
             }
-          : obj
+          : obj,
       ),
     }));
   };
@@ -160,13 +159,13 @@ export default function MarketingPlanDetailPage() {
                   ? {
                       ...kr,
                       checklistItems: kr.checklistItems?.filter(
-                        (item) => item.id !== itemId
+                        (item) => item.id !== itemId,
                       ),
                     }
-                  : kr
+                  : kr,
               ),
             }
-          : obj
+          : obj,
       ),
     }));
   };
@@ -186,11 +185,13 @@ export default function MarketingPlanDetailPage() {
                       checklistItems: kr.checklistItems?.map((item) =>
                         item.id === itemId
                           ? { ...item, completed: !item.completed }
-                          : item
+                          : item,
                       ),
                       currentValue: kr.checklistItems
                         ? kr.checklistItems.filter((item) =>
-                            item.id === itemId ? !item.completed : item.completed
+                            item.id === itemId
+                              ? !item.completed
+                              : item.completed,
                           ).length +
                           (kr.checklistItems.find((item) => item.id === itemId)
                             ?.completed
@@ -198,10 +199,10 @@ export default function MarketingPlanDetailPage() {
                             : 1)
                         : 0,
                     }
-                  : kr
+                  : kr,
               ),
             }
-          : obj
+          : obj,
       ),
     }));
   };
@@ -211,7 +212,7 @@ export default function MarketingPlanDetailPage() {
     setPlan((prev) => ({
       ...prev,
       objectives: prev.objectives.map((obj, index) =>
-        index === objectiveIndex ? { ...obj, isDeleted: false } : obj
+        index === objectiveIndex ? { ...obj, isDeleted: false } : obj,
       ),
     }));
 
@@ -499,7 +500,9 @@ export default function MarketingPlanDetailPage() {
       case "진행중":
         return <Badge className="bg-blue-500 hover:bg-blue-600">진행중</Badge>;
       case "계획됨":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">계획됨</Badge>;
+        return (
+          <Badge className="bg-yellow-500 hover:bg-yellow-600">계획됨</Badge>
+        );
       case "완료":
         return <Badge className="bg-green-500 hover:bg-green-600">완료</Badge>;
       case "보류":
@@ -552,7 +555,9 @@ export default function MarketingPlanDetailPage() {
     setShowDeleteConfirm(null);
 
     // 히스토리에 기록 추가
-    const action = deletedObjectives.has(objectiveId) ? "목표 복원" : "목표 삭제";
+    const action = deletedObjectives.has(objectiveId)
+      ? "목표 복원"
+      : "목표 삭제";
     const newHistoryItem = {
       id: history.length + 1,
       action,
@@ -576,33 +581,15 @@ export default function MarketingPlanDetailPage() {
       .filter((progress) => progress !== null && !isNaN(progress));
 
     if (validProgress.length === 0) return null;
-    return Math.round(validProgress.reduce((sum, progress) => sum + progress, 0) / validProgress.length);
+    return Math.round(
+      validProgress.reduce((sum, progress) => sum + progress, 0) /
+        validProgress.length,
+    );
   };
 
   // 진행률 표시 텍스트
   const formatProgress = (progress) => {
     return progress === null || isNaN(progress) ? "측정 대기" : `${progress}%`;
-  };
-
-  // 전략 개요 저장
-  const handleSaveStrategy = () => {
-    setPlan((prev) => ({
-      ...prev,
-      targetPersona: strategyData.targetPersona,
-      coreMessage: strategyData.coreMessage,
-      channels: strategyData.channels,
-    }));
-    setEditingStrategy(false);
-
-    // 히스토리에 기록 추가
-    const newHistoryItem = {
-      id: history.length + 1,
-      action: "전략 개요 수정",
-      user: "현재 사용자",
-      detail: "전략 개요가 수정됨",
-      timestamp: new Date().toLocaleString("ko-KR"),
-    };
-    setHistory((prev) => [newHistoryItem, ...prev]);
   };
 
   // 채널 추가
@@ -832,7 +819,9 @@ export default function MarketingPlanDetailPage() {
           {plan.objectives.map((objective, index) => {
             const isCollapsed = collapsedObjectives.has(objective.id);
             const isDeleted = deletedObjectives.has(objective.id);
-            const objectiveProgress = calculateObjectiveProgress(objective.keyResults);
+            const objectiveProgress = calculateObjectiveProgress(
+              objective.keyResults,
+            );
 
             return (
               <div
@@ -843,50 +832,50 @@ export default function MarketingPlanDetailPage() {
               >
                 {/* Objective 헤더 */}
                 <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => toggleObjective(index)}
-                            className="p-1"
-                          >
-                            {collapsedObjectives[index] ? (
-                              <Plus className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </Button>
-                          <h4 className="font-medium text-gray-900 dark:text-white">
-                            Objective: {objective.title}
-                            {objective.isDeleted && (
-                              <Badge variant="secondary" className="ml-2">
-                                삭제됨
-                              </Badge>
-                            )}
-                          </h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {objective.isDeleted ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRestoreObjective(index)}
-                              className="text-green-600 hover:text-green-700"
-                            >
-                              <RotateCcw className="w-4 h-4" />
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeleteObjective(index)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => toggleObjective(index)}
+                      className="p-1"
+                    >
+                      {collapsedObjectives[index] ? (
+                        <Plus className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </Button>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Objective: {objective.title}
+                      {objective.isDeleted && (
+                        <Badge variant="secondary" className="ml-2">
+                          삭제됨
+                        </Badge>
+                      )}
+                    </h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {objective.isDeleted ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRestoreObjective(index)}
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteObjective(index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
                 {/* Objective 진행률 바 */}
                 <div className="mb-4">
@@ -895,7 +884,8 @@ export default function MarketingPlanDetailPage() {
                       className="h-2 rounded-full transition-all duration-500"
                       style={{
                         width: `${objectiveProgress || 0}%`,
-                        background: "linear-gradient(to right, #3b82f6, #1e40af)",
+                        background:
+                          "linear-gradient(to right, #3b82f6, #1e40af)",
                       }}
                     ></div>
                   </div>
@@ -903,173 +893,198 @@ export default function MarketingPlanDetailPage() {
 
                 {/* Key Results */}
                 {!collapsedObjectives[index] && (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Key Results:
-                          </p>
-                          {objective.keyResults.map((kr, krIndex) => (
-                            <div
-                              key={krIndex}
-                              className={`p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${
-                                objective.isDeleted ? "opacity-50 pointer-events-none" : ""
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  {kr.text}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Key Results:
+                    </p>
+                    {objective.keyResults.map((kr, krIndex) => (
+                      <div
+                        key={krIndex}
+                        className={`p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${
+                          objective.isDeleted
+                            ? "opacity-50 pointer-events-none"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {kr.text}
+                          </span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {kr.currentValue !== undefined && kr.targetValue
+                              ? `${Math.round(
+                                  (kr.currentValue / kr.targetValue) * 100,
+                                )}%`
+                              : "측정 대기"}
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+                          <div
+                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${
+                                kr.currentValue !== undefined && kr.targetValue
+                                  ? Math.min(
+                                      (kr.currentValue / kr.targetValue) * 100,
+                                      100,
+                                    )
+                                  : 0
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+
+                        {kr.measurementType === "manual" && (
+                          <div className="flex items-center gap-2 mb-2">
+                            <Input
+                              type="number"
+                              value={kr.currentValue || 0}
+                              onChange={(e) => {
+                                const newValue = parseInt(e.target.value) || 0;
+                                setPlan((prev) => ({
+                                  ...prev,
+                                  objectives: prev.objectives.map(
+                                    (obj, oIndex) =>
+                                      oIndex === index
+                                        ? {
+                                            ...obj,
+                                            keyResults: obj.keyResults.map(
+                                              (k, kIndex) =>
+                                                kIndex === krIndex
+                                                  ? {
+                                                      ...k,
+                                                      currentValue: newValue,
+                                                    }
+                                                  : k,
+                                            ),
+                                          }
+                                        : obj,
+                                  ),
+                                }));
+                              }}
+                              className="w-20 text-center"
+                            />
+                            <span className="text-sm text-gray-500">
+                              / {kr.targetValue}
+                            </span>
+                          </div>
+                        )}
+
+                        {kr.measurementType === "checklist" && (
+                          <div className="space-y-2 mb-2">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              진행률: {kr.currentValue || 0} /{" "}
+                              {kr.checklistItems?.length || 0}
+                            </div>
+                            {kr.checklistItems?.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={item.completed}
+                                  onChange={() =>
+                                    handleToggleChecklistItem(
+                                      index,
+                                      krIndex,
+                                      item.id,
+                                    )
+                                  }
+                                  className="w-4 h-4"
+                                />
+                                <span
+                                  className={`text-sm ${
+                                    item.completed
+                                      ? "line-through text-gray-500"
+                                      : "text-gray-700 dark:text-gray-300"
+                                  }`}
+                                >
+                                  {item.text}
                                 </span>
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {kr.currentValue !== undefined && kr.targetValue
-                                    ? `${Math.round(
-                                        (kr.currentValue / kr.targetValue) * 100
-                                      )}%`
-                                    : "측정 대기"}
-                                </span>
-                              </div>
-
-                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
-                                <div
-                                  className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-500"
-                                  style={{
-                                    width: `${
-                                      kr.currentValue !== undefined && kr.targetValue
-                                        ? Math.min(
-                                            (kr.currentValue / kr.targetValue) * 100,
-                                            100
-                                          )
-                                        : 0
-                                    }%`,
-                                  }}
-                                ></div>
-                              </div>
-
-                              {kr.measurementType === "manual" && (
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Input
-                                    type="number"
-                                    value={kr.currentValue || 0}
-                                    onChange={(e) => {
-                                      const newValue = parseInt(e.target.value) || 0;
-                                      setPlan((prev) => ({
-                                        ...prev,
-                                        objectives: prev.objectives.map((obj, oIndex) =>
-                                          oIndex === index
-                                            ? {
-                                                ...obj,
-                                                keyResults: obj.keyResults.map((k, kIndex) =>
-                                                  kIndex === krIndex
-                                                    ? { ...k, currentValue: newValue }
-                                                    : k
-                                                ),
-                                              }
-                                            : obj
-                                        ),
-                                      }));
-                                    }}
-                                    className="w-20 text-center"
-                                  />
-                                  <span className="text-sm text-gray-500">
-                                    / {kr.targetValue}
-                                  </span>
-                                </div>
-                              )}
-
-                              {kr.measurementType === "checklist" && (
-                                <div className="space-y-2 mb-2">
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    진행률: {kr.currentValue || 0} / {kr.checklistItems?.length || 0}
-                                  </div>
-                                  {kr.checklistItems?.map((item) => (
-                                    <div key={item.id} className="flex items-center gap-2">
-                                      <input
-                                        type="checkbox"
-                                        checked={item.completed}
-                                        onChange={() =>
-                                          handleToggleChecklistItem(index, krIndex, item.id)
-                                        }
-                                        className="w-4 h-4"
-                                      />
-                                      <span
-                                        className={`text-sm ${
-                                          item.completed
-                                            ? "line-through text-gray-500"
-                                            : "text-gray-700 dark:text-gray-300"
-                                        }`}
-                                      >
-                                        {item.text}
-                                      </span>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() =>
-                                          handleDeleteChecklistItem(index, krIndex, item.id)
-                                        }
-                                        className="p-1 text-red-500 hover:text-red-700"
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  ))}
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      placeholder="새 항목 추가..."
-                                      onKeyPress={(e) => {
-                                        if (e.key === "Enter" && e.target.value.trim()) {
-                                          handleAddChecklistItem(
-                                            index,
-                                            krIndex,
-                                            e.target.value
-                                          );
-                                          e.target.value = "";
-                                        }
-                                      }}
-                                      className="flex-1"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={(e) => {
-                                        const input = e.target.previousElementSibling;
-                                        if (input.value.trim()) {
-                                          handleAddChecklistItem(
-                                            index,
-                                            krIndex,
-                                            input.value
-                                          );
-                                          input.value = "";
-                                        }
-                                      }}
-                                    >
-                                      <Plus className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
-
-                              {kr.currentValue !== undefined && kr.targetValue && kr.measurementType !== "checklist" && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                                  {kr.currentValue.toLocaleString()} /{" "}
-                                  {kr.targetValue.toLocaleString()}
-                                </div>
-                              )}
-
-                              <div className="flex justify-end">
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  onClick={() => handleSetMeasurement(index, krIndex)}
-                                  className="text-xs"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleDeleteChecklistItem(
+                                      index,
+                                      krIndex,
+                                      item.id,
+                                    )
+                                  }
+                                  className="p-1 text-red-500 hover:text-red-700"
                                 >
-                                  {kr.measurementType === "auto" && "📈 연결됨"}
-                                  {kr.measurementType === "manual" && "✍️ 수동 입력"}
-                                  {kr.measurementType === "checklist" && "✔️ 체크리스트"}
-                                  {!kr.measurementType && "성과 측정 방식 설정"}
+                                  <X className="w-3 h-3" />
                                 </Button>
                               </div>
+                            ))}
+                            <div className="flex items-center gap-2">
+                              <Input
+                                placeholder="새 항목 추가..."
+                                onKeyPress={(e) => {
+                                  if (
+                                    e.key === "Enter" &&
+                                    e.target.value.trim()
+                                  ) {
+                                    handleAddChecklistItem(
+                                      index,
+                                      krIndex,
+                                      e.target.value,
+                                    );
+                                    e.target.value = "";
+                                  }
+                                }}
+                                className="flex-1"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  const input = e.target.previousElementSibling;
+                                  if (input.value.trim()) {
+                                    handleAddChecklistItem(
+                                      index,
+                                      krIndex,
+                                      input.value,
+                                    );
+                                    input.value = "";
+                                  }
+                                }}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
                             </div>
-                          ))}
+                          </div>
+                        )}
+
+                        {kr.currentValue !== undefined &&
+                          kr.targetValue &&
+                          kr.measurementType !== "checklist" && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                              {kr.currentValue.toLocaleString()} /{" "}
+                              {kr.targetValue.toLocaleString()}
+                            </div>
+                          )}
+
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSetMeasurement(index, krIndex)}
+                            className="text-xs"
+                          >
+                            {kr.measurementType === "auto" && "📈 연결됨"}
+                            {kr.measurementType === "manual" && "✍️ 수동 입력"}
+                            {kr.measurementType === "checklist" &&
+                              "✔️ 체크리스트"}
+                            {!kr.measurementType && "성과 측정 방식 설정"}
+                          </Button>
                         </div>
-                      )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -1084,139 +1099,139 @@ export default function MarketingPlanDetailPage() {
               <FileText className="w-5 h-5 text-green-500" />
               전략 개요
             </CardTitle>
-            <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="ml-auto"
-                  onClick={isEditingStrategy ? handleSaveStrategy : handleStartEditStrategy}
-                >
-                  {isEditingStrategy ? (
-                    <>
-                      <Save className="w-4 h-4 mr-1" />
-                      저장
-                    </>
-                  ) : (
-                    <>
-                      <Edit className="w-4 h-4 mr-1" />
-                      편집
-                    </>
-                  )}
-                </Button>
-                {isEditingStrategy && (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={handleCancelEditStrategy}
-                    className="text-gray-500"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    취소
-                  </Button>
-                )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto"
+              onClick={
+                isEditingStrategy ? handleSaveStrategy : handleStartEditStrategy
+              }
+            >
+              {isEditingStrategy ? (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  저장
+                </>
+              ) : (
+                <>
+                  <Edit className="w-4 h-4 mr-1" />
+                  편집
+                </>
+              )}
+            </Button>
+            {isEditingStrategy && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCancelEditStrategy}
+                className="text-gray-500"
+              >
+                <X className="w-4 h-4 mr-1" />
+                취소
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
           <div>
-              
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                    타겟 고객
-                  </h4>
-                  {isEditingStrategy ? (
-                    <textarea
-                      value={editingStrategyData.targetPersona}
-                      onChange={(e) =>
-                        setEditingStrategyData((prev) => ({
-                          ...prev,
-                          targetPersona: e.target.value,
-                        }))
-                      }
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                      rows={3}
-                      placeholder="타겟 고객을 입력하세요"
-                    />
-                  ) : (
-                    <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
-                      {plan.targetPersona}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                    핵심 메시지
-                  </h4>
-                  {isEditingStrategy ? (
-                    <textarea
-                      value={editingStrategyData.coreMessage}
-                      onChange={(e) =>
-                        setEditingStrategyData((prev) => ({
-                          ...prev,
-                          coreMessage: e.target.value,
-                        }))
-                      }
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                      rows={3}
-                      placeholder="핵심 메시지를 입력하세요"
-                    />
-                  ) : (
-                    <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
-                      {plan.coreMessage}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                  주요 채널
+                  타겟 고객
                 </h4>
                 {isEditingStrategy ? (
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      {editingStrategyData.channels.map((channel, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 flex items-center gap-1"
-                        >
-                          {channel}
-                          <button
-                            onClick={() => handleRemoveChannel(channel)}
-                            className="ml-1 hover:text-red-500"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <Input
-                      placeholder="채널을 입력하고 Enter를 누르세요"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter" && e.target.value.trim()) {
-                          handleAddChannel(e.target.value);
-                          e.target.value = "";
-                        }
-                      }}
-                      className="w-full"
-                    />
-                  </div>
+                  <textarea
+                    value={editingStrategyData.targetPersona}
+                    onChange={(e) =>
+                      setEditingStrategyData((prev) => ({
+                        ...prev,
+                        targetPersona: e.target.value,
+                      }))
+                    }
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    rows={3}
+                    placeholder="타겟 고객을 입력하세요"
+                  />
                 ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {plan.channels?.map((channel, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300"
-                      >
-                        {channel}
-                      </Badge>
-                    ))}
-                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                    {plan.targetPersona}
+                  </p>
+                )}
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                  핵심 메시지
+                </h4>
+                {isEditingStrategy ? (
+                  <textarea
+                    value={editingStrategyData.coreMessage}
+                    onChange={(e) =>
+                      setEditingStrategyData((prev) => ({
+                        ...prev,
+                        coreMessage: e.target.value,
+                      }))
+                    }
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    rows={3}
+                    placeholder="핵심 메시지를 입력하세요"
+                  />
+                ) : (
+                  <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                    {plan.coreMessage}
+                  </p>
                 )}
               </div>
             </div>
+
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                주요 채널
+              </h4>
+              {isEditingStrategy ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {editingStrategyData.channels.map((channel, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 flex items-center gap-1"
+                      >
+                        {channel}
+                        <button
+                          onClick={() => handleRemoveChannel(channel)}
+                          className="ml-1 hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <Input
+                    placeholder="채널을 입력하고 Enter를 누르세요"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && e.target.value.trim()) {
+                        handleAddChannel(e.target.value);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {plan.channels?.map((channel, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300"
+                    >
+                      {channel}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -1228,232 +1243,242 @@ export default function MarketingPlanDetailPage() {
               <Calendar className="w-5 h-5 text-purple-500" />
               주요 활동
             </CardTitle>
-            <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="ml-auto"
-                  onClick={handleStartAddActivity}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  활동 추가
-                </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto"
+              onClick={handleStartAddActivity}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              활동 추가
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-              
-
-              <div className="space-y-3">
-                {plan.initiatives?.map((initiative, index) => (
-                  <div key={index}>
-                    {editingActivity?.originalId === initiative.id ? (
-                      // 편집 모드
-                      <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                        <div className="space-y-3">
+            <div className="space-y-3">
+              {plan.initiatives?.map((initiative, index) => (
+                <div key={index}>
+                  {editingActivity?.originalId === initiative.id ? (
+                    // 편집 모드
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            활동명
+                          </label>
+                          <Input
+                            value={editingActivity.name}
+                            onChange={(e) =>
+                              setEditingActivity((prev) => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
+                            }
+                            placeholder="활동명을 입력하세요"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              활동명
+                              캠페인 연결
                             </label>
-                            <Input
-                              value={editingActivity.name}
+                            <select
+                              value={editingActivity.campaignId || ""}
                               onChange={(e) =>
                                 setEditingActivity((prev) => ({
                                   ...prev,
-                                  name: e.target.value,
+                                  campaignId: e.target.value,
                                 }))
                               }
-                              placeholder="활동명을 입력하세요"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            >
+                              <option value="">캠페인을 선택하세요</option>
+                              <option value="camp1">
+                                2025 신제품 런칭 캠페인
+                              </option>
+                              <option value="camp2">여름 시즌 프로모션</option>
+                              <option value="camp3">
+                                브랜드 인지도 향상 캠페인
+                              </option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              예산 (만원)
+                            </label>
+                            <Input
+                              type="number"
+                              value={editingActivity.budget}
+                              onChange={(e) =>
+                                setEditingActivity((prev) => ({
+                                  ...prev,
+                                  budget: e.target.value,
+                                }))
+                              }
+                              placeholder="예산을 입력하세요"
                             />
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                캠페인 연결
-                              </label>
-                              <select
-                                value={editingActivity.campaignId || ""}
-                                onChange={(e) =>
-                                  setEditingActivity((prev) => ({
-                                    ...prev,
-                                    campaignId: e.target.value,
-                                  }))
-                                }
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                              >
-                                <option value="">캠페인을 선택하세요</option>
-                                <option value="camp1">2025 신제품 런칭 캠페인</option>
-                                <option value="camp2">여름 시즌 프로모션</option>
-                                <option value="camp3">브랜드 인지도 향상 캠페인</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                예산 (만원)
-                              </label>
-                              <Input
-                                type="number"
-                                value={editingActivity.budget}
-                                onChange={(e) =>
-                                  setEditingActivity((prev) => ({
-                                    ...prev,
-                                    budget: e.target.value,
-                                  }))
-                                }
-                                placeholder="예산을 입력하세요"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" onClick={handleSaveEditActivity}>
-                              <Save className="w-4 h-4 mr-1" />
-                              저장
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => setEditingActivity(null)}
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              취소
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      // 표시 모드
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {initiative.name}
-                          </span>
-                          {getStatusBadge(initiative.status)}
-                          {initiative.linkedToCampaign && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300"
-                            >
-                              캠페인연동
-                            </Badge>
-                          )}
-                          {initiative.budget > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              예산: {initiative.budget}만원
-                            </Badge>
-                          )}
                         </div>
                         <div className="flex gap-2">
-                          {!initiative.linkedToCampaign && (
-                            <Button size="sm" variant="outline">
-                              <Link className="w-4 h-4 mr-1" />
-                              캠페인 연결
-                            </Button>
-                          )}
+                          <Button size="sm" onClick={handleSaveEditActivity}>
+                            <Save className="w-4 h-4 mr-1" />
+                            저장
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setShowActivityDropdown(showActivityDropdown === index ? null : index)}
-                            className="relative"
+                            onClick={() => setEditingActivity(null)}
                           >
-                            <MoreVertical className="w-4 h-4" />
+                            <X className="w-4 h-4 mr-1" />
+                            취소
                           </Button>
-                          {showActivityDropdown === index && (
-                            <div className="absolute right-0 top-8 mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
-                              <button
-                                onClick={() => handleEditActivity(initiative.id)}
-                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                수정
-                              </button>
-                              <button
-                                onClick={() => handleDeleteActivity(initiative.id)}
-                                className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ) : (
+                    // 표시 모드
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {initiative.name}
+                        </span>
+                        {getStatusBadge(initiative.status)}
+                        {initiative.linkedToCampaign && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300"
+                          >
+                            캠페인연동
+                          </Badge>
+                        )}
+                        {initiative.budget > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            예산: {initiative.budget}만원
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {!initiative.linkedToCampaign && (
+                          <Button size="sm" variant="outline">
+                            <Link className="w-4 h-4 mr-1" />
+                            캠페인 연결
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setShowActivityDropdown(
+                              showActivityDropdown === index ? null : index,
+                            )
+                          }
+                          className="relative"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                        {showActivityDropdown === index && (
+                          <div className="absolute right-0 top-8 mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
+                            <button
+                              onClick={() => handleEditActivity(initiative.id)}
+                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteActivity(initiative.id)
+                              }
+                              className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
 
-                {/* 새 활동 추가 폼 */}
-                {showAddActivity && (
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <div className="space-y-3">
+              {/* 새 활동 추가 폼 */}
+              {showAddActivity && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        활동명 *
+                      </label>
+                      <Input
+                        value={newActivity.name}
+                        onChange={(e) =>
+                          setNewActivity((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                        placeholder="활동명을 입력하세요"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          활동명 *
+                          캠페인 연결
                         </label>
-                        <Input
-                          value={newActivity.name}
+                        <select
+                          value={newActivity.campaignId}
                           onChange={(e) =>
                             setNewActivity((prev) => ({
                               ...prev,
-                              name: e.target.value,
+                              campaignId: e.target.value,
                             }))
                           }
-                          placeholder="활동명을 입력하세요"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="">캠페인을 선택하세요</option>
+                          <option value="camp1">2025 신제품 런칭 캠페인</option>
+                          <option value="camp2">여름 시즌 프로모션</option>
+                          <option value="camp3">
+                            브랜드 인지도 향상 캠페인
+                          </option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          예산 (만원)
+                        </label>
+                        <Input
+                          type="number"
+                          value={newActivity.budget}
+                          onChange={(e) =>
+                            setNewActivity((prev) => ({
+                              ...prev,
+                              budget: e.target.value,
+                            }))
+                          }
+                          placeholder="예산을 입력하세요"
                         />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            캠페인 연결
-                          </label>
-                          <select
-                            value={newActivity.campaignId}
-                            onChange={(e) =>
-                              setNewActivity((prev) => ({
-                                ...prev,
-                                campaignId: e.target.value,
-                              }))
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                          >
-                            <option value="">캠페인을 선택하세요</option>
-                            <option value="camp1">2025 신제품 런칭 캠페인</option>
-                            <option value="camp2">여름 시즌 프로모션</option>
-                            <option value="camp3">브랜드 인지도 향상 캠페인</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            예산 (만원)
-                          </label>
-                          <Input
-                            type="number"
-                            value={newActivity.budget}
-                            onChange={(e) =>
-                              setNewActivity((prev) => ({
-                                ...prev,
-                                budget: e.target.value,
-                              }))
-                            }
-                            placeholder="예산을 입력하세요"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={handleSaveNewActivity}>
-                          <Save className="w-4 h-4 mr-1" />
-                          저장
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={handleCancelAddActivity}
-                        >
-                          <X className="w-4 h-4 mr-1" />
-                          취소
-                        </Button>
-                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleSaveNewActivity}>
+                        <Save className="w-4 h-4 mr-1" />
+                        저장
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancelAddActivity}
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        취소
+                      </Button>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -1470,9 +1495,13 @@ export default function MarketingPlanDetailPage() {
             <div key={comment.id} className="border-l-4 border-blue-200 pl-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-sm">{comment.user}</span>
-                <span className="text-xs text-gray-500">{comment.timestamp}</span>
+                <span className="text-xs text-gray-500">
+                  {comment.timestamp}
+                </span>
               </div>
-              <p className="text-gray-700 dark:text-gray-300">{comment.message}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {comment.message}
+              </p>
             </div>
           ))}
 
@@ -1513,8 +1542,12 @@ export default function MarketingPlanDetailPage() {
                     <span className="font-medium">{item.action}</span>
                     <span className="text-gray-500">by {item.user}</span>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400">{item.detail}</p>
-                  <span className="text-xs text-gray-500">{item.timestamp}</span>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {item.detail}
+                  </p>
+                  <span className="text-xs text-gray-500">
+                    {item.timestamp}
+                  </span>
                 </div>
               </div>
             ))}
