@@ -856,7 +856,7 @@ export default function MarketingPlanDetailPage() {
         kr.target !== null &&
         !isNaN(kr.target)
       );
-    });
+    
 
     if (validResults.length === 0) return 0;
 
