@@ -650,15 +650,34 @@ export default function MarketingPlanDetailPage() {
 
   // Objective 전체 달성률 계산
   const calculateObjectiveProgress = (keyResults) => {
-    const validProgress = keyResults
-      .map((kr) => calculateProgress(kr.current, kr.target))
-      .filter((progress) => progress !== null && !isNaN(progress));
+    if (!keyResults || keyResults.length === 0) return 0;
 
-    if (validProgress.length === 0) return null;
-    return Math.round(
-      validProgress.reduce((sum, progress) => sum + progress, 0) /
-        validProgress.length,
-    );
+    const validResults = keyResults.filter((kr) => {
+      if (kr.measurementType === "checklist") {
+        return kr.checklist && kr.checklist.length > 0;
+      }
+      return (
+        kr.current !== null &&
+        !isNaN(kr.current) &&
+        kr.target !== null &&
+        !isNaN(kr.target)
+      );
+    });
+
+    if (validResults.length === 0) return 0;
+
+    const totalProgress = validResults.reduce((sum, kr) => {
+      if (kr.measurementType === "checklist") {
+        const completed = kr.checklist
+          ? kr.checklist.filter((item) => item.completed).length
+          : 0;
+        const total = kr.checklist ? kr.checklist.length : 1;
+        return sum + (completed / total) * 100;
+      }
+      return sum + Math.min((kr.current / kr.target) * 100, 100);
+    }, 0);
+
+    return Math.round(totalProgress / validResults.length);
   };
 
   // 진행률 표시 텍스트
@@ -793,24 +812,12 @@ export default function MarketingPlanDetailPage() {
     setNewComment("");
   };
 
-  // 목표 토글 함수
+  // 목표 토글 함수 (펼치기/접기)
   const toggleObjective = (objectiveId) => {
     setExpandedObjectives((prev) => ({
       ...prev,
       [objectiveId]: !prev[objectiveId],
     }));
-  };
-  // 목표 접기/펼치기
-  const toggleObjective = (objectiveId) => {
-    setCollapsedObjectives((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(objectiveId)) {
-        newSet.delete(objectiveId);
-      } else {
-        newSet.add(objectiveId);
-      }
-      return newSet;
-    });
   };
 
   // 목표 삭제 함수
@@ -840,12 +847,6 @@ export default function MarketingPlanDetailPage() {
     setShowDeleteModal(false);
     setObjectiveToDelete(null);
   };
-
-  // 달성률 계산 함수
-  const calculateObjectiveProgress = (keyResults) => {
-    if (!keyResults || keyResults.length === 0) return 0;
-
-    const validResults = keyResults.filter((kr) => {
       if (kr.measurementType === "checklist") {
         return kr.checklist && kr.checklist.length > 0;
       }
