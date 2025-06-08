@@ -1,0 +1,234 @@
+
+Failed to compile
+./src/app/dashboard/marketing/planning-process/[id]/page.js
+Error: 
+  × the name `toggleObjective` is defined multiple times
+     ╭─[/home/runner/workspace/client-nextjs/src/app/dashboard/marketing/planning-process/[id]/page.js:794:1]
+ 794 │   };
+ 795 │ 
+ 796 │   // 목표 토글 함수
+ 797 │   const toggleObjective = (objectiveId) => {
+     ·         ───────┬───────
+     ·                ╰── previous definition of `toggleObjective` here
+ 798 │     setExpandedObjectives((prev) => ({
+ 799 │       ...prev,
+ 800 │       [objectiveId]: !prev[objectiveId],
+ 801 │     }));
+ 802 │   };
+ 803 │   // 목표 접기/펼치기
+ 804 │   const toggleObjective = (objectiveId) => {
+     ·         ───────┬───────
+     ·                ╰── `toggleObjective` redefined here
+ 805 │     setCollapsedObjectives((prev) => {
+ 806 │       const newSet = new Set(prev);
+ 807 │       if (newSet.has(objectiveId)) {
+     ╰────
+
+  × the name `calculateObjectiveProgress` is defined multiple times
+     ╭─[/home/runner/workspace/client-nextjs/src/app/dashboard/marketing/planning-process/[id]/page.js:649:1]
+ 649 │   };
+ 650 │ 
+ 651 │   // Objective 전체 달성률 계산
+ 652 │   const calculateObjectiveProgress = (keyResults) => {
+     ·         ─────────────┬────────────
+     ·                      ╰── previous definition of `calculateObjectiveProgress` here
+ 653 │     const validProgress = keyResults
+ 654 │       .map((kr) => calculateProgress(kr.current, kr.target))
+ 655 │       .filter((progress) => progress !== null && !isNaN(progress));
+ 656 │ 
+ 657 │     if (validProgress.length === 0) return null;
+ 658 │     return Math.round(
+ 659 │       validProgress.reduce((sum, progress) => sum + progress, 0) /
+ 660 │         validProgress.length,
+ 661 │     );
+ 662 │   };
+ 663 │ 
+ 664 │   // 진행률 표시 텍스트
+ 665 │   const formatProgress = (progress) => {
+ 666 │     return progress === null || isNaN(progress) ? "측정 대기" : `${progress}%`;
+ 667 │   };
+ 668 │ 
+ 669 │   // 채널 추가
+ 670 │   const addChannel = (channel) => {
+ 671 │     if (channel && !strategyData.channels.includes(channel)) {
+ 672 │       setStrategyData((prev) => ({
+ 673 │         ...prev,
+ 674 │         channels: [...prev.channels, channel],
+ 675 │       }));
+ 676 │     }
+ 677 │   };
+ 678 │ 
+ 679 │   // 채널 제거
+ 680 │   const removeChannel = (channelToRemove) => {
+ 681 │     setStrategyData((prev) => ({
+ 682 │       ...prev,
+ 683 │       channels: prev.channels.filter((channel) => channel !== channelToRemove),
+ 684 │     }));
+ 685 │   };
+ 686 │ 
+ 687 │   // 활동 추가
+ 688 │   const handleAddActivity = () => {
+ 689 │     if (!newActivity.name.trim()) return;
+ 690 │ 
+ 691 │     const activity = {
+ 692 │       id: plan.initiatives.length + 1,
+ 693 │       name: newActivity.name,
+ 694 │       status: "계획됨",
+ 695 │       linkedToCampaign: !!newActivity.campaignId,
+ 696 │       campaignId: newActivity.campaignId || null,
+ 697 │       budget: parseInt(newActivity.budget) || 0,
+ 698 │     };
+ 699 │ 
+ 700 │     setPlan((prev) => ({
+ 701 │       ...prev,
+ 702 │       initiatives: [...prev.initiatives, activity],
+ 703 │     }));
+ 704 │ 
+ 705 │     setNewActivity({ name: "", campaignId: "", budget: "" });
+ 706 │     setShowAddActivity(false);
+ 707 │ 
+ 708 │     // 히스토리에 기록 추가
+ 709 │     const newHistoryItem = {
+ 710 │       id: history.length + 1,
+ 711 │       action: "활동 추가",
+ 712 │       user: "현재 사용자",
+ 713 │       detail: `새 활동 '${activity.name}'이 추가됨`,
+ 714 │       timestamp: new Date().toLocaleString("ko-KR"),
+ 715 │     };
+ 716 │     setHistory((prev) => [newHistoryItem, ...prev]);
+ 717 │   };
+ 718 │ 
+ 719 │   // 활동 수정
+ 720 │   const handleEditActivity = (activityId) => {
+ 721 │     const activity = plan.initiatives.find((init) => init.id === activityId);
+ 722 │     setEditingActivity({
+ 723 │       ...activity,
+ 724 │       originalId: activityId,
+ 725 │     });
+ 726 │     setShowActivityDropdown(null);
+ 727 │   };
+ 728 │ 
+ 729 │   // 활동 수정 저장
+ 730 │   const handleSaveEditActivity = () => {
+ 731 │     setPlan((prev) => ({
+ 732 │       ...prev,
+ 733 │       initiatives: prev.initiatives.map((init) =>
+ 734 │         init.id === editingActivity.originalId
+ 735 │           ? {
+ 736 │               ...init,
+ 737 │               name: editingActivity.name,
+ 738 │               campaignId: editingActivity.campaignId,
+ 739 │               linkedToCampaign: !!editingActivity.campaignId,
+ 740 │               budget: parseInt(editingActivity.budget) || 0,
+ 741 │             }
+ 742 │           : init,
+ 743 │       ),
+ 744 │     }));
+ 745 │ 
+ 746 │     setEditingActivity(null);
+ 747 │ 
+ 748 │     // 히스토리에 기록 추가
+ 749 │     const newHistoryItem = {
+ 750 │       id: history.length + 1,
+ 751 │       action: "활동 수정",
+ 752 │       user: "현재 사용자",
+ 753 │       detail: `활동 '${editingActivity.name}'이 수정됨`,
+ 754 │       timestamp: new Date().toLocaleString("ko-KR"),
+ 755 │     };
+ 756 │     setHistory((prev) => [newHistoryItem, ...prev]);
+ 757 │   };
+ 758 │ 
+ 759 │   // 활동 삭제
+ 760 │   const handleDeleteActivity = (activityId) => {
+ 761 │     if (confirm("해당 활동을 삭제하시겠습니까?")) {
+ 762 │       const activity = plan.initiatives.find((init) => init.id === activityId);
+ 763 │       setPlan((prev) => ({
+ 764 │         ...prev,
+ 765 │         initiatives: prev.initiatives.filter((init) => init.id !== activityId),
+ 766 │       }));
+ 767 │ 
+ 768 │       // 히스토리에 기록 추가
+ 769 │       const newHistoryItem = {
+ 770 │         id: history.length + 1,
+ 771 │         action: "활동 삭제",
+ 772 │         user: "현재 사용자",
+ 773 │         detail: `활동 '${activity.name}'이 삭제됨`,
+ 774 │         timestamp: new Date().toLocaleString("ko-KR"),
+ 775 │       };
+ 776 │       setHistory((prev) => [newHistoryItem, ...prev]);
+ 777 │     }
+ 778 │     setShowActivityDropdown(null);
+ 779 │   };
+ 780 │ 
+ 781 │   // 댓글 추가
+ 782 │   const handleAddComment = () => {
+ 783 │     if (!newComment.trim()) return;
+ 784 │ 
+ 785 │     const comment = {
+ 786 │       id: comments.length + 1,
+ 787 │       user: "현재 사용자",
+ 788 │       message: newComment,
+ 789 │       timestamp: new Date().toLocaleString("ko-KR"),
+ 790 │     };
+ 791 │ 
+ 792 │     setComments((prev) => [...prev, comment]);
+ 793 │     setNewComment("");
+ 794 │   };
+ 795 │ 
+ 796 │   // 목표 토글 함수
+ 797 │   const toggleObjective = (objectiveId) => {
+ 798 │     setExpandedObjectives((prev) => ({
+ 799 │       ...prev,
+ 800 │       [objectiveId]: !prev[objectiveId],
+ 801 │     }));
+ 802 │   };
+ 803 │   // 목표 접기/펼치기
+ 804 │   const toggleObjective = (objectiveId) => {
+ 805 │     setCollapsedObjectives((prev) => {
+ 806 │       const newSet = new Set(prev);
+ 807 │       if (newSet.has(objectiveId)) {
+ 808 │         newSet.delete(objectiveId);
+ 809 │       } else {
+ 810 │         newSet.add(objectiveId);
+ 811 │       }
+ 812 │       return newSet;
+ 813 │     });
+ 814 │   };
+ 815 │ 
+ 816 │   // 목표 삭제 함수
+ 817 │   const deleteObjective = (objectiveId) => {
+ 818 │     setObjectiveToDelete(objectiveId);
+ 819 │     setShowDeleteModal(true);
+ 820 │   };
+ 821 │ 
+ 822 │   // 목표 복원 함수
+ 823 │   const restoreObjective = (objectiveId) => {
+ 824 │     setObjectives((prev) =>
+ 825 │       prev.map((obj) =>
+ 826 │         obj.id === objectiveId ? { ...obj, deleted: false } : obj,
+ 827 │       ),
+ 828 │     );
+ 829 │   };
+ 830 │ 
+ 831 │   // 삭제 확인 함수
+ 832 │   const confirmDelete = () => {
+ 833 │     if (objectiveToDelete) {
+ 834 │       setObjectives((prev) =>
+ 835 │         prev.map((obj) =>
+ 836 │           obj.id === objectiveToDelete ? { ...obj, deleted: true } : obj,
+ 837 │         ),
+ 838 │       );
+ 839 │     }
+ 840 │     setShowDeleteModal(false);
+ 841 │     setObjectiveToDelete(null);
+ 842 │   };
+ 843 │ 
+ 844 │   // 달성률 계산 함수
+ 845 │   const calculateObjectiveProgress = (keyResults) => {
+     ·         ─────────────┬────────────
+     ·                      ╰── `calculateObjectiveProgress` redefined here
+ 846 │     if (!keyResults || keyResults.length === 0) return 0;
+ 847 │ 
+ 848 │     const validResults = keyResults.filter((kr) => {
+     ╰────
+This error occurred during the build process and can only be dismissed by fixing the error.
