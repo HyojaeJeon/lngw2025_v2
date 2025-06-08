@@ -1,0 +1,41 @@
+Act as a senior frontend developer. Based on the following requirements, please modify the code for the marketing plan detail page located at `/dashboard/marketing/planning-process/1`.
+
+**1. OKRs Component (`목표 달성도`) Improvements:**
+
+* **1.1. Implement Collapse/Expand Feature for Objective Cards:**
+    * Add a `+` / `-` icon button to the header of each `Objective` card.
+    * Clicking this button should toggle the visibility of the `Key Results` list within that card. The default state should be expanded.
+
+* **1.2. Implement "Soft Delete" for Objective Cards:**
+    * Add a "delete" (trash can icon) button to the header of each `Objective` card.
+    * On click, show a confirmation modal with "정말 삭제하시겠습니까?" and "예" / "아니오" buttons.
+    * If "예" is clicked, do not remove the card from the DOM. Instead:
+        * Apply a disabled visual state to the entire card (e.g., `opacity: 0.5`, `pointer-events: none`).
+        * Display a "[삭제됨]" (Deleted) badge next to the Objective title.
+        * Replace the "delete" icon with a "restore" icon. Clicking "restore" should revert the card to its active state.
+
+* **1.3. Implement KR Achievement Calculation Logic:**
+    * When calculating the overall achievement percentage for an `Objective`, iterate through its `Key Results`.
+    * If a `Key Result`'s achievement percentage is `NaN` or `null`, exclude it from the calculation.
+    * The `Objective`'s percentage should be the average of the valid `Key Result` percentages.
+
+**2. Strategy Overview (`전략 개요`) Component Improvements:**
+
+* **2.1. Enable In-place Editing:**
+    * When the `[편집]` (Edit) button is clicked:
+        * Change the button text to `[저장]` (Save).
+        * Convert the static text for "타겟 고객" and "핵심 메시지" into `<textarea>` inputs.
+        * Convert the "주요 채널" tags into an editable tag-input component.
+    * When the `[저장]` button is clicked, save the changes and revert the component to its view-only state.
+
+**3. Key Activities (`주요 활동`) Component Improvements:**
+
+* **3.1. Implement "Add Activity" Functionality:**
+    * When the `[+ 활동 추가]` button is clicked, append a new inline form at the bottom of the activities list.
+    * This form should include fields for `Activity Name`, a dropdown to link an existing `Campaign`, and `Budget`, along with `Save` and `Cancel` buttons.
+
+* **3.2. Implement "Edit" and "Delete" for Activities:**
+    * For each activity card, add a `...` (more options) button.
+    * This button should open a dropdown menu with two options: `[수정]` (Edit) and `[삭제]` (Delete).
+    * `[수정]` should turn the selected card into an editable form, similar to the "Add Activity" form.
+    * `[삭제]` should show a confirmation modal and then remove the activity from the list upon confirmation.
