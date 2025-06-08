@@ -33,6 +33,8 @@ import {
   BarChart3,
   TrendingUp,
   AlertCircle,
+  FileText,
+  Download
 } from "lucide-react";
 
 export default function MarketingPlanDetailPage() {
@@ -53,6 +55,10 @@ export default function MarketingPlanDetailPage() {
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState([]);
   const [history, setHistory] = useState([]);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedPlan, setEditedPlan] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // 더미 데이터 (실제로는 API에서 가져올 데이터)
   useEffect(() => {
@@ -314,6 +320,287 @@ export default function MarketingPlanDetailPage() {
     setComments((prev) => [newCommentObj, ...prev]);
     setNewComment("");
   };
+    // 계획 수정 관련 함수들
+  const handleEditStart = () => {
+    setIsEditMode(true);
+    setEditedPlan({ ...plan });
+  };
+
+  const handleEditCancel = () => {
+    setIsEditMode(false);
+    setEditedPlan(null);
+  };
+
+  const handleEditSave = () => {
+    // 실제 API 호출로 데이터 저장
+    setPlan(editedPlan);
+    setIsEditMode(false);
+    setEditedPlan(null);
+
+    // 성공 메시지 표시
+    alert('계획이 성공적으로 수정되었습니다.');
+  };
+
+  const updateEditedPlan = (field, value) => {
+    setEditedPlan(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const updateObjective = (objIndex, field, value) => {
+    setEditedPlan(prev => ({
+      ...prev,
+      objectives: prev.objectives.map((obj, index) => 
+        index === objIndex ? { ...obj, [field]: value } : obj
+      )
+    }));
+  };
+
+  const updateKeyResult = (objIndex, krIndex, field, value) => {
+    setEditedPlan(prev => ({
+      ...prev,
+      objectives: prev.objectives.map((obj, oIndex) => 
+        oIndex === objIndex 
+          ? {
+              ...obj,
+              keyResults: obj.keyResults.map((kr, kIndex) => 
+                kIndex === krIndex ? { ...kr, [field]: value } : kr
+              )
+            }
+          : obj
+      )
+    }));
+  };
+
+  const addChannel = (newChannel) => {
+    if (newChannel && !editedPlan.channels.includes(newChannel)) {
+      setEditedPlan(prev => ({
+        ...prev,
+        channels: [...prev.channels, newChannel]
+      }));
+    }
+  };
+
+  const removeChannel = (channelToRemove) => {
+    setEditedPlan(prev => ({
+      ...prev,
+      channels: prev.channels.filter(channel => channel !== channelToRemove)
+    }));
+  };
+
+  // 보고서 관련 함수들
+  const generateReport = () => {
+    setShowReportModal(true);
+  };
+
+  const calculateOverallProgress = () => {
+    if (!plan?.objectives?.length) return 0;
+
+    const totalProgress = plan.objectives.reduce((acc, obj) => {
+      return acc + calculateObjectiveProgress(obj.keyResults);
+    }, 0);
+
+    return Math.round(totalProgress / plan.objectives.length);
+  };
+
+  // 보고서 모달 렌더링
+  const renderReportModal = () => {
+    if (!showReportModal || !plan) return null;
+
+    const overallProgress = calculateOverallProgress();
+    const objectiveProgress = plan.objectives.map(obj => ({
+      title: obj.title,
+      progress: calculateObjectiveProgress(obj.keyResults)
+    }));
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+          {/* 헤더 */}
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {plan.title} - 진행 보고서
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  보고서 생성일: {new Date().toLocaleDateString('ko-KR')}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  PDF 내보내기
+                </Button>
+                <Button variant="outline" onClick={() => setShowReportModal(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-8">
+            {/* 기본 정보 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 dark:text-gray-300">담당자</h3>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">{plan.manager}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 dark:text-gray-300">계획 기간</h3>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {plan.startDate} ~ {plan.endDate}
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 dark:text-gray-300">전체 진행률</h3>
+                <p className="text-2xl font-bold text-blue-600">{overallProgress}%</p>
+              </div>
+            </div>
+
+            {/* 전체 진행 현황 */}
+            <div className="bg-white dark:bg-gray-800 border rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-500" />
+                전체 진행 현황
+              </h3>
+              <div className="flex items-center justify-center">
+                <div className="relative w-40 h-40">
+                  <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 144 144">
+                    <circle
+                      cx="72"
+                      cy="72"
+                      r="60"
+                      stroke="currentColor"
+                      strokeWidth="12"
+                      fill="none"
+                      className="text-gray-200 dark:text-gray-700"
+                    />
+                    <circle
+                      cx="72"
+                      cy="72"
+                      r="60"
+                      stroke="currentColor"
+                      strokeWidth="12"
+                      fill="none"
+                      strokeDasharray={`${(overallProgress / 100) * 377} 377`}
+                      className="text-blue-500"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {overallProgress}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 목표별 달성 현황 */}
+            <div className="bg-white dark:bg-gray-800 border rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-green-500" />
+                목표별 달성 현황
+              </h3>
+              <div className="space-y-4">
+                {objectiveProgress.map((obj, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-gray-900 dark:text-white">{obj.title}</span>
+                      <span className="text-sm font-semibold text-blue-600">{obj.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                      <div 
+                        className="bg-blue-500 h-3 rounded-full transition-all duration-500" 
+                        style={{width: `${obj.progress}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 핵심 결과 상세 */}
+            <div className="bg-white dark:bg-gray-800 border rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-purple-500" />
+                핵심 결과 상세 현황
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {plan.objectives.map((objective, objIndex) => (
+                  <div key={objIndex} className="space-y-4">
+                    <h4 className="font-medium text-gray-900 dark:text-white border-b pb-2">
+                      {objective.title}
+                    </h4>
+                    {objective.keyResults.map((kr, krIndex) => (
+                      <div key={krIndex} className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {kr.title}
+                          </span>
+                          {kr.measurementType === 'number' && (
+                            <span className="text-sm text-blue-600 font-semibold">
+                              {Math.round((kr.current / kr.target) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        {kr.measurementType === 'number' && (
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-green-500 h-2 rounded-full" 
+                              style={{width: `${Math.min((kr.current / kr.target) * 100, 100)}%`}}
+                            ></div>
+                          </div>
+                        )}
+                        {kr.measurementType === 'percentage' && (
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full" 
+                              style={{width: `${Math.min((kr.current / kr.target) * 100, 100)}%`}}
+                            ></div>
+                          </div>
+                        )}
+                        {kr.measurementType === 'checklist' && (
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            완료: {kr.checklist.filter(item => item.completed).length} / {kr.checklist.length}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 주요 코멘트 요약 */}
+            <div className="bg-white dark:bg-gray-800 border rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-orange-500" />
+                주요 코멘트 요약
+              </h3>
+              <div className="space-y-3">
+                {comments.slice(-3).map((comment, index) => (
+                  <div key={index} className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+                        {comment.author}
+                      </span>
+                      <span className="text-xs text-gray-500">{comment.timestamp}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{comment.text}</p>
+                  </div>
+                ))}
+                {comments.length === 0 && (
+                  <p className="text-gray-500 italic">등록된 코멘트가 없습니다.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // 목표 모달 컴포넌트
   const ObjectiveModal = ({ isOpen, editingObj, onClose }) => {
@@ -444,37 +731,93 @@ export default function MarketingPlanDetailPage() {
         목록으로 돌아가기
       </Button>
 
-      {/* 헤더 */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">{plan.title}</CardTitle>
-              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <Badge variant={plan.status === "진행중" ? "default" : "secondary"}>
-                  {plan.status}
-                </Badge>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {plan.startDate} ~ {plan.endDate}
-                </span>
-                <span className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  담당자: {plan.manager}
-                </span>
+        {/* 헤더 */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  {isEditMode ? (
+                    <Input
+                      value={editedPlan.title}
+                      onChange={(e) => updateEditedPlan('title', e.target.value)}
+                      className="text-2xl font-semibold border-2 border-blue-500"
+                    />
+                  ) : (
+                    <CardTitle className="text-2xl">{plan.title}</CardTitle>
+                  )}
+                  <Badge className="bg-blue-500 hover:bg-blue-600">{plan.status}</Badge>
+                </div>
+                <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {isEditMode ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="date"
+                          value={editedPlan.startDate}
+                          onChange={(e) => updateEditedPlan('startDate', e.target.value)}
+                          className="w-32 h-8 text-xs border border-blue-500"
+                        />
+                        <span>~</span>
+                        <Input
+                          type="date"
+                          value={editedPlan.endDate}
+                          onChange={(e) => updateEditedPlan('endDate', e.target.value)}
+                          className="w-32 h-8 text-xs border border-blue-500"
+                        />
+                      </div>
+                    ) : (
+                      `${plan.startDate} ~ ${plan.endDate}`
+                    )}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    담당자: {isEditMode ? (
+                      <select
+                        value={editedPlan.manager}
+                        onChange={(e) => updateEditedPlan('manager', e.target.value)}
+                        className="ml-1 px-2 py-1 border border-blue-500 rounded text-sm bg-white dark:bg-gray-700"
+                      >
+                        <option value="김마케팅">김마케팅</option>
+                        <option value="이기획">이기획</option>
+                        <option value="박전략">박전략</option>
+                        <option value="최브랜드">최브랜드</option>
+                      </select>
+                    ) : plan.manager}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <BarChart3 className="w-4 h-4" />
+                    진행률: {plan.progress}%
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {isEditMode ? (
+                  <>
+                    <Button size="sm" variant="default" onClick={handleEditSave}>
+                      <Save className="w-4 h-4 mr-1" />
+                      저장
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleEditCancel}>
+                      <X className="w-4 h-4 mr-1" />
+                      취소
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" onClick={handleEditStart}>
+                      <Edit className="w-4 h-4 mr-1" />
+                      수정
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={generateReport}>
+                      <FileText className="w-4 h-4 mr-1" />
+                      보고서
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">
-                <Edit className="w-4 h-4 mr-2" />
-                수정
-              </Button>
-              <Button size="sm" variant="outline">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                보고서
-              </Button>
-            </div>
-          </div>
 
           {/* 전체 진행률 */}
           <div className="mt-4">
@@ -502,41 +845,89 @@ export default function MarketingPlanDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {plan.description && (
+            {/* 계획 개요 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">설명</h4>
-                <p className="text-gray-600 dark:text-gray-400">{plan.description}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">설명</h3>
+                {isEditMode ? (
+                  <textarea
+                    value={editedPlan.description}
+```python
+                    onChange={(e) => updateEditedPlan('description', e.target.value)}
+                    className="w-full p-3 border-2 border-blue-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    rows={3}
+                  />
+                ) : (
+                  <p className="text-gray-600 dark:text-gray-400">{plan.description}</p>
+                )}
               </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {plan.targetPersona && (
-                <div>
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">타겟 고객</h4>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">타겟 고객</h3>
+                {isEditMode ? (
+                  <Input
+                    value={editedPlan.targetPersona}
+                    onChange={(e) => updateEditedPlan('targetPersona', e.target.value)}
+                    className="border-2 border-blue-500"
+                  />
+                ) : (
                   <p className="text-gray-600 dark:text-gray-400">{plan.targetPersona}</p>
-                </div>
-              )}
-
-              {plan.coreMessage && (
-                <div>
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">핵심 메시지</h4>
-                  <p className="text-gray-600 dark:text-gray-400">{plan.coreMessage}</p>
-                </div>
-              )}
-            </div>
-
-            {plan.channels && plan.channels.length > 0 && (
-              <div>
-                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">주요 채널</h4>
-                <div className="flex flex-wrap gap-2">
-                  {plan.channels.map((channel, index) => (
-                    <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {channel}
-                    </Badge>
-                  ))}
-                </div>
+                )}
               </div>
-            )}
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">핵심 메시지</h3>
+                {isEditMode ? (
+                  <Input
+                    value={editedPlan.coreMessage}
+                    onChange={(e) => updateEditedPlan('coreMessage', e.target.value)}
+                    className="border-2 border-blue-500"
+                  />
+                ) : (
+                  <p className="text-gray-600 dark:text-gray-400">{plan.coreMessage}</p>
+                )}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">주요 채널</h3>
+                {isEditMode ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      {editedPlan.channels.map((channel, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1"
+                        >
+                          {channel}
+                          <button
+                            onClick={() => removeChannel(channel)}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <Input
+                      placeholder="새 채널을 입력하고 Enter를 누르세요"
+                      className="border-2 border-blue-500"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && e.target.value.trim()) {
+                          addChannel(e.target.value.trim());
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {plan.channels.map((channel, index) => (
+                      <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {channel}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -573,236 +964,1824 @@ export default function MarketingPlanDetailPage() {
               <div key={objective.id || objIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg">
                 {/* Objective 헤더 */}
                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-t-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                          {objective.title}
-                        </h3>
-                        <Badge variant="outline" className={`${
-                          objectiveProgress >= 100 ? 'bg-green-100 text-green-800 border-green-300' :
-                          objectiveProgress >= 75 ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                          objectiveProgress >= 50 ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                          objectiveProgress > 0 ? 'bg-orange-100 text-orange-800 border-orange-300' :
-                          'bg-gray-100 text-gray-800 border-gray-300'
-                        }`}>
-                          {objectiveProgress}% 달성
-                        </Badge>
-                      </div>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+목표 수정
+                  
 
-                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            objectiveProgress >= 100 ? 'bg-green-500' :
-                            objectiveProgress >= 75 ? 'bg-blue-500' :
-                            objectiveProgress >= 50 ? 'bg-yellow-500' :
-                            objectiveProgress > 0 ? 'bg-orange-500' : 'bg-gray-400'
-                          }`}
-                          style={{ width: `${Math.min(objectiveProgress, 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
+// 렌더링 함수들
+  const renderObjectiveModal = () => {
+    const isEditMode = !!editingObjective;
+    const [title, setTitle] = useState(editingObjective?.title || "");
 
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toggleObjective(objective.id)}
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingObjective(objective);
-                          setShowObjectiveModal(true);
-                        }}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setObjectiveToDelete(objective.id);
-                          setShowDeleteModal(true);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+    // editingObj가 변경될 때마다 title 업데이트
+    React.useEffect(() => {
+      setTitle(editingObj?.title || "");
+    }, [editingObj]);
+
+    const handleSubmit = () => {
+      if (!title.trim()) return;
+
+      if (isEditMode) {
+        // 목표 수정 로직
+        setPlan((prev) => ({
+          ...prev,
+          objectives: prev.objectives.map((obj) =>
+            obj.id === editingObj.id ? { ...obj, title } : obj
+          ),
+        }));
+      } else {
+        // 목표 추가 로직
+        const newObjective = {
+          id: Date.now(),
+          title,
+          keyResults: [],
+          isActive: true, // 새 목표는 활성화 상태
+        };
+        setPlan((prev) => ({
+          ...prev,
+          objectives: [...prev.objectives, newObjective],
+        }));
+      }
+
+      // 모달 닫기 및 상태 초기화
+      onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      
+        
+          
+            {isEditMode ? "목표 수정" : "새 목표 추가"}
+          
+          
+            목표 제목
+          
+          <Input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="목표를 입력하세요"
+            className="mb-4"
+          />
+          
+            
+              취소
+            
+            <Button onClick={handleSubmit} disabled={!title.trim()}>
+              {isEditMode ? "수정" : "추가"}
+            </Button>
+          
+        
+      
+    );
+  };
+
+  // 삭제 확인 모달
+  const renderDeleteModal = () => (
+    
+      
+        
+          목표 삭제 확인
+        
+        
+          이 목표를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+        
+        
+          
+            취소
+          
+          <Button variant="destructive" onClick={handleDeleteObjective}>
+            삭제
+          </Button>
+        
+      
+    
+  );
+
+  if (loading) {
+    return (
+      
+        
+      
+    );
+  }
+
+  if (!plan) {
+    return (
+      
+        계획을 찾을 수 없습니다.
+      
+    );
+  }
+
+  return (
+    
+      {/* 뒤로가기 버튼 */}
+      <Button
+        variant="outline"
+        onClick={() => router.push("/dashboard/marketing/planning-process")}
+        className="flex items-center gap-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        목록으로 돌아가기
+      </Button>
+
+        {/* 헤더 */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  {isEditMode ? (
+                    <Input
+                      value={editedPlan.title}
+                      onChange={(e) => updateEditedPlan('title', e.target.value)}
+                      className="text-2xl font-semibold border-2 border-blue-500"
+                    />
+                  ) : (
+                    <CardTitle className="text-2xl">{plan.title}</CardTitle>
+                  )}
+                  <Badge className="bg-blue-500 hover:bg-blue-600">{plan.status}</Badge>
                 </div>
+                <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {isEditMode ? (
+                      
+                        <Input
+                          type="date"
+                          value={editedPlan.startDate}
+                          onChange={(e) => updateEditedPlan('startDate', e.target.value)}
+                          className="w-32 h-8 text-xs border border-blue-500"
+                        />
+                        <span>~</span>
+                        <Input
+                          type="date"
+                          value={editedPlan.endDate}
+                          onChange={(e) => updateEditedPlan('endDate', e.target.value)}
+                          className="w-32 h-8 text-xs border border-blue-500"
+                        />
+                      
+                    ) : (
+                      `${plan.startDate} ~ ${plan.endDate}`
+                    )}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    담당자: {isEditMode ? (
+                      
+                        김마케팅
+                        이기획
+                        박전략
+                        최브랜드
+                      
+                    ) : plan.manager}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <BarChart3 className="w-4 h-4" />
+                    진행률: {plan.progress}%
+                  </span>
+                </div>
+              </div>
+              
+                {isEditMode ? (
+                  
+                    
+                      저장
+                    
+                    
+                      취소
+                    
+                  
+                ) : (
+                  
+                    
+                      수정
+                    
+                    
+                      보고서
+                    
+                  
+                )}
+              
+            
+          
+
+          {/* 전체 진행률 */}
+          
+            
+              전체 진행률
+              {plan.progress}%
+            
+            
+              
+            
+          
+        </CardHeader>
+      </Card>
+
+      {/* 계획 개요 */}
+      {(plan.description || plan.targetPersona || plan.coreMessage) && (
+        
+          
+            
+              
+              계획 개요
+            
+          
+          
+            {/* 계획 개요 */}
+            
+              
+                
+                  설명
+                  {isEditMode ? (
+                    
+                      
+                    
+                  ) : (
+                    
+                      {plan.description}
+                    
+                  )}
+                
+                
+                  타겟 고객
+                  {isEditMode ? (
+                    
+                  ) : (
+                    
+                      {plan.targetPersona}
+                    
+                  )}
+                
+                
+                  핵심 메시지
+                  {isEditMode ? (
+                    
+                  ) : (
+                    
+                      {plan.coreMessage}
+                    
+                  )}
+                
+                
+                  주요 채널
+                  {isEditMode ? (
+                    
+                      
+                        
+                          {editedPlan.channels.map((channel, index) => (
+                            
+                              {channel}
+                              
+                            
+                          ))}
+                        
+                        
+                          새 채널을 입력하고 Enter를 누르세요
+                        
+                      
+                    
+                  ) : (
+                    
+                      {plan.channels.map((channel, index) => (
+                        
+                          {channel}
+                        
+                      ))}
+                    
+                  )}
+                
+              
+            
+          
+        
+      )}
+
+      {/* 목표 설정 (OKRs) */}
+      <Card>
+        
+          
+            
+              
+              목표 설정 (OKRs)
+            
+            <Button 
+              size="sm" 
+              onClick={() => setShowObjectiveModal(true)}
+              className="flex items-center gap-2"
+            >
+              
+              목표 추가
+            </Button>
+          
+        
+        
+          {plan.objectives?.map((objective, objIndex) => {
+            const isExpanded = expandedObjectives[objective.id] || false;
+            const objectiveProgress = calculateObjectiveProgress(objective.keyResults);
+
+            // 목표가 비활성화된 경우 렌더링하지 않음
+            if (!objective.isActive) {
+              return null;
+            }
+
+            return (
+              
+                
+                  
+                    
+                      
+                        
+                          
+                          {isEditMode ? (
+                            
+                              onClick={(e) => updateObjective(objIndex, 'title', e.target.value)}
+                              className="font-semibold text-lg border-2 border-blue-500"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            
+                              {objective.title}
+                            
+                          )}
+                          {!isEditMode && (
+                            isExpanded ? (
+                              
+                            ) : (
+                              
+                            )
+                          )}
+                        
+                        
+                          달성률:
+                          {objectiveProgress}%
+                        
+                      
+                      {!isEditMode && (
+                        
+                          
+                            
+                              
+                            
+                          
+                          
+                            
+                              
+                            
+                          
+                        
+                      )}
+                    
+                  
+                
 
                 {/* Key Results */}
                 {isExpanded && (
-                  <div className="p-4 space-y-4">
-                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  
+                    
                       Key Results ({objective.keyResults.length}개)
-                    </h4>
+                    
 
                     {objective.keyResults.map((kr, krIndex) => (
-                      <div key={kr.id || krIndex} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                        <div className="flex items-start justify-between mb-3">
-                          <h5 className="font-medium text-gray-900 dark:text-white flex-1">
-                            {kr.title}
-                          </h5>
-                          {kr.measurementType !== "checklist" && (
-                            <div className="text-right">
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                {getProgressText(kr.current, kr.target, kr.unit)}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                진행률: {calculateProgress(kr.current, kr.target)?.toFixed(1) || 0}%
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 진행률 바 (체크리스트가 아닌 경우) */}
-                        {kr.measurementType !== "checklist" && (
-                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-3">
-                            <div
-                              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                              style={{
-                                width: `${Math.min(calculateProgress(kr.current, kr.target) || 0, 100)}%`
-                              }}
-                            ></div>
-                          </div>
-                        )}
-
-                        {/* 체크리스트 */}
-                        {kr.measurementType === "checklist" && kr.checklist && (
-                          <div className="space-y-2 mb-3">
-                            {kr.checklist.map((item, itemIndex) => (
-                              <div key={item.id || itemIndex} className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleToggleChecklistItem(objective.id, kr.id, itemIndex)}
-                                  className="flex-shrink-0"
-                                >
-                                  {item.completed ? (
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                  ) : (
-                                    <Circle className="w-5 h-5 text-gray-400" />
+                      
+                        
+                          
+                            {isEditMode ? (
+                              
+                                onClick={(e) => updateKeyResult(objIndex, krIndex, 'title', e.target.value)}
+                                className="font-medium border-2 border-blue-500 flex-1 mr-2"
+                              />
+                            ) : (
+                              
+                                {kr.title}
+                              
+                            )}
+                            {!isEditMode && (
+                              
+                                
+                                  
+                                
+                                
+                                  
+                                
+                              
+                            )}
+                          
+                          {kr.measurementType === "number" && (
+                              
+                                
+                                  
+                                    현재: {isEditMode ? (
+                                      
+                                        onChange={(e) => updateKeyResult(objIndex, krIndex, 'current', parseInt(e.target.value) || 0)}
+                                        className="w-20 h-8 text-xs border border-blue-500 ml-1"
+                                      />
+                                    ) : (kr.current?.toLocaleString() || 0)}
+                                  
+                                  
+                                    목표: {kr.target?.toLocaleString() || 0}
+                                  
+                                
+                                
+                                  
+                                
+                                
+                                  {Math.round((kr.current / kr.target) * 100)}% 달성
+                                
+                              
+                            )}
+                            {kr.measurementType === "checklist" && (
+                              
+                                
+                                  {kr.checklist.map((item, itemIndex) => (
+                                    
+                                      
+                                        type="checkbox"
+                                        checked={item.completed}
+                                        onChange={(e) => {
+                                          if (isEditMode) {
+                                            const updatedChecklist = [...editedPlan.objectives[objIndex].keyResults[krIndex].checklist];
+                                            updatedChecklist[itemIndex].completed = e.target.checked;
+                                            updateKeyResult(objIndex, krIndex, 'checklist', updatedChecklist);
+                                          } else {
+                                            const updatedPlan = { ...plan };
+                                            updatedPlan.objectives[objIndex].keyResults[krIndex].checklist[itemIndex].completed = e.target.checked;
+                                            setPlan(updatedPlan);
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                      />
+                                      {isEditMode ? (
+                                        
+                                          
+                                            onChange={(e) => {
+                                              const updatedChecklist = [...editedPlan.objectives[objIndex].keyResults[krIndex].checklist];
+                                              updatedChecklist[itemIndex].text = e.target.value;
+                                              updateKeyResult(objIndex, krIndex, 'checklist', updatedChecklist);
+                                            }}
+                                            className={`text-sm border border-blue-500 ${item.completed ? 'line-through text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}
+                                          />
+                                          
+                                            
+                                              
+                                                const updatedChecklist = editedPlan.objectives[objIndex].keyResults[krIndex].checklist.filter((_, i) => i !== itemIndex);
+                                                updateKeyResult(objIndex, krIndex, 'checklist', updatedChecklist);
+                                              
+                                            
+                                          
+                                        
+                                      ) : (
+                                        
+                                          {item.text}
+                                        
+                                      )}
+                                    
+                                  ))}
+                                  {isEditMode && (
+                                    
+                                      
+                                        
+                                          const updatedChecklist = [...editedPlan.objectives[objIndex].keyResults[krIndex].checklist, { text: '', completed: false }];
+                                          updateKeyResult(objIndex, krIndex, 'checklist', updatedChecklist);
+                                        
+                                      
+                                      
+                                      항목 추가
+                                    
                                   )}
-                                </button>
-                                <span className={`text-sm ${
-                                  item.completed 
-                                    ? 'text-gray-500 line-through' 
-                                    : 'text-gray-700 dark:text-gray-300'
-                                }`}>
-                                  {item.text}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* 업데이트 버튼 */}
-                        {kr.measurementType !== "checklist" && (
-                          <div className="flex items-center gap-2 mt-3">
-                            <Input
-                              type="number"
-                              placeholder="현재값 입력"
-                              value={updateValues[kr.id] || ""}
-                              onChange={(e) => setUpdateValues(prev => ({
-                                ...prev,
-                                [kr.id]: e.target.value
-                              }))}
-                              className="w-32"
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateKeyResult(objective.id, kr.id, updateValues[kr.id])}
-                              disabled={!updateValues[kr.id]}
-                            >
-                              <Save className="w-4 h-4 mr-1" />
-                              업데이트
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                                
+                                
+                                  {kr.checklist.filter(item => item.completed).length} / {kr.checklist.length} 완료
+                                
+                              
+                            )}
+                          
+                        
+                      
                     ))}
-                  </div>
+                  
                 )}
-              </div>
+              
             );
           })}
-        </CardContent>
+        
       </Card>
 
       {/* 코멘트 섹션 */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-purple-500" />
-            코멘트 ({comments.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        
+          
+            
+              
+              코멘트 ({comments.length})
+            
+          
+        
+        
           {/* 새 코멘트 입력 */}
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="코멘트를 작성하세요..."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="flex justify-end mt-3">
-              <Button
-                onClick={handleAddComment}
-                disabled={!newComment.trim()}
-                size="sm"
-              >
-                코멘트 추가
-              </Button>
-            </div>
-          </div>
+          
+            
+              
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="코멘트를 작성하세요..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            
+            
+              
+                
+                  코멘트 추가
+                
+              
+            
+          
 
           {/* 코멘트 목록 */}
-          <div className="space-y-4">
+          
             {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                </div>
-                <div className="flex-1">
-                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm text-gray-900 dark:text-white">
+              
+                
+                  
+                    
+                      
                         {comment.author}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      
+                      
                         {comment.createdAt}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      
+                    
+                    
                       {comment.content}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                    
+                  
+                
+              
             ))}
-          </div>
-        </CardContent>
+          
+        
       </Card>
 
       {/* 모달들 */}
-       <ObjectiveModal
-        isOpen={showObjectiveModal}
-        editingObj={editingObjective}
+      
         onClose={() => {
           setShowObjectiveModal(false);
           setEditingObjective(null);
         }}
       />
-      {showDeleteModal && renderDeleteModal()}
-    </div>
+      {renderDeleteModal()}
+      {renderReportModal()}
+    
   );
 }
