@@ -57,6 +57,35 @@ export default function PlanningProcessDetailPage() {
     keyResults: [{ type: "numeric", description: "", target: "", currentValue: 0, checklist: [] }]
   });
   const [selectedObjective, setSelectedObjective] = useState(null);
+  const [showObjectiveModal, setShowObjectiveModal] = useState(false);
+  const [showKRModal, setShowKRModal] = useState(false);
+  const [showEditKRModal, setShowEditKRModal] = useState(false);
+  const [selectedKR, setSelectedKR] = useState(null);
+  const [editingObjIndex, setEditingObjIndex] = useState(null);
+  const [editingKRIndex, setEditingKRIndex] = useState(null);
+  const [newObjectiveTitle, setNewObjectiveTitle] = useState("");
+  const [newObjective, setNewObjective] = useState({
+    title: "",
+    description: "",
+    keyResults: [{
+      title: "",
+      description: "",
+      type: "number",
+      target: "",
+      current: "",
+      unit: "",
+      checklist: []
+    }]
+  });
+  const [editKR, setEditKR] = useState({
+    title: "",
+    description: "",
+    type: "number",
+    target: "",
+    current: "",
+    unit: "",
+    checklist: []
+  });
 
   // 사용자 목록 (담당자 선택용)
   const availableUsers = [
@@ -292,6 +321,47 @@ export default function PlanningProcessDetailPage() {
       title: "",
       keyResults: [{ type: "numeric", description: "", target: "", currentValue: 0, checklist: [] }]
     });
+  };
+
+  // 핵심결과 편집 함수
+  const handleEditKeyResult = (objIndex, krIndex) => {
+    const objective = objectives[objIndex];
+    const keyResult = objective.keyResults[krIndex];
+
+    setSelectedKR(keyResult);
+    setEditingObjIndex(objIndex);
+    setEditingKRIndex(krIndex);
+    setShowEditKRModal(true);
+  };
+
+  // 핵심결과 확장(복제) 함수
+  const handleExpandKeyResult = (objIndex, krIndex) => {
+    const objective = objectives[objIndex];
+    const keyResult = objective.keyResults[krIndex];
+
+    const expandedKR = {
+      ...keyResult,
+      id: `kr_${Date.now()}`,
+      title: `${keyResult.title} (복사본)`,
+      progress: 0
+    };
+
+    setObjectives(prev => prev.map((obj, i) => 
+      i === objIndex 
+        ? { ...obj, keyResults: [...obj.keyResults, expandedKR] }
+        : obj
+    ));
+  };
+
+  // 핵심결과 삭제 함수
+  const handleDeleteKeyResult = (objIndex, krIndex) => {
+    if (window.confirm('이 핵심결과를 삭제하시겠습니까?')) {
+      setObjectives(prev => prev.map((obj, i) => 
+        i === objIndex 
+          ? { ...obj, keyResults: obj.keyResults.filter((_, ki) => ki !== krIndex) }
+          : obj
+      ));
+    }
   };
 
   // 커스텀 드롭다운 컴포넌트
@@ -603,7 +673,7 @@ export default function PlanningProcessDetailPage() {
         </div>
 
         <div className="grid gap-6">
-          {objectives.filter(obj => obj.isActive).map((objective) => (
+          {objectives.filter(obj => obj.isActive).map((objective, objIndex) => (
             <Card key={objective.id} className="shadow-lg border-0 hover:shadow-xl transition-all duration-300">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 border-b">
                 <div className="flex items-center justify-between">
@@ -658,7 +728,7 @@ export default function PlanningProcessDetailPage() {
                     핵심 결과 (Key Results)
                   </h4>
 
-                  {objective.keyResults.map((kr) => (
+                  {objective.keyResults.map((kr, index) => (
                     <div key={kr.id} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-3">
                         <h5 className="font-medium text-gray-900 dark:text-white">{kr.description}</h5>
@@ -703,7 +773,7 @@ export default function PlanningProcessDetailPage() {
                                 </button>
                                 <Input
                                   value={item.text}
-                                  onChange={(e) => updateChecklistItem(kr.id, itemIndex, e.target.value)}
+                                  onChange={(e => updateChecklistItem(kr.id, itemIndex, e.target.value)}
                                   className={`flex-1 bg-transparent border-none p-0 h-auto focus:ring-0 ${
                                     item.completed ? "line-through text-gray-500" : ""
                                   }`}
@@ -778,6 +848,440 @@ export default function PlanningProcessDetailPage() {
           )}
         </div>
       </div>
+
+      {/* 핵심결과 편집 모달 */}
+      {showEditKRModal && selectedKR && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
+            {/* 헤더 */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 z-10">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <Edit className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">핵심결과 편집</h2>
+                    <p className="text-blue-100 text-sm">핵심결과의 세부 정보를 수정하세요</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShowEditKRModal(false);
+                    setSelectedKR(null);
+                    setEditingObjIndex(null);
+                    setEditingKRIndex(null);
+                  }}
+                  className="text-white hover:bg-white/20 border-white/30"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-8 space-y-6">
+              {/* 기본 정보 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  기본 정보
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    핵심결과 제목 <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={editKR.title || selectedKR.title}
+                    onChange={(e) => setEditKR(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="핵심결과 제목을 입력하세요"
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    상세 설명
+                  </label>
+                  <textarea
+                    value={editKR.description || selectedKR.description || ""}
+                    onChange={(e) => setEditKR(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="핵심결과에 대한 상세 설명을 입력하세요"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* 결과 유형 선택 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  결과 유형
+                </h3>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setEditKR(prev => ({ ...prev, type: "number" }))}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                      (editKR.type || selectedKR.type) === "number"
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    }`}
+                  >
+                    <div className="text-center">
+                      <BarChart3 className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                      <h4 className="font-medium text-gray-900 dark:text-white">수치 기반</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">목표 수치와 현재 값으로 진행률 측정</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setEditKR(prev => ({ ...prev, type: "checklist" }))}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                      (editKR.type || selectedKR.type) === "checklist"
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    }`}
+                  >
+                    <div className="text-center">
+                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                      <h4 className="font-medium text-gray-900 dark:text-white">체크리스트 기반</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">완료된 항목 수로 진행률 측정</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* 수치 기반 입력 */}
+              {(editKR.type || selectedKR.type) === "number" && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    수치 설정
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        목표 값
+                      </label>
+                      <Input
+                        type="number"
+                        value={editKR.target || selectedKR.target || ""}
+                        onChange={(e) => setEditKR(prev => ({ ...prev, target: e.target.value }))}
+                        placeholder="100"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        현재 값
+                      </label>
+                      <Input
+                        type="number"
+                        value={editKR.current || selectedKR.current || ""}
+                        onChange={(e) => setEditKR(prev => ({ ...prev, current: e.target.value }))}
+                        placeholder="65"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        단위
+                      </label>
+                      <Input
+                        value={editKR.unit || selectedKR.unit || ""}
+                        onChange={(e) => setEditKR(prev => ({ ...prev, unit: e.target.value }))}
+                        placeholder="명, %, 건"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 체크리스트 기반 입력 */}
+              {(editKR.type || selectedKR.type) === "checklist" && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    체크리스트 항목
+                  </h3>
+
+                  <div className="space-y-3">
+                    {((editKR.checklist && editKR.checklist.length > 0 ? editKR.checklist : selectedKR.checklist) || []).map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <input
+                          type="checkbox"
+                          checked={item.completed || false}
+                          onChange={(e) => {
+                            const updatedChecklist = [...(editKR.checklist || selectedKR.checklist || [])];
+                            updatedChecklist[index] = { ...item, completed: e.target.checked };
+                            setEditKR(prev => ({ ...prev, checklist: updatedChecklist }));
+                          }}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <Input
+                          value={item.text || ""}
+                          onChange={(e) => {
+                            const updatedChecklist = [...(editKR.checklist || selectedKR.checklist || [])];
+                            updatedChecklist[index] = { ...item, text: e.target.value };
+                            setEditKR(prev => ({ ...prev, checklist: updatedChecklist }));
+                          }}
+                          placeholder="체크리스트 항목을 입력하세요"
+                          className="flex-1"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const updatedChecklist = (editKR.checklist || selectedKR.checklist || []).filter((_, i) => i !== index);
+                            setEditKR(prev => ({ ...prev, checklist: updatedChecklist }));
+                          }}
+                          className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const newItem = { text: "", completed: false };
+                        const currentChecklist = editKR.checklist || selectedKR.checklist || [];
+                        setEditKR(prev => ({ ...prev, checklist: [...currentChecklist, newItem] }));
+                      }}
+                      className="w-full flex items-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                    >
+                      <Plus className="w-4 h-4" />
+                      항목 추가
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 p-6">
+              <div className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => {
+                    setShowEditKRModal(false);
+                    setSelectedKR(null);
+                    setEditingObjIndex(null);
+                    setEditingKRIndex(null);
+                    setEditKR({});
+                  }}
+                  className="px-6"
+                >
+                  취소
+                </Button>
+                <Button 
+                  size="lg"
+                  onClick={() => {
+                    // 편집된 내용으로 업데이트
+                    const updatedKR = {
+                      ...selectedKR,
+                      ...editKR,
+                      title: editKR.title || selectedKR.title,
+                      description: editKR.description || selectedKR.description,
+                      type: editKR.type || selectedKR.type,
+                      target: editKR.target || selectedKR.target,
+                      current: editKR.current || selectedKR.current,
+                      unit: editKR.unit || selectedKR.unit,
+                      checklist: editKR.checklist || selectedKR.checklist
+                    };
+
+                    // 진행률 재계산
+                    if (updatedKR.type === "number" && updatedKR.target && updatedKR.current) {
+                      updatedKR.progress = Math.min(Math.round((updatedKR.current / updatedKR.target) * 100), 100);
+                    } else if (updatedKR.type === "checklist" && updatedKR.checklist) {
+                      const completed = updatedKR.checklist.filter(item => item.completed).length;
+                      updatedKR.progress = updatedKR.checklist.length > 0 ? Math.round((completed / updatedKR.checklist.length) * 100) : 0;
+                    }
+
+                    setObjectives(prev => prev.map((obj, i) => 
+                      i === editingObjIndex 
+                        ? { 
+                            ...obj, 
+                            keyResults: obj.keyResults.map((kr, ki) => 
+                              ki === editingKRIndex ? updatedKR : kr
+                            )
+                          }
+                        : obj
+                    ));
+
+                    setShowEditKRModal(false);
+                    setSelectedKR(null);
+                    setEditingObjIndex(null);
+                    setEditingKRIndex(null);
+                    setEditKR({});
+                  }}
+                  className="px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  변경사항 저장
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 목표 상세 모달 */}
+      {selectedObjective && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl">
+            {/* 모달 헤더 */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">목표 상세 정보</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setSelectedObjective(null)}
+                  className="text-white hover:bg-white/20"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 스크롤 가능한 모달 바디 */}
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+              {/* 목표 정보 */}
+              <div className="space-y-6">
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    목표 (Objective)
+                  </Label>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {selectedObjective.title}
+                  </p>
+                </div>
+
+                {/* 핵심 결과 */}
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                    핵심 결과 (Key Results)
+                  </Label>
+
+                  <div className="space-y-4">
+                    {selectedObjective.keyResults.map((kr, index) => (
+                      <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-medium text-gray-900 dark:text-white">{kr.description}</h5>
+                          <Badge variant="outline" className={kr.type === "numeric" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-green-50 text-green-700 border-green-200"}>
+                            {kr.type === "numeric" ? "수치 기반" : "체크리스트 기반"}
+                          </Badge>
+                        </div>
+
+                        {kr.type === "numeric" && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                현재: {kr.currentValue.toLocaleString()}{kr.unit} / 목표: {parseFloat(kr.target).toLocaleString()}{kr.unit}
+                              </span>
+                              <span className="font-semibold text-blue-600">
+                                {Math.min(Math.round((kr.currentValue / parseFloat(kr.target)) * 100), 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                style={{width: `${Math.min((kr.currentValue / parseFloat(kr.target)) * 100, 100)}%`}}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+
+                        {kr.type === "checklist" && (
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              {kr.checklist.map((item, itemIndex) => (
+                                <div key={itemIndex} className="flex items-center gap-3 group">
+                                  <button
+                                    onClick={() => toggleChecklistItem(kr.id, itemIndex)}
+                                    className="flex-shrink-0"
+                                  >
+                                    {item.completed ? (
+                                      <CheckCircle className="w-5 h-5 text-green-500" />
+                                    ) : (
+                                      <Circle className="w-5 h-5 text-gray-400" />
+                                    )}
+                                  </button>
+                                  <Input
+                                    value={item.text}
+                                    onChange={(e) => updateChecklistItem(kr.id, itemIndex, e.target.value)}
+                                    className={`flex-1 bg-transparent border-none p-0 h-auto focus:ring-0 ${
+                                      item.completed ? "line-through text-gray-500" : ""
+                                    }`}
+                                    placeholder="체크리스트 항목을 입력하세요"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeChecklistItem(kr.id, itemIndex)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-500 hover:text-red-700"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addChecklistItem(kr.id)}
+                              className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            >
+                              <Plus className="w-4 h-4" />
+                              항목 추가
+                            </Button>
+
+                            {kr.checklist.length > 0 && (
+                              <div className="mt-4">
+                                <div className="flex items-center justify-between text-sm mb-2">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    완료: {kr.checklist.filter(item => item.completed).length} / {kr.checklist.length}
+                                  </span>
+                                  <span className="font-semibold text-green-600">
+                                    {kr.checklist.length > 0 ? Math.round((kr.checklist.filter(item => item.completed).length / kr.checklist.length) * 100) : 0}%
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                                  <div
+                                    className="bg-gradient-to-r from-green-500 to-teal-500 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                    style={{width: `${kr.checklist.length > 0 ? (kr.checklist.filter(item => item.completed).length / kr.checklist.length) * 100 : 0}%`}}
+                                  ></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 고정 Footer */}
+            <div className="sticky bottom-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-t-2 border-gray-200 dark:border-gray-600 p-6">
+              <div className="flex justify-end">
+                <Button onClick={() => setSelectedObjective(null)}>
+                  닫기
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 새 목표 추가 모달 */}
       {showNewObjectiveModal && (
@@ -967,20 +1471,20 @@ export default function PlanningProcessDetailPage() {
                         {newObjective.keyResults.length > 1 && (
                           <div className="flex justify-end">
                             <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                const updatedKRs = newObjective.keyResults.filter((_, i) => i !== index);
-                                setNewObjective(prev => ({ ...prev, keyResults: updatedKRs }));
-                              }}
-                              className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              핵심 결과 삭제
-                            </Button>
-                          </div>
-                        )}
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const updatedKRs = newObjective.keyResults.filter((_, i) => i !== index);
+                                  setNewObjective(prev => ({ ...prev, keyResults: updatedKRs }));
+                                }}
+                                className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                핵심 결과 삭제
+                              </Button>
+                            </div>
+                          )}
                       </div>
                     ))}
 
