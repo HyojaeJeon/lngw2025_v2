@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -45,16 +44,30 @@ export default function MarketingPlanDetailPage() {
   const planId = params.id;
 
   // 상태 관리
+  const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState(null);
-  const [objectives, setObjectives] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editedPlan, setEditedPlan] = useState({});
-  const [expandedObjectives, setExpandedObjectives] = useState({});
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
   const [showObjectiveModal, setShowObjectiveModal] = useState(false);
   const [editingObjective, setEditingObjective] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [objectiveToDelete, setObjectiveToDelete] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [expandedObjectives, setExpandedObjectives] = useState({});
+  const [keyResults, setKeyResults] = useState([]);
+  const [objectiveTitle, setObjectiveTitle] = useState("");
+
+  // 새로운 편집 상태
+  const [editingPeriod, setEditingPeriod] = useState(false);
+  const [editingManager, setEditingManager] = useState(false);
+  const [editingTarget, setEditingTarget] = useState(false);
+  const [editingMessage, setEditingMessage] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState("");
+  const [tempEndDate, setTempEndDate] = useState("");
+  const [tempManager, setTempManager] = useState("");
+  const [tempTarget, setTempTarget] = useState("");
+  const [tempMessage, setTempMessage] = useState("");
+  const [showManagerDropdown, setShowManagerDropdown] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // 샘플 데이터
   const samplePlan = {
@@ -142,22 +155,105 @@ export default function MarketingPlanDetailPage() {
     }
   ];
 
-  // 컴포넌트 초기화
+  // 사용자 데이터 가져오기
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      // 실제 환경에서는 API 호출
+      // const response = await fetch('/api/users');
+      // const users = await response.json();
+
+      // 임시 데이터
+      const mockUsers = [
+        { id: 1, name: "김마케팅", email: "kim.marketing@company.com", role: "마케팅 총괄", avatar: "/api/placeholder/40/40" },
+        { id: 2, name: "이기획", email: "lee.planning@company.com", role: "마케팅 기획자", avatar: "/api/placeholder/40/40" },
+        { id: 3, name: "박전략", email: "park.strategy@company.com", role: "전략 기획자", avatar: "/api/placeholder/40/40" },
+        { id: 4, name: "최브랜드", email: "choi.brand@company.com", role: "브랜드 매니저", avatar: "/api/placeholder/40/40" },
+        { id: 5, name: "정콘텐츠", email: "jung.content@company.com", role: "콘텐츠 팀장", avatar: "/api/placeholder/40/40" },
+        { id: 6, name: "한디자인", email: "han.design@company.com", role: "디자이너", avatar: "/api/placeholder/40/40" }
+      ];
+
+      setAvailableUsers(mockUsers);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  // 계획 데이터 로드
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setPlan(samplePlan);
-      setObjectives(samplePlan.objectives);
-      setEditedPlan(samplePlan);
-      
-      // 모든 목표를 기본적으로 확장상태로 설정
-      const expanded = {};
-      samplePlan.objectives.forEach(obj => {
-        expanded[obj.id] = true;
-      });
-      setExpandedObjectives(expanded);
-      setLoading(false);
-    }, 500);
+    const loadPlanData = async () => {
+      try {
+        console.log("Loading plan data for ID:", planId);
+        setLoading(true);
+
+        // 실제 환경에서는 API 호출
+        // const response = await fetch(`/api/marketing/plans/${planId}`);
+        // const planData = await response.json();
+
+        // 임시 데이터 (실제로는 API에서 가져옴)
+        const mockPlan = {
+          id: parseInt(planId),
+          title: "2025년 1분기 마케팅 계획",
+          status: "진행중",
+          progress: 65,
+          startDate: "2025-01-01",
+          endDate: "2025-03-31",
+          manager: "김마케팅",
+          targetPersona: "20-30대 직장인",
+          coreMessage: "일상을 더 스마트하게, 더 편리하게",
+          createdAt: "2025-01-15",
+          updatedAt: "2025-06-08",
+          objectives: [
+            {
+              id: 1,
+              title: "Z세대 인지도 확보",
+              status: "진행중",
+              progress: 70,
+              keyResults: [
+                { id: 1, title: "틱톡 팔로워 5만 달성", target: 50000, current: 35000, unit: "명" },
+                { id: 2, title: "브랜드 인지도 20% 증가", target: 20, current: 15, unit: "%" },
+                { id: 3, title: "UGC 콘텐츠 100건 수집", target: 100, current: 78, unit: "건" }
+              ]
+            },
+            {
+              id: 2,
+              title: "온라인 매출 증대",
+              status: "진행중",
+              progress: 60,
+              keyResults: [
+                { id: 4, title: "온라인 매출 30% 증가", target: 30, current: 18, unit: "%" },
+                { id: 5, title: "전환율 3.5% 달성", target: 3.5, current: 2.8, unit: "%" },
+                { id: 6, title: "고객 생애가치 25% 향상", target: 25, current: 15, unit: "%" }
+              ]
+            }
+          ],
+          initiatives: [
+            { id: 1, name: "여름 바캉스 캠페인", status: "계획됨", linkedToCampaign: true },
+            { id: 2, name: "대학생 앰배서더 운영", status: "진행중", linkedToCampaign: false },
+            { id: 3, name: "인플루언서 협업 프로젝트", status: "완료", linkedToCampaign: true }
+          ]
+        };
+
+        setPlan(mockPlan);
+        setTempTitle(mockPlan.title);
+        setTempStartDate(mockPlan.startDate);
+        setTempEndDate(mockPlan.endDate);
+        setTempManager(mockPlan.manager);
+        setTempTarget(mockPlan.targetPersona);
+        setTempMessage(mockPlan.coreMessage);
+      } catch (error) {
+        console.error("Failed to load plan:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (planId) {
+      loadPlanData();
+      fetchUsers();
+    }
   }, [planId]);
 
   // 유틸리티 함수들
@@ -252,6 +348,119 @@ export default function MarketingPlanDetailPage() {
   const addNewObjective = () => {
     setEditingObjective(null);
     setShowObjectiveModal(true);
+  };
+
+  // 제목 수정 핸들러
+  const saveTitle = async () => {
+    try {
+      // 실제 환경에서는 API 호출
+      // await fetch(`/api/marketing/plans/${planId}`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ title: tempTitle })
+      // });
+
+      setPlan(prev => ({ ...prev, title: tempTitle }));
+      setEditingTitle(false);
+    } catch (error) {
+      console.error("Failed to save title:", error);
+    }
+  };
+
+  // 기간 수정 핸들러
+  const savePeriod = async () => {
+    try {
+      setPlan(prev => ({ ...prev, startDate: tempStartDate, endDate: tempEndDate }));
+      setEditingPeriod(false);
+    } catch (error) {
+      console.error("Failed to save period:", error);
+    }
+  };
+
+  // 담당자 수정 핸들러
+  const saveManager = async (selectedUser) => {
+    try {
+      setPlan(prev => ({ ...prev, manager: selectedUser.name }));
+      setTempManager(selectedUser.name);
+      setEditingManager(false);
+      setShowManagerDropdown(false);
+    } catch (error) {
+      console.error("Failed to save manager:", error);
+    }
+  };
+
+  // 타겟 고객 수정 핸들러
+  const saveTarget = async () => {
+    try {
+      setPlan(prev => ({ ...prev, targetPersona: tempTarget }));
+      setEditingTarget(false);
+    } catch (error) {
+      console.error("Failed to save target:", error);
+    }
+  };
+
+  // 핵심 메시지 수정 핸들러
+  const saveMessage = async () => {
+    try {
+      setPlan(prev => ({ ...prev, coreMessage: tempMessage }));
+      setEditingMessage(false);
+    } catch (error) {
+      console.error("Failed to save message:", error);
+    }
+  };
+
+  // 키 결과 토글
+  const toggleKeyResult = (objectiveId) => {
+    setExpandedObjectives(prev => ({
+      ...prev,
+      [objectiveId]: !prev[objectiveId]
+    }));
+  };
+
+  // 커스텀 드롭다운 컴포넌트
+  const CustomManagerDropdown = ({ isOpen, onSelect, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+        {loadingUsers ? (
+          <div className="p-4 text-center">
+            <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+            <p className="text-sm text-gray-500 mt-2">사용자 정보를 불러오는 중...</p>
+          </div>
+        ) : (
+          <>
+            <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">책임 담당자 선택</h4>
+            </div>
+            <div className="py-2">
+              {availableUsers.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => onSelect(user)}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {user.role}
+                    </p>
+                  </div>
+                  {plan.manager === user.name && (
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   // 목표 모달 컴포넌트
@@ -584,154 +793,288 @@ export default function MarketingPlanDetailPage() {
         목록으로 돌아가기
       </Button>
 
-      {/* 헤더 카드 */}
-      <Card className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 border-2 border-blue-200 dark:border-gray-600 shadow-lg">
-        <CardHeader className="pb-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              {isEditMode ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                      계획 제목
-                    </Label>
+      {/* 타이틀 박스 */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex-1">
+                {editingTitle ? (
+                  <div className="flex items-center gap-3">
                     <Input
-                      value={editedPlan.title}
-                      onChange={(e) => updateEditedPlan('title', e.target.value)}
-                      className="text-2xl font-bold bg-white dark:bg-gray-700 border-2 border-blue-500 focus:border-blue-600"
+                      value={tempTitle}
+                      onChange={(e) => setTempTitle(e.target.value)}
+                      className="text-3xl font-bold bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30"
+                      placeholder="계획 제목을 입력하세요"
+                      autoFocus
                     />
+                    <Button
+                      onClick={saveTitle}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    >
+                      <Save className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setEditingTitle(false);
+                        setTempTitle(plan.title);
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                      계획 설명
-                    </Label>
-                    <textarea
-                      value={editedPlan.description}
-                      onChange={(e) => updateEditedPlan('description', e.target.value)}
-                      className="w-full p-3 border-2 border-blue-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                      rows={3}
-                    />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold">{plan.title}</h1>
+                    <Button
+                      onClick={() => setEditingTitle(true)}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
                   </div>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <Badge 
+                  className={`${
+                    plan.status === "진행중" 
+                      ? "bg-green-500 hover:bg-green-600" 
+                      : plan.status === "계획됨"
+                      ? "bg-yellow-500 hover:bg-yellow-600"
+                      : "bg-gray-500 hover:bg-gray-600"
+                  } text-white font-medium px-4 py-2 text-sm`}
+                >
+                  {plan.status}
+                </Badge>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{plan.progress}%</div>
+                  <div className="text-blue-100 text-sm">진행률</div>
                 </div>
-              ) : (
-                <div>
-                  <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    {plan.title}
-                  </CardTitle>
-                  <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                    {plan.description}
-                  </p>
-                </div>
-              )}
+              </div>
+            </div>
 
-              {/* 상태 및 진행률 */}
-              <div className="flex items-center gap-6 mt-6">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-500" />
-                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-3 py-1">
-                    {plan.status}
-                  </Badge>
+            {/* 진행률 바 */}
+            <div className="mb-8">
+              <div className="w-full bg-white/20 rounded-full h-3">
+                <div 
+                  className="bg-white h-3 rounded-full transition-all duration-1000 shadow-sm" 
+                  style={{width: `${plan.progress}%`}}
+                ></div>
+              </div>
+            </div>
+
+            {/* 정보 그리드 */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {/* 기간 편집 */}
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm font-medium">기간</span>
+                  {!editingPeriod && (
+                    <Button
+                      onClick={() => setEditingPeriod(true)}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <BarChart3 className="w-5 h-5 text-green-500" />
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    전체 진행률
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" 
-                        style={{width: `${plan.progress}%`}}
-                      ></div>
+                {editingPeriod ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2">
+                      <Input
+                        type="date"
+                        value={tempStartDate}
+                        onChange={(e) => setTempStartDate(e.target.value)}
+                        className="text-sm bg-white/20 border-white/30 text-white"
+                      />
+                      <Input
+                        type="date"
+                        value={tempEndDate}
+                        onChange={(e) => setTempEndDate(e.target.value)}
+                        className="text-sm bg-white/20 border-white/30 text-white"
+                      />
                     </div>
-                    <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                      {plan.progress}%
-                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={savePeriod}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <Save className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingPeriod(false);
+                          setTempStartDate(plan.startDate);
+                          setTempEndDate(plan.endDate);
+                        }}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p className="text-white font-semibold text-sm">
+                    {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}
+                  </p>
+                )}
               </div>
-            </div>
 
-            {/* 액션 버튼 */}
-            <div className="flex gap-3">
-              {isEditMode ? (
-                <>
-                  <Button size="sm" onClick={cancelEdit} variant="outline">
-                    <X className="w-4 h-4 mr-1" />
-                    취소
-                  </Button>
-                  <Button size="sm" onClick={saveChanges} className="bg-green-600 hover:bg-green-700">
-                    <Save className="w-4 h-4 mr-1" />
-                    저장
-                  </Button>
-                </>
-              ) : (
-                <Button size="sm" onClick={toggleEditMode} variant="outline">
-                  <Edit className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-              )}
+              {/* 담당자 편집 */}
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm font-medium">담당자</span>
+                  {!editingManager && (
+                    <Button
+                      onClick={() => {
+                        setEditingManager(true);
+                        setShowManagerDropdown(true);
+                      }}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                {editingManager ? (
+                  <div className="relative">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => setShowManagerDropdown(!showManagerDropdown)}
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 justify-between w-full text-sm p-2"
+                      >
+                        <span>{tempManager}</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingManager(false);
+                          setShowManagerDropdown(false);
+                        }}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <CustomManagerDropdown
+                      isOpen={showManagerDropdown}
+                      onSelect={saveManager}
+                      onClose={() => setShowManagerDropdown(false)}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-white font-semibold">{plan.manager}</p>
+                )}
+              </div>
+
+              {/* 타겟 고객 편집 */}
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm font-medium">타겟 고객</span>
+                  {!editingTarget && (
+                    <Button
+                      onClick={() => setEditingTarget(true)}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                {editingTarget ? (
+                  <div className="space-y-2">
+                    <Input
+                      value={tempTarget}
+                      onChange={(e) => setTempTarget(e.target.value)}
+                      className="text-sm bg-white/20 border-white/30 text-white placeholder-white/70"
+                      placeholder="타겟 고객을 입력하세요"
+                    />
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={saveTarget}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <Save className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingTarget(false);
+                          setTempTarget(plan.targetPersona);
+                        }}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white font-semibold">{plan.targetPersona}</p>
+                )}
+              </div>
+
+              {/* 핵심 메시지 편집 */}
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm font-medium">핵심 메시지</span>
+                  {!editingMessage && (
+                    <Button
+                      onClick={() => setEditingMessage(true)}
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                {editingMessage ? (
+                  <div className="space-y-2">
+                    <Input
+                      value={tempMessage}
+                      onChange={(e) => setTempMessage(e.target.value)}
+                      className="text-sm bg-white/20 border-white/30 text-white placeholder-white/70"
+                      placeholder="핵심 메시지를 입력하세요"
+                    />
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={saveMessage}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <Save className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingMessage(false);
+                          setTempMessage(plan.coreMessage);
+                        }}
+                        size="sm"
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 p-1 h-6 w-6"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white font-semibold">{plan.coreMessage}</p>
+                )}
+              </div>
             </div>
           </div>
-        </CardHeader>
-
-        <CardContent className="pt-0">
-          {/* 기본 정보 그리드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">기간</p>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {plan.startDate} ~ {plan.endDate}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <User className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">담당자</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{plan.manager}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">타겟 고객</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{plan.targetPersona}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">핵심 메시지</p>
-                  <p className="font-medium text-gray-900 dark:text-white text-sm leading-tight">
-                    {plan.coreMessage}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* OKR 대시보드 */}
       <Card className="shadow-lg border-2 border-gray-200 dark:border-gray-600">
