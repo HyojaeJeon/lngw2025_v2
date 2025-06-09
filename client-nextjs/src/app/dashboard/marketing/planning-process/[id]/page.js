@@ -665,6 +665,20 @@ export default function PlanningProcessDetailPage() {
       setShowObjectiveModal(false);
     };
 
+        // 체크리스트 항목 삭제
+        const deleteChecklistItem = (krId, itemIndex) => {
+          setKeyResults(prev =>
+            prev.map(kr =>
+              kr.id === krId
+                ? {
+                    ...kr,
+                    checklist: kr.checklist.filter((_, index) => index !== itemIndex)
+                  }
+                : kr
+            )
+          );
+        };
+
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
@@ -845,61 +859,49 @@ export default function PlanningProcessDetailPage() {
 
                         {/* 체크리스트 기반 폼 */}
                         {kr.type === "checklist" && (
-                          <div className="mt-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                체크리스트
-                              </Label>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => addChecklistItem(kr.id)}
-                                className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                              >
-                                <Plus className="w-3 h-3" />
-                                항목 추가
-                              </Button>
-                            </div>
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {(kr.checklist || []).map((item, itemIndex) => (
-                                <div key={itemIndex} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleChecklistItem(kr.id, itemIndex)}
-                                    className={`flex-shrink-0 w-5 h-5 rounded border-2 transition-all ${
-                                      item.completed
-                                        ? "bg-green-500 border-green-500 text-white"
-                                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-green-400"
-                                    }`}
-                                  >
-                                    {item.completed && (
-                                      <svg className="w-3 h-3 mx-auto mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    )}
-                                  </button>
+                          <div className="mt-4 space-y-3">
+                            <div className="space-y-2">
+                              {(kr.checklist || []).map((item, index) => (
+                                <div key={index} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <input
+                                    type="checkbox"
+                                    checked={item.completed || false}
+                                    onChange={() => toggleChecklistItem(kr.id, index)}
+                                    className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                  />
                                   <Input
-                                    value={item.text}
-                                    onChange={(e) => updateChecklistItem(kr.id, itemIndex, e.target.value)}
+                                    value={item.text || ""}
+                                    onChange={(e) => updateChecklistItem(kr.id, index, e.target.value)}
                                     placeholder="체크리스트 항목을 입력하세요"
-                                    className={`flex-1 ${item.completed ? "line-through text-gray-500" : ""}`}
+                                    className="flex-1 bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
                                   />
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => removeChecklistItem(kr.id, itemIndex)}
+                                    onClick={() => deleteChecklistItem(kr.id, index)}
                                     className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   >
-                                    <Trash2 className="w-3 h-3" />
+                                    <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
                               ))}
+
                               {(!kr.checklist || kr.checklist.length === 0) && (
                                 <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
                                   체크리스트 항목을 추가해주세요
                                 </div>
                               )}
                             </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addChecklistItem(kr.id)}
+                              className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            >
+                              <Plus className="w-4 h-4" />
+                              항목 추가
+                            </Button>
                           </div>
                         )}
                       </div>
