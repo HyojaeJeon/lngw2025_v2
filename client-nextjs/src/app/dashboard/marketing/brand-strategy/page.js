@@ -149,6 +149,122 @@ export default function BrandStrategyPage() {
       disappointmentFactors: ""
     }
   });
+  
+  // SWOT 분석 데이터
+  const [swotData, setSwotData] = useState({
+    strengths: [
+      {
+        id: 1,
+        category: "제품 및 가치 제안",
+        title: "대표 제품 AHA-BHA-PHA 30 Days Miracle Toner",
+        content: "3초당 1병 판매 – 시장 흡인력 입증"
+      },
+      {
+        id: 2,
+        category: "제품 및 가치 제안",
+        title: "Clean-ical 포뮬러",
+        content: "Tea Tree 10,000ppm, AHA/BHA/PHA, 2% 나이아신아마이드 → 성분 비율 투명 공개 + 유해 성분 20가지 무첨가"
+      },
+      {
+        id: 3,
+        category: "고객 및 경험",
+        title: "Hasaki 기준 높은 고객 만족도",
+        content: "Toner 평균 평점 4.9 / 5 (리뷰 73건), 반품률 낮음"
+      },
+      {
+        id: 4,
+        category: "채널 및 마케팅",
+        title: "TikTok 베트남 채널",
+        content: "@somebymi.official_vn: 팔로워 48.8K, 좋아요 189K, ER 4~6% (뷰티 평균 3.5% 이상)"
+      }
+    ],
+    weaknesses: [
+      {
+        id: 1,
+        category: "제품 및 가치 제안",
+        title: "복잡한 제품 라인업",
+        content: "라인업이 많고 이름이 길어 → 신규 고객이 선택 시 혼란"
+      },
+      {
+        id: 2,
+        category: "제품 및 가치 제안",
+        title: "민감성 피부 자극 우려",
+        content: "일부 산 성분/레티놀 제품은 민감성 피부에 자극 보고 존재 → 정확한 사용법 안내 필요"
+      },
+      {
+        id: 3,
+        category: "고객 및 경험",
+        title: "오프라인 체험 기회 부족",
+        content: "오프라인 플래그십 매장 없음 → Innisfree처럼 제품 '직접 체험' 기회 부족"
+      },
+      {
+        id: 4,
+        category: "채널 및 마케팅",
+        title: "높은 할인 의존도",
+        content: "30–40% 할인 의존도 높음 → 매출 유지 위해 마진 희생 우려"
+      }
+    ],
+    opportunities: [
+      {
+        id: 1,
+        category: "제품 및 가치 제안",
+        title: "Gen Z의 성분 니즈 증가",
+        content: "강력하지만 순한 성분 니즈 증가, 투명한 농도 표기 브랜드가 적은 상황에서 차별화 우위"
+      },
+      {
+        id: 2,
+        category: "고객 및 경험",
+        title: "오프라인 체험 확장 가능성",
+        content: "Watsons/Guardian 등 오프라인 체험 키오스크 개설로 브랜드 인지도 향상"
+      },
+      {
+        id: 3,
+        category: "채널 및 마케팅",
+        title: "TikTok Shop 폭발적 성장",
+        content: "2024년 VN 이커머스 점유율 24%, GMV 전년 대비 53% 성장"
+      },
+      {
+        id: 4,
+        category: "재무 및 시장 점유율",
+        title: "베트남 화장품 시장 성장",
+        content: "연평균 성장률 9.5% 예상 (2030까지), 이커머스 뷰티 분야 지속적인 두 자릿수 성장세"
+      }
+    ],
+    threats: [
+      {
+        id: 1,
+        category: "제품 및 가치 제안",
+        title: "K-beauty 경쟁사 모방",
+        content: "COSRX, Axis-Y 등 K-beauty 경쟁사들이 Clean-ical 콘셉트와 성분 투명성 모방 중"
+      },
+      {
+        id: 2,
+        category: "고객 및 경험",
+        title: "오프라인 체험 선호 트렌드",
+        content: "베트남 소비자들은 직접 테스트 선호 → 오프라인 체험 부재 시 경쟁사에 밀릴 수 있음"
+      },
+      {
+        id: 3,
+        category: "채널 및 마케팅",
+        title: "플랫폼 규제 리스크",
+        content: "국가의 TikTok Shop / 라이브 방송 규제 가능성, 이커머스 플랫폼 수수료 인상 리스크"
+      },
+      {
+        id: 4,
+        category: "재무 및 시장 점유율",
+        title: "가격 경쟁 심화",
+        content: "가격 경쟁 심화, 광고 단가 상승, COSRX, Innisfree는 플래시 세일 강화로 시장 공세 확대 중"
+      }
+    ]
+  });
+  const [newSwotItem, setNewSwotItem] = useState({
+    category: "",
+    title: "",
+    content: ""
+  });
+  const [editingSwotItem, setEditingSwotItem] = useState(null);
+  const [showSwotModal, setShowSwotModal] = useState(false);
+  const [selectedSwotType, setSelectedSwotType] = useState("strengths");
 
   const handleBrandDataChange = (field, value) => {
     setBrandData(prev => ({ ...prev, [field]: value }));
@@ -335,9 +451,93 @@ export default function BrandStrategyPage() {
     }));
   };
 
+  // SWOT 분석 관련 함수들
+  const openSwotModal = (type, item = null) => {
+    setSelectedSwotType(type);
+    if (item) {
+      setEditingSwotItem(item);
+      setNewSwotItem({
+        category: item.category,
+        title: item.title,
+        content: item.content
+      });
+    } else {
+      setEditingSwotItem(null);
+      setNewSwotItem({
+        category: "",
+        title: "",
+        content: ""
+      });
+    }
+    setShowSwotModal(true);
+  };
+
+  const saveSwotItem = () => {
+    if (!newSwotItem.title || !newSwotItem.content) return;
+
+    if (editingSwotItem) {
+      setSwotData(prev => ({
+        ...prev,
+        [selectedSwotType]: prev[selectedSwotType].map(item => 
+          item.id === editingSwotItem.id 
+            ? { ...newSwotItem, id: editingSwotItem.id }
+            : item
+        )
+      }));
+    } else {
+      setSwotData(prev => ({
+        ...prev,
+        [selectedSwotType]: [...prev[selectedSwotType], {
+          ...newSwotItem,
+          id: Date.now()
+        }]
+      }));
+    }
+    setShowSwotModal(false);
+    setEditingSwotItem(null);
+  };
+
+  const deleteSwotItem = (type, id) => {
+    setSwotData(prev => ({
+      ...prev,
+      [type]: prev[type].filter(item => item.id !== id)
+    }));
+  };
+
+  const getSwotIcon = (type) => {
+    switch (type) {
+      case "strengths": return Award;
+      case "weaknesses": return AlertTriangle;
+      case "opportunities": return Star;
+      case "threats": return RefreshCw;
+      default: return Target;
+    }
+  };
+
+  const getSwotColor = (type) => {
+    switch (type) {
+      case "strengths": return "from-green-500 to-emerald-500";
+      case "weaknesses": return "from-red-500 to-rose-500";
+      case "opportunities": return "from-blue-500 to-cyan-500";
+      case "threats": return "from-orange-500 to-yellow-500";
+      default: return "from-gray-500 to-gray-600";
+    }
+  };
+
+  const getSwotLabel = (type) => {
+    switch (type) {
+      case "strengths": return "강점 (Strengths)";
+      case "weaknesses": return "약점 (Weaknesses)";
+      case "opportunities": return "기회 (Opportunities)";
+      case "threats": return "위협 (Threats)";
+      default: return "";
+    }
+  };
+
   const tabs = [
     { id: "mission", label: "미션/비전/가치", icon: FileText },
     { id: "personas", label: "고객 페르소나", icon: Users },
+    { id: "swot", label: "SWOT 분석", icon: Target },
     { id: "assets", label: "브랜드 자산", icon: Palette },
     { id: "guidelines", label: "가이드라인", icon: Upload },
     { id: "history", label: "변경 이력", icon: History },
@@ -604,6 +804,158 @@ export default function BrandStrategyPage() {
           </div>
         )}
 
+        {activeTab === "swot" && (
+          <div className="space-y-8">
+            {/* 헤더 */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">SWOT 분석</h2>
+                <p className="text-gray-600 dark:text-gray-400">브랜드의 강점, 약점, 기회, 위협 요소를 체계적으로 분석하고 관리하세요</p>
+              </div>
+            </div>
+
+            {/* SWOT 매트릭스 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {["strengths", "weaknesses", "opportunities", "threats"].map((type) => {
+                const Icon = getSwotIcon(type);
+                return (
+                  <Card key={type} className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+                    <CardHeader className={`bg-gradient-to-r ${getSwotColor(type)} text-white`}>
+                      <CardTitle className="flex items-center justify-between text-xl">
+                        <div className="flex items-center space-x-3">
+                          <Icon className="w-6 h-6" />
+                          <span>{getSwotLabel(type)}</span>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => openSwotModal(type)} 
+                          className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          추가
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="p-6">
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {swotData[type].map((item) => (
+                          <div key={item.id} className={`p-4 rounded-xl border-2 transition-all hover:shadow-md ${
+                            type === "strengths" ? "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 dark:from-gray-700 dark:to-gray-600" :
+                            type === "weaknesses" ? "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 dark:from-gray-700 dark:to-gray-600" :
+                            type === "opportunities" ? "bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 dark:from-gray-700 dark:to-gray-600" :
+                            "bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 dark:from-gray-700 dark:to-gray-600"
+                          }`}>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                    type === "strengths" ? "bg-green-200 text-green-800" :
+                                    type === "weaknesses" ? "bg-red-200 text-red-800" :
+                                    type === "opportunities" ? "bg-blue-200 text-blue-800" :
+                                    "bg-orange-200 text-orange-800"
+                                  }`}>
+                                    {item.category}
+                                  </span>
+                                </div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">
+                                  {item.title}
+                                </h4>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                                  {item.content}
+                                </p>
+                              </div>
+                              <div className="flex space-x-1 ml-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openSwotModal(type, item)}
+                                  className="p-2 h-8 w-8"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => deleteSwotItem(type, item.id)}
+                                  className="p-2 h-8 w-8 text-red-600 border-red-300 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {swotData[type].length === 0 && (
+                          <div className="text-center py-8">
+                            <Icon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                            <p className="text-gray-500">아직 등록된 항목이 없습니다.</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openSwotModal(type)}
+                              className="mt-3"
+                            >
+                              첫 번째 항목 추가하기
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* 결론 및 인사이트 */}
+            <Card className="shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                <CardTitle className="flex items-center space-x-3 text-xl">
+                  <Lightbulb className="w-6 h-6" />
+                  <span>SWOT 분석 결론 및 전략적 인사이트</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 p-6 rounded-xl">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">핵심 인사이트</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">🎯 핵심 강점 활용</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          성분 투명성을 갖춘 Clean-ical 제품군으로 차별화된 강점을 보유하며, 
+                          30일 안에 효과라는 명확한 포지셔닝과 TikTok 중심의 강력한 디지털 존재감
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">🚀 기회 포착 전략</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          베트남 화장품 시장의 지속적인 성장세와 TikTok Shop의 폭발적 성장을 활용하여 
+                          시장 점유율 확대 가능
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-red-700 dark:text-red-400 mb-2">⚠️ 약점 보완 방안</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          오프라인 채널 다변화와 지나친 할인 의존 탈피가 향후 지속 성장을 위한 과제
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-2">🛡️ 위협 대응 전략</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          피부 진단 및 사용 가이드가 포함된 체험형 서비스로 경쟁 심화되는 
+                          K-beauty 시장에서 우위를 유지해야 함
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {activeTab === "assets" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Color Palette */}
@@ -797,6 +1149,85 @@ export default function BrandStrategyPage() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {/* SWOT 모달 */}
+        {showSwotModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl">
+              {/* 모달 헤더 */}
+              <div className={`bg-gradient-to-r ${getSwotColor(selectedSwotType)} text-white p-6`}>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">
+                    {editingSwotItem ? `${getSwotLabel(selectedSwotType)} 수정` : `${getSwotLabel(selectedSwotType)} 추가`}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSwotModal(false)}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <X className="w-6 h-6" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* 모달 콘텐츠 */}
+              <div className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">카테고리 *</Label>
+                    <Input
+                      value={newSwotItem.category}
+                      onChange={(e) => setNewSwotItem(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder="예: 제품 및 가치 제안, 고객 및 경험, 채널 및 마케팅..."
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">제목 *</Label>
+                    <Input
+                      value={newSwotItem.title}
+                      onChange={(e) => setNewSwotItem(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="항목의 제목을 입력하세요"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">내용 *</Label>
+                    <textarea
+                      value={newSwotItem.content}
+                      onChange={(e) => setNewSwotItem(prev => ({ ...prev, content: e.target.value }))}
+                      placeholder="세부 내용을 입력하세요"
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 모달 푸터 */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-6 flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSwotModal(false)}
+                  className="px-6"
+                >
+                  취소
+                </Button>
+                <Button
+                  onClick={saveSwotItem}
+                  disabled={!newSwotItem.title || !newSwotItem.content}
+                  className={`bg-gradient-to-r ${getSwotColor(selectedSwotType)} hover:opacity-90 text-white px-6 disabled:opacity-50`}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  저장
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* 페르소나 모달 */}
