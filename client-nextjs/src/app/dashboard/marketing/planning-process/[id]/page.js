@@ -71,6 +71,7 @@ export default function PlanningProcessDetailPage() {
   const [showManagerDropdown, setShowManagerDropdown] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [selectedObjective, setSelectedObjective] = useState(null);
 
   // 샘플 데이터
   const samplePlan = {
@@ -538,28 +539,46 @@ export default function PlanningProcessDetailPage() {
 
   // 체크리스트 항목 추가
   const addChecklistItem = (krId) => {
-    setKeyResults(keyResults.map(kr => 
+    const updatedKeyResults = keyResults.map(kr => 
       kr.id === krId 
-        ? { 
-            ...kr, 
+        ? {
+            ...kr,
             checklist: [...(kr.checklist || []), { text: "", completed: false }]
-          } 
+          }
         : kr
-    ));
+    );
+    setKeyResults(updatedKeyResults);
+
+    // 선택된 목표 수정 시에도 업데이트
+    if (selectedObjective) {
+      setSelectedObjective(prev => ({
+        ...prev,
+        keyResults: updatedKeyResults
+      }));
+    }
   };
 
   // 체크리스트 항목 업데이트
   const updateChecklistItem = (krId, itemIndex, text) => {
-    setKeyResults(keyResults.map(kr => 
+    const updatedKeyResults = keyResults.map(kr => 
       kr.id === krId 
         ? {
             ...kr,
-            checklist: kr.checklist.map((item, index) => 
+            checklist: (kr.checklist || []).map((item, index) => 
               index === itemIndex ? { ...item, text } : item
             )
           }
         : kr
-    ));
+    );
+    setKeyResults(updatedKeyResults);
+
+    // 선택된 목표 수정 시에도 업데이트
+    if (selectedObjective) {
+      setSelectedObjective(prev => ({
+        ...prev,
+        keyResults: updatedKeyResults
+      }));
+    }
   };
 
   // 체크리스트 항목 토글
@@ -1473,7 +1492,7 @@ className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transit
           ))}
 
           {objectives.filter(obj => obj.isActive).length === 0 && (
-            <div className="text-center py-12">```python
+            <div className="text-center py-12">
               <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 목표가 없습니다
