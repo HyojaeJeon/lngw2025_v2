@@ -12,37 +12,45 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useLanguage } from "@/contexts/languageContext.js";
 import {
-  Save,
-  Upload,
-  Download,
-  History,
-  Palette,
-  Type,
-  Image,
-  FileText,
-  Edit3,
-  Eye,
-  Plus,
-  Trash2,
-  RefreshCw,
-  Users,
-  User,
   Target,
-  Quote,
-  MapPin,
-  Briefcase,
-  DollarSign,
-  Heart,
+  Users,
+  MessageSquare,
   Calendar,
-  ShoppingBag,
-  AlertTriangle,
-  Award,
-  Star,
-  Copy,
+  Plus,
   Edit,
-  Lightbulb,
-  Camera,
+  Trash2,
+  Save,
   X,
+  ChevronRight,
+  ArrowRight,
+  Clock,
+  User,
+  FileText,
+  BarChart3,
+  CheckCircle,
+  Circle,
+  GitBranch,
+  Settings,
+  Play,
+  Pause,
+  RotateCcw,
+  AlertTriangle,
+  TrendingUp,
+  Zap,
+  Globe,
+  Link,
+  Copy,
+  ExternalLink,
+  Download,
+  Upload,
+  Search,
+  Filter,
+  Eye,
+  Star,
+  BookOpen,
+  Lightbulb,
+  Workflow,
+  FlowChart,
 } from "lucide-react";
 
 export default function BrandStrategyPage() {
@@ -256,7 +264,7 @@ export default function BrandStrategyPage() {
       {
         id: 2,
         category: "고객 및 경험",
-        title: "오프 �인 체험 선호 트렌드",
+        title: "오프라인 체험 선호 트렌드",
         content:
           "베트남 소비자들은 직접 테스트 선호 → 오프라인 체험 부재 시 경쟁사에 밀릴 수 있음",
       },
@@ -583,7 +591,7 @@ export default function BrandStrategyPage() {
       case "opportunities":
         return "기회 (Opportunities)";
       case "threats":
-        return "위 �� (Threats)";
+        return "위협 (Threats)";
       default:
         return "";
     }
@@ -857,7 +865,8 @@ export default function BrandStrategyPage() {
                         <Button
                           size="sm"
                           onClick={() => duplicatePersona(persona)}
-                          className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                          className="bg-white/20 hover:bg-white/30 text```text
+-white border-white/30"
                         >
                           <Copy className="w-4 h-4" />
                         </Button>
@@ -1608,6 +1617,7 @@ export default function BrandStrategyPage() {
                       <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-white font-bold flex items-center justify-center">
                         2
                       </div>
+                      ```text
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                         인구통계학적 정보 (Demographics)
                       </h3>
@@ -1953,7 +1963,7 @@ export default function BrandStrategyPage() {
                               e.target.value,
                             )
                           }
-                          placeholder="아침 기상부터 잠  � 때까지의 시간대별 활동을 간략히 서술"
+                          placeholder="아침 기상부터 잠   때까지의 시간대별 활동을 간략히 서술"
                           rows={3}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                         />
