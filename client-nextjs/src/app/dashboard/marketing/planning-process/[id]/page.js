@@ -599,7 +599,7 @@ export default function PlanningProcessDetailPage() {
     useEffect(() => {
       setTitle(editingObjective?.title || "");
       setKeyResults(editingObjective?.keyResults || [
-        { id: Date.now(), title: "", target: 0, current: 0, unit: "", type: "number", isActive: true }
+        { id: Date.now(), title: "", title: "", target: 0, current: 0, unit: "", type: "number", isActive: true }
       ]);
     }, [editingObjective]);
 
@@ -781,7 +781,7 @@ export default function PlanningProcessDetailPage() {
                               className={`flex-1 p-3 rounded-lg border-2 transition-all ${
                                 kr.type === "target" 
                                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
-                                  : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-300"
+                                  : "border-gray-300dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-300"
                               }`}
                             >
                               <div className="text-center">
@@ -793,8 +793,8 @@ export default function PlanningProcessDetailPage() {
                               type="button"
                               onClick={() => updateKeyResult(kr.id, "type", "checklist")}
                               className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                                kr.type === "checklist" 
-                                  ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" 
+                                kr.type === "checklist"
+                                  ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
                                   : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-green-300"
                               }`}
                             >
@@ -918,8 +918,8 @@ export default function PlanningProcessDetailPage() {
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500" 
+                            <div
+                              className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500"
                               style={{width: `${Math.min(((kr.current || 0) / kr.target) * 100, 100)}%`}}
                             ></div>
                           </div>
@@ -943,8 +943,8 @@ export default function PlanningProcessDetailPage() {
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500" 
+                            <div
+                              className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500"
                               style={{width: `${(kr.checklist.filter(item => item.completed).length / kr.checklist.length) * 100}%`}}
                             ></div>
                           </div>
@@ -1083,10 +1083,10 @@ export default function PlanningProcessDetailPage() {
                 )}
               </div>
               <div className="flex items-center gap-4">
-                <Badge 
+                <Badge
                   className={`${
-                    plan.status === "진행중" 
-                      ? "bg-green-500 hover:bg-green-600" 
+                    plan.status === "진행중"
+                      ? "bg-green-500 hover:bg-green-600"
                       : plan.status === "계획됨"
                       ? "bg-yellow-500 hover:bg-yellow-600"
                       : "bg-gray-500 hover:bg-gray-600"
@@ -1104,8 +1104,8 @@ export default function PlanningProcessDetailPage() {
             {/* 진행률 바 */}
             <div className="mb-8">
               <div className="w-full bg-white/20 rounded-full h-3">
-                <div 
-                  className="bg-white h-3 rounded-full transition-all duration-1000 shadow-sm" 
+                <div
+                  className="bg-white h-3 rounded-full transition-all duration-1000 shadow-sm"
                   style={{width: `${plan.progress}%`}}
                 ></div>
               </div>
@@ -1372,8 +1372,8 @@ export default function PlanningProcessDetailPage() {
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700" 
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700"
                           style={{width: `${calculateObjectiveProgress(objective)}%`}}
                         ></div>
                       </div>
@@ -1382,8 +1382,8 @@ export default function PlanningProcessDetailPage() {
 
                   {/* 액션 버튼 */}
                   <div className="flex gap-2 ml-4">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => toggleObjectiveExpansion(objective.id)}
                       className="flex items-center gap-1"
@@ -1400,15 +1400,15 @@ export default function PlanningProcessDetailPage() {
                         </>
                       )}
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => editObjective(objective)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => {
                         setObjectiveToDelete(objective.id);
@@ -1458,8 +1458,8 @@ export default function PlanningProcessDetailPage() {
                                   {statusText}
                                 </div>
                                 <div className="w-full bg-gray-700 rounded-full h-3">
-                                  <div 
-className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700" 
+                                  <div
+className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700"
                                     style={{width: `${progress}%`}}
                                   ></div>
                                 </div>
@@ -1473,7 +1473,7 @@ className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transit
           ))}
 
           {objectives.filter(obj => obj.isActive).length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12">```python
               <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 목표가 없습니다
@@ -1557,8 +1557,8 @@ className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transit
               <Button variant="outline" onClick={() => setShowDeleteModal(false)} className="flex-1">
                 취소
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={() => deleteObjective(objectiveToDelete)}
                 className="flex-1 bg-red-600 hover:bg-red-700"
               >
