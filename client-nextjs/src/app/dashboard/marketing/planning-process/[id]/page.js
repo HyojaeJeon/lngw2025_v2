@@ -37,7 +37,7 @@ import {
   RefreshCw
 } from "lucide-react";
 
-export default function MarketingPlanDetailPage() {
+export default function PlanningProcessDetailPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const params = useParams();
@@ -54,6 +54,9 @@ export default function MarketingPlanDetailPage() {
   const [expandedObjectives, setExpandedObjectives] = useState({});
   const [keyResults, setKeyResults] = useState([]);
   const [objectiveTitle, setObjectiveTitle] = useState("");
+  const [objectives, setObjectives] = useState([]); // objectives 상태 추가
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // 삭제 확인 모달 상태
+  const [objectiveToDelete, setObjectiveToDelete] = useState(null); // 삭제할 목표 ID
 
   // 새로운 편집 상태
   const [editingPeriod, setEditingPeriod] = useState(false);
@@ -181,7 +184,7 @@ export default function MarketingPlanDetailPage() {
     }
   };
 
-  // 계획 데이터 로드
+  // 페이지 데이터 로드
   useEffect(() => {
     const loadPlanData = async () => {
       try {
@@ -203,49 +206,86 @@ export default function MarketingPlanDetailPage() {
           manager: "김마케팅",
           targetPersona: "20-30대 직장인",
           coreMessage: "일상을 더 스마트하게, 더 편리하게",
+          description: "Z세대를 타겟으로 한 브랜드 인지도 향상 및 온라인 매출 증대를 목표로 하는 마케팅 계획입니다.",
           createdAt: "2025-01-15",
           updatedAt: "2025-06-08",
-          objectives: [
-            {
-              id: 1,
-              title: "Z세대 인지도 확보",
-              status: "진행중",
-              progress: 70,
-              keyResults: [
-                { id: 1, title: "틱톡 팔로워 5만 달성", target: 50000, current: 35000, unit: "명" },
-                { id: 2, title: "브랜드 인지도 20% 증가", target: 20, current: 15, unit: "%" },
-                { id: 3, title: "UGC 콘텐츠 100건 수집", target: 100, current: 78, unit: "건" }
-              ]
-            },
-            {
-              id: 2,
-              title: "온라인 매출 증대",
-              status: "진행중",
-              progress: 60,
-              keyResults: [
-                { id: 4, title: "온라인 매출 30% 증가", target: 30, current: 18, unit: "%" },
-                { id: 5, title: "전환율 3.5% 달성", target: 3.5, current: 2.8, unit: "%" },
-                { id: 6, title: "고객 생애가치 25% 향상", target: 25, current: 15, unit: "%" }
-              ]
-            }
-          ],
+          channels: ["Instagram", "TikTok", "YouTube", "네이버 블로그"],
           initiatives: [
-            { id: 1, name: "여름 바캉스 캠페인", status: "계획됨", linkedToCampaign: true },
-            { id: 2, name: "대학생 앰배서더 운영", status: "진행중", linkedToCampaign: false },
-            { id: 3, name: "인플루언서 협업 프로젝트", status: "완료", linkedToCampaign: true }
+            { name: "여름 바캉스 캠페인", status: "계획됨", linkedToCampaign: true },
+            { name: "대학생 앰배서더 운영", status: "진행중", linkedToCampaign: false },
+            { name: "인플루언서 협업 프로젝트", status: "완료", linkedToCampaign: true }
           ]
         };
 
+        // 목표 데이터 초기화
+        const mockObjectives = [
+          {
+            id: 1,
+            title: "Z세대 인지도 확보",
+            progress: 70,
+            confidence: "On Track",
+            isActive: true,
+            keyResults: [
+              {
+                id: 1,
+                title: "틱톡 팔로워 증가",
+                target: 50000,
+                current: 35000,
+                unit: "명",
+                type: "number",
+                isActive: true
+              },
+              {
+                id: 2,
+                title: "브랜드 인지도 향상",
+                target: 20,
+                current: 14,
+                unit: "%",
+                type: "percentage",
+                isActive: true
+              }
+            ]
+          },
+          {
+            id: 2,
+            title: "온라인 매출 증대",
+            progress: 60,
+            confidence: "At Risk",
+            isActive: true,
+            keyResults: [
+              {
+                id: 3,
+                title: "온라인 매출 증가",
+                target: 30,
+                current: 18,
+                unit: "%",
+                type: "percentage",
+                isActive: true
+              },
+              {
+                id: 4,
+                title: "전환율 달성",
+                target: 3.5,
+                current: 2.8,
+                unit: "%",
+                type: "percentage",
+                isActive: true
+              }
+            ]
+          }
+        ];
+
         setPlan(mockPlan);
+        setObjectives(mockObjectives);
         setTempTitle(mockPlan.title);
         setTempStartDate(mockPlan.startDate);
         setTempEndDate(mockPlan.endDate);
         setTempManager(mockPlan.manager);
         setTempTarget(mockPlan.targetPersona);
         setTempMessage(mockPlan.coreMessage);
+        setLoading(false);
       } catch (error) {
-        console.error("Failed to load plan:", error);
-      } finally {
+        console.error("Failed to load plan data:", error);
         setLoading(false);
       }
     };
