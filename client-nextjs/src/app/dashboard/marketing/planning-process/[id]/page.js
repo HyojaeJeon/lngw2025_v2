@@ -95,11 +95,11 @@ export default function PlanningProcessDetailPage() {
         confidence: "On Track",
         isActive: true,
         keyResults: [
-          { id: 1, title: "틱톡 팔로워 수", target: 50000, current: 38500, unit: "명", type: "number", isActive: true },
-          { id: 2, title: "브랜드 인지도", target: 20, current: 15, unit: "%", type: "percentage", isActive: true },
-          { id: 3, title: "UGC 콘텐츠 수집", target: 100, current: 82, unit: "건", type: "number", isActive: true },
-          { id: 4, title: "참여율 증가", target: 5, current: 3.8, unit: "%", type: "percentage", isActive: true },
-          { id: 5, title: "해시태그 사용량", target: 1000, current: 750, unit: "회", type: "number", isActive: true }
+          { id: 1, title: "틱톡 팔로워 수", type: "target", target: 50000, current: 38500, unit: "명", isActive: true },
+          { id: 2, title: "브랜드 인지도", type: "target", target: 20, current: 15, unit: "%", isActive: true },
+          { id: 3, title: "UGC 콘텐츠 수집", type: "target", target: 100, current: 82, unit: "건", isActive: true },
+          { id: 4, title: "참여율 증가", type: "target", target: 5, current: 3.8, unit: "%", isActive: true },
+          { id: 5, title: "해시태그 사용량", type: "target", target: 1000, current: 750, unit: "회", isActive: true }
         ]
       },
       {
@@ -109,10 +109,10 @@ export default function PlanningProcessDetailPage() {
         confidence: "At Risk",
         isActive: true,
         keyResults: [
-          { id: 6, title: "온라인 매출", target: 30, current: 18, unit: "%", type: "percentage", isActive: true },
-          { id: 7, title: "전환율", target: 3.5, current: 2.1, unit: "%", type: "percentage", isActive: true },
-          { id: 8, title: "고객 생애가치", target: 25, current: 12, unit: "%", type: "percentage", isActive: true },
-          { id: 9, title: "신규 고객 획득", target: 500, current: 280, unit: "명", type: "number", isActive: true }
+          { id: 6, title: "온라인 매출", type: "target", target: 30, current: 18, unit: "%", isActive: true },
+          { id: 7, title: "전환율", type: "target", target: 3.5, current: 2.1, unit: "%", isActive: true },
+          { id: 8, title: "고객 생애가치", type: "target", target: 25, current: 12, unit: "%", isActive: true },
+          { id: 9, title: "신규 고객 획득", type: "target", target: 500, current: 280, unit: "명", isActive: true }
         ]
       },
       {
@@ -122,9 +122,9 @@ export default function PlanningProcessDetailPage() {
         confidence: "On Track",
         isActive: true,
         keyResults: [
-          { id: 10, title: "고객 만족도", target: 4.5, current: 4.2, unit: "점", type: "rating", isActive: true },
-          { id: 11, title: "재구매율", target: 40, current: 38, unit: "%", type: "percentage", isActive: true },
-          { id: 12, title: "리뷰 평점", target: 4.7, current: 4.6, unit: "점", type: "rating", isActive: true }
+          { id: 10, title: "고객 만족도", type: "target", target: 4.5, current: 4.2, unit: "점", isActive: true },
+          { id: 11, title: "재구매율", type: "target", target: 40, current: 38, unit: "%", isActive: true },
+          { id: 12, title: "리뷰 평점", type: "target", target: 4.7, current: 4.6, unit: "점", isActive: true }
         ]
       }
     ]
@@ -228,21 +228,19 @@ export default function PlanningProcessDetailPage() {
             keyResults: [
               {
                 id: 1,
-                title: "틱톡 팔로워 증가",
-                target: 50000,
-                current: 35000,
+                title: "틱톡 팔로워 수",
+                type: "target",
                 unit: "명",
-                type: "number",
-                isActive: true
+                target: 50000,
+                current: 35000
               },
               {
                 id: 2,
                 title: "브랜드 인지도 향상",
-                target: 20,
-                current: 14,
+                type: "target",
                 unit: "%",
-                type: "percentage",
-                isActive: true
+                target: 20,
+                current: 14
               }
             ]
           },
@@ -255,21 +253,30 @@ export default function PlanningProcessDetailPage() {
             keyResults: [
               {
                 id: 3,
-                title: "온라인 매출 증가",
-                target: 30,
-                current: 18,
+                title: "온라인 매출",
+                type: "target",
                 unit: "%",
-                type: "percentage",
-                isActive: true
+                target: 30,
+                current: 18
               },
               {
                 id: 4,
-                title: "전환율 달성",
-                target: 3.5,
-                current: 2.8,
+                title: "전환율",
+                type: "target",
                 unit: "%",
-                type: "percentage",
-                isActive: true
+                target: 3.5,
+                current: 2.8
+              },
+              {
+                id: 5,
+                title: "고객 생애가치",
+                type: "checklist",
+                checklist: [
+                  { text: "고객 세분화 분석 완료", completed: true },
+                  { text: "개인화된 마케팅 캠페인 실행", completed: true },
+                  { text: "리텐션 프로그램 런칭", completed: false },
+                  { text: "고객 피드백 시스템 구축", completed: false }
+                ]
               }
             ]
           }
@@ -325,22 +332,21 @@ export default function PlanningProcessDetailPage() {
     }));
   };
 
+  // 목표 진행률 계산
   const calculateObjectiveProgress = (objective) => {
-    const validResults = objective.keyResults.filter(kr => 
-      kr.isActive && 
-      kr.target !== null && 
-      !isNaN(kr.target) && 
-      kr.target > 0
-    );
+    if (!objective.keyResults || objective.keyResults.length === 0) return 0;
 
-    if (validResults.length === 0) return 0;
-
-    const totalProgress = validResults.reduce((sum, kr) => {
-      const progress = Math.min((kr.current / kr.target) * 100, 100);
-      return sum + progress;
+    const totalProgress = objective.keyResults.reduce((sum, kr) => {
+      if (kr.type === "target" && kr.target && kr.target > 0) {
+        return sum + Math.min(((kr.current || 0) / kr.target) * 100, 100);
+      } else if (kr.type === "checklist" && kr.checklist && kr.checklist.length > 0) {
+        const completedItems = kr.checklist.filter(item => item.completed).length;
+        return sum + (completedItems / kr.checklist.length) * 100;
+      }
+      return sum;
     }, 0);
 
-    return Math.round(totalProgress / validResults.length);
+    return Math.round(totalProgress / objective.keyResults.length);
   };
 
   const getConfidenceBadge = (confidence) => {
@@ -503,6 +509,85 @@ export default function PlanningProcessDetailPage() {
     );
   };
 
+  // 목표 관련 함수들
+  // 핵심 결과 추가
+  const addKeyResult = () => {
+    const newKeyResult = {
+      id: Date.now(),
+      title: "",
+      type: "target", // 기본값은 목표/달성치 기반
+      unit: "",
+      target: 0,
+      current: 0,
+      checklist: []
+    };
+    setKeyResults([...keyResults, newKeyResult]);
+  };
+
+  // 핵심 결과 업데이트
+  const updateKeyResult = (id, field, value) => {
+    setKeyResults(keyResults.map(kr => 
+      kr.id === id ? { ...kr, [field]: value } : kr
+    ));
+  };
+
+  // 핵심 결과 삭제
+  const deleteKeyResult = (id) => {
+    setKeyResults(keyResults.filter(kr => kr.id !== id));
+  };
+
+  // 체크리스트 항목 추가
+  const addChecklistItem = (krId) => {
+    setKeyResults(keyResults.map(kr => 
+      kr.id === krId 
+        ? { 
+            ...kr, 
+            checklist: [...(kr.checklist || []), { text: "", completed: false }]
+          } 
+        : kr
+    ));
+  };
+
+  // 체크리스트 항목 업데이트
+  const updateChecklistItem = (krId, itemIndex, text) => {
+    setKeyResults(keyResults.map(kr => 
+      kr.id === krId 
+        ? {
+            ...kr,
+            checklist: kr.checklist.map((item, index) => 
+              index === itemIndex ? { ...item, text } : item
+            )
+          }
+        : kr
+    ));
+  };
+
+  // 체크리스트 항목 토글
+  const toggleChecklistItem = (krId, itemIndex) => {
+    setKeyResults(keyResults.map(kr => 
+      kr.id === krId 
+        ? {
+            ...kr,
+            checklist: kr.checklist.map((item, index) => 
+              index === itemIndex ? { ...item, completed: !item.completed } : item
+            )
+          }
+        : kr
+    ));
+  };
+
+  // 체크리스트 항목 삭제
+  const removeChecklistItem = (krId, itemIndex) => {
+    setKeyResults(keyResults.map(kr => 
+      kr.id === krId 
+        ? {
+            ...kr,
+            checklist: kr.checklist.filter((_, index) => index !== itemIndex)
+          }
+        : kr
+    ));
+  };
+
   // 목표 모달 컴포넌트
   const ObjectiveModal = () => {
     const isEditMode = !!editingObjective;
@@ -522,10 +607,11 @@ export default function PlanningProcessDetailPage() {
       setKeyResults(prev => [...prev, { 
         id: Date.now(), 
         title: "", 
+        type: "target",
         target: 0, 
         current: 0, 
         unit: "", 
-        type: "number", 
+        checklist: [],
         isActive: true 
       }]);
     };
@@ -669,82 +755,218 @@ export default function PlanningProcessDetailPage() {
                           />
                         </div>
 
-                        <div>
-                          <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
-                            측정 단위
+                        {/* 핵심 결과 유형 선택 */}
+                        <div className="mt-4">
+                          <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 block">
+                            결과(Key Results) 유형(Type) <span className="text-red-500">*</span>
                           </Label>
-                          <select
-                            value={kr.unit}
-                            onChange={(e) => updateKeyResult(kr.id, "unit", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-green-500 focus:ring-green-200"
-                          >
-                            <option value="">단위 선택</option>
-                            <option value="명">명</option>
-                            <option value="%">%</option>
-                            <option value="건">건</option>
-                            <option value="점">점</option>
-                            <option value="회">회</option>
-                            <option value="원">원</option>
-                            <option value="개">개</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
-                            목표 수치 <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            type="number"
-                            value={kr.target}
-                            onChange={(e) => updateKeyResult(kr.id, "target", parseFloat(e.target.value) || 0)}
-                            placeholder="목표값"
-                            className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
-                          />
-                        </div>
-
-                        <div className="flex items-end gap-2">
-                          <div className="flex-1">
-                            <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
-                              현재 달성 수치
-                            </Label>
-                            <Input
-                              type="number"
-                              value={kr.current}
-                              onChange={(e) => updateKeyResult(kr.id, "current", parseFloat(e.target.value) || 0)}
-                              placeholder="현재값"
-                              className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
-                            />
-                          </div>
-                          {keyResults.length > 1 && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => deleteKeyResult(kr.id)}
-                              className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={() => updateKeyResult(kr.id, "type", "target")}
+                              className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                                kr.type === "target" 
+                                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
+                                  : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-300"
+                              }`}
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                              <div className="text-center">
+                                <div className="text-sm font-medium">목표/달성치 기반</div>
+                                <div className="text-xs text-gray-500 mt-1">수치 목표 설정</div>
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateKeyResult(kr.id, "type", "checklist")}
+                              className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                                kr.type === "checklist" 
+                                  ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" 
+                                  : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-green-300"
+                              }`}
+                            >
+                              <div className="text-center">
+                                <div className="text-sm font-medium">체크리스트 기반</div>
+                                <div className="text-xs text-gray-500 mt-1">할 일 목록 관리</div>
+                              </div>
+                            </button>
+                          </div>
                         </div>
+
+                        {/* 목표/달성치 기반 폼 */}
+                        {kr.type === "target" && (
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                                측정 단위
+                              </Label>
+                              <select
+                                value={kr.unit || ""}
+                                onChange={(e) => updateKeyResult(kr.id, "unit", e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-green-500 focus:ring-green-200"
+                              >
+                                <option value="">단위 선택</option>
+                                <option value="명">명</option>
+                                <option value="%">%</option>
+                                <option value="건">건</option>
+                                <option value="점">점</option>
+                                <option value="회">회</option>
+                                <option value="원">원</option>
+                                <option value="개">개</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                                목표 수치 <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                type="number"
+                                value={kr.target || ""}
+                                onChange={(e) => updateKeyResult(kr.id, "target", parseFloat(e.target.value) || 0)}
+                                placeholder="목표값"
+                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
+                              />
+                            </div>
+
+                            <div>
+                              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                                현재 달성 수치
+                              </Label>
+                              <Input
+                                type="number"
+                                value={kr.current || ""}
+                                onChange={(e) => updateKeyResult(kr.id, "current", parseFloat(e.target.value) || 0)}
+                                placeholder="현재값"
+                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-200"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 체크리스트 기반 폼 */}
+                        {kr.type === "checklist" && (
+                          <div className="mt-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                체크리스트
+                              </Label>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addChecklistItem(kr.id)}
+                                className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              >
+                                <Plus className="w-3 h-3" />
+                                항목 추가
+                              </Button>
+                            </div>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {(kr.checklist || []).map((item, itemIndex) => (
+                                <div key={itemIndex} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleChecklistItem(kr.id, itemIndex)}
+                                    className={`flex-shrink-0 w-5 h-5 rounded border-2 transition-all ${
+                                      item.completed
+                                        ? "bg-green-500 border-green-500 text-white"
+                                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-green-400"
+                                    }`}
+                                  >
+                                    {item.completed && (
+                                      <svg className="w-3 h-3 mx-auto mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                  <Input
+                                    value={item.text}
+                                    onChange={(e) => updateChecklistItem(kr.id, itemIndex, e.target.value)}
+                                    placeholder="체크리스트 항목을 입력하세요"
+                                    className={`flex-1 ${item.completed ? "line-through text-gray-500" : ""}`}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => removeChecklistItem(kr.id, itemIndex)}
+                                    className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                              {(!kr.checklist || kr.checklist.length === 0) && (
+                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                  체크리스트 항목을 추가해주세요
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* 진행률 표시 */}
-                      {kr.target > 0 && (
+                      {/* 진행률 표시 - 목표/달성치 기반 */}
+                      {kr.type === "target" && kr.target > 0 && (
                         <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">진행률</span>
-                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                              {Math.min(Math.round((kr.current / kr.target) * 100), 100)}%
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              진행률
+                            </span>
+                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                              {kr.current || 0} / {kr.target} {kr.unit}
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500" 
-                              style={{width: `${Math.min((kr.current / kr.target) * 100, 100)}%`}}
+                              style={{width: `${Math.min(((kr.current || 0) / kr.target) * 100, 100)}%`}}
                             ></div>
+                          </div>
+                          <div className="mt-1 text-center">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {Math.round(((kr.current || 0) / kr.target) * 100)}% 달성
+                            </span>
                           </div>
                         </div>
                       )}
+
+                      {/* 진행률 표시 - 체크리스트 기반 */}
+                      {kr.type === "checklist" && kr.checklist && kr.checklist.length > 0 && (
+                        <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              완료율
+                            </span>
+                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                              {kr.checklist.filter(item => item.completed).length} / {kr.checklist.length} 완료
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-500" 
+                              style={{width: `${(kr.checklist.filter(item => item.completed).length / kr.checklist.length) * 100}%`}}
+                            ></div>
+                          </div>
+                          <div className="mt-1 text-center">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {Math.round((kr.checklist.filter(item => item.completed).length / kr.checklist.length) * 100)}% 완료
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 삭제 버튼 */}
+                      <div className="flex justify-end mt-4">
+                        {keyResults.length > 1 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteKeyResult(kr.id)}
+                            className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -752,40 +974,20 @@ export default function PlanningProcessDetailPage() {
                 <Button
                   variant="outline"
                   onClick={addKeyResult}
-                  className="flex items-center gap-2 w-full py-4 text-lg bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-2 border-dashed border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 hover:bg-gradient-to-r hover:from-green-100 hover:to-teal-100 dark:hover:from-green-900/30 dark:hover:to-teal-900/30"
+                  className="flex items-center gap-2 w-full py-6 text-lg bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-2 border-dashed border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 hover:bg-gradient-to-r hover:from-green-100 hover:to-teal-100 dark:hover:from-green-900/30 dark:hover:to-teal-900/30"
                 >
                   <Plus className="w-5 h-5" />
-                  핵심 결과 추가
+                  핵심 결과(Key Result) 추가
                 </Button>
               </div>
-            </div>
-          </div>
 
-          {/* Footer */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 p-6">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  {keyResults.filter(kr => kr.title.trim() && kr.target > 0).length}개의 유효한 핵심 결과
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={() => setShowObjectiveModal(false)}
-                  className="px-6"
-                >
+              {/* 저장 버튼 */}
+              <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <Button variant="outline" onClick={() => setShowObjectiveModal(false)}>
                   취소
                 </Button>
-                <Button 
-                  size="lg"
-                  onClick={saveObjective}
-                  className="px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEditMode ? "수정 완료" : "목표 추가"}
+                <Button onClick={saveObjective}>
+                  저장
                 </Button>
               </div>
             </div>
@@ -1231,53 +1433,37 @@ export default function PlanningProcessDetailPage() {
                   </div>
 
                   <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
-                    {objective.keyResults.filter(kr => kr.isActive).map((kr) => (
-                      <div key={kr.id} className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 rounded-lg flex items-center justify-center">
-                              {kr.current >= kr.target ? (
-                                <CheckCircle className="w-4 h-4 text-green-600" />
-                              ) : (
-                                <Circle className="w-4 h-4 text-gray-400" />
-                              )}
-                            </div>
-                            <div>
-                              <h5 className="font-medium text-gray-900 dark:text-white">
-                                {kr.title}
-                              </h5>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {kr.current} / {kr.target} {kr.unit}
-                              </p>
-                            </div>
-                          </div>
+                    {objective.keyResults.map((kr) => {
+                            let progress = 0;
+                            let statusText = "";
 
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-gray-900 dark:text-white">
-                              {Math.min(Math.round((kr.current / kr.target) * 100), 100)}%
-                            </div>
-                            {kr.current >= kr.target && (
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
-                                <Award className="w-3 h-3 mr-1" />
-                                달성
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+                            if (kr.type === "target" && kr.target > 0) {
+                              progress = Math.min(((kr.current || 0) / kr.target) * 100, 100);
+                              statusText = `${kr.current || 0} / ${kr.target} ${kr.unit}`;
+                            } else if (kr.type === "checklist" && kr.checklist && kr.checklist.length > 0) {
+                              const completedItems = kr.checklist.filter(item => item.completed).length;
+                              progress = (completedItems / kr.checklist.length) * 100;
+                              statusText = `${completedItems} / ${kr.checklist.length} 완료`;
+                            }
 
-                        {/* 진행률 바 */}
-                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full transition-all duration-500 ${
-                              kr.current >= kr.target 
-                                ? 'bg-gradient-to-r from-green-500 to-teal-500' 
-                                : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                            }`}
-                            style={{width: `${Math.min((kr.current / kr.target) * 100, 100)}%`}}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
+                            return (
+                              <div key={kr.id} className="bg-gray-600 p-4 rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-gray-200 text-sm">{kr.title || `핵심 결과 ${kr.id + 1}`}</h4>
+                                  <span className="text-lg font-bold text-white">{Math.round(progress)}%</span>
+                                </div>
+                                <div className="text-xs text-gray-400 mb-2">
+                                  {statusText}
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-3">
+                                  <div 
+className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700" 
+                                    style={{width: `${progress}%`}}
+                                  ></div>
+                                </div>
+                              </div>
+                            );
+                          })}
                   </div>
                 </div>
               )}
