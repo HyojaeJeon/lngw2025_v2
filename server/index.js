@@ -165,18 +165,49 @@ async function startServer() {
       }
     }
 
-    // 반드시 process.env.PORT를 사용해야 Replit 환경에서 외부에서 접근할 수 있습니다.
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
+    // 서버 시작 전 포트 확인 및 정리
+  const server_instance = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
+    console.log(
+      `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+    );
+    if (process.env.APOLLO_PLAYGROUND === "true") {
       console.log(
-        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+        `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
       );
-      if (process.env.APOLLO_PLAYGROUND === "true") {
-        console.log(
-          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-        );
-      }
+    }
+  });
+
+  // 오류 처리
+  server_instance.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`);
+      const newPort = PORT + 1;
+      console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
+      app.listen(newPort, "0.0.0.0", () => {
+        console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
+        console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`);
+      });
+    } else {
+      console.error('서버 시작 오류:', err);
+      process.exit(1);
+    }
+  });
+
+  // 프로세스 종료 시 정리
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM 신호를 받았습니다. 서버를 정리합니다...');
+    server_instance.close(() => {
+      process.exit(0);
     });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('SIGINT 신호를 받았습니다. 서버를 정리합니다...');
+    server_instance.close(() => {
+      process.exit(0);
+    });
+  });
   } catch (error) {
     console.error("Unable to start server:", error);
     process.exit(1);

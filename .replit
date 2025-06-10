@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Clean Start Full Stack"
+runButton = "Clean Development Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -270,6 +270,39 @@ args = "cd server && npm run dev &"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "sleep 5"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client-nextjs && npm run dev -- --port 3000"
+
+[[workflows.workflow]]
+name = "Clean Development Start"
+author = 43113446
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"next\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"mysql\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 3"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && npm run dev &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 8"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
