@@ -1,13 +1,15 @@
+
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('categories', {
       id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
+        allowNull: false,
         autoIncrement: true,
-        allowNull: false
+        primaryKey: true,
+        type: Sequelize.INTEGER
       },
       code: {
         type: Sequelize.STRING(50),
@@ -15,49 +17,75 @@ module.exports = {
         unique: true,
         comment: '카테고리 코드'
       },
-      nameKo: {
-        type: Sequelize.STRING(255),
-        allowNull: true,
-        comment: '한국어 이름'
-      },
-      nameVi: {
-        type: Sequelize.STRING(255),
+      names: {
+        type: Sequelize.JSON,
         allowNull: false,
-        comment: '베트남어 이름'
+        comment: '다국어 이름 {ko, vi, en}'
       },
-      nameEn: {
-        type: Sequelize.STRING(255),
+      descriptions: {
+        type: Sequelize.JSON,
         allowNull: true,
-        comment: '영어 이름'
+        comment: '다국어 설명 {ko, vi, en}'
       },
-      description: {
-        type: Sequelize.TEXT,
+      parentId: {
+        type: Sequelize.INTEGER,
         allowNull: true,
-        comment: '카테고리 설명'
+        references: {
+          model: 'categories',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+        comment: '상위 카테고리 ID'
+      },
+      level: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+        comment: '카테고리 레벨'
+      },
+      sortOrder: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+        comment: '정렬 순서'
       },
       isActive: {
         type: Sequelize.BOOLEAN,
+        allowNull: false,
         defaultValue: true,
         comment: '활성 상태'
       },
       createdAt: {
-        type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        type: Sequelize.DATE
       },
       updatedAt: {
-        type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
+        type: Sequelize.DATE
       }
     });
 
-    // 인덱스 추가
-    await queryInterface.addIndex('categories', ['code']);
-    await queryInterface.addIndex('categories', ['isActive']);
+    // 인덱스 생성
+    await queryInterface.addIndex('categories', ['code'], {
+      unique: true,
+      name: 'categories_code_unique'
+    });
+    
+    await queryInterface.addIndex('categories', ['parentId'], {
+      name: 'categories_parent_id_index'
+    });
+    
+    await queryInterface.addIndex('categories', ['level'], {
+      name: 'categories_level_index'
+    });
+    
+    await queryInterface.addIndex('categories', ['isActive'], {
+      name: 'categories_is_active_index'
+    });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('categories');
   }
 };
