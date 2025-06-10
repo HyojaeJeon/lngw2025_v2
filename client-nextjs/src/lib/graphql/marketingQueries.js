@@ -483,3 +483,135 @@ export const GET_MARKETING_INSIGHTS = gql`
     }
   }
 `;
+
+// 마케팅 계획 쿼리
+export const GET_MARKETING_PLANS = gql`
+  query GetMarketingPlans($userId: ID, $status: String, $limit: Int, $offset: Int) {
+    marketingPlans(userId: $userId, status: $status, limit: $limit, offset: $offset) {
+      id
+      title
+      description
+      startDate
+      endDate
+      manager
+      targetPersona
+      coreMessage
+      status
+      userId
+      user {
+        id
+        name
+        email
+      }
+      objectives {
+        id
+        title
+        description
+        priority
+        status
+        progress
+        keyResults {
+          id
+          title
+          description
+          targetValue
+          currentValue
+          unit
+          status
+          progress
+          checklist {
+            id
+            text
+            completed
+            completedAt
+            sortOrder
+          }
+        }
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_MARKETING_PLAN = gql`
+  query GetMarketingPlan($id: ID!) {
+    marketingPlan(id: $id) {
+      id
+      title
+      description
+      startDate
+      endDate
+      manager
+      targetPersona
+      coreMessage
+      status
+      userId
+      user {
+        id
+        name
+        email
+      }
+      objectives {
+        id
+        title
+        description
+        priority
+        status
+        progress
+        keyResults {
+          id
+          title
+          description
+          targetValue
+          currentValue
+          unit
+          status
+          progress
+          checklist {
+            id
+            text
+            completed
+            completedAt
+            sortOrder
+          }
+        }
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_MARKETING_PLAN_OBJECTIVES = gql`
+  query GetMarketingPlanObjectives($planId: ID!) {
+    marketingPlanObjectives(planId: $planId) {
+      id
+      planId
+      title
+      description
+      priority
+      status
+      progress
+      keyResults {
+        id
+        title
+        description
+        targetValue
+        currentValue
+        unit
+        status
+        progress
+        checklist {
+          id
+          text
+          completed
+          completedAt
+          sortOrder
+        }
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;

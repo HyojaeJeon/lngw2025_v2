@@ -65,6 +65,10 @@ const SalesOpportunity = require("./SalesOpportunity")(
 );
 const Address = require("./Address")(sequelize, Sequelize.DataTypes);
 const Service = require("./Service")(sequelize, Sequelize.DataTypes);
+const MarketingPlan = require("./MarketingPlan")(sequelize, Sequelize.DataTypes);
+const MarketingObjective = require("./MarketingObjective")(sequelize, Sequelize.DataTypes);
+const KeyResult = require("./KeyResult")(sequelize, Sequelize.DataTypes);
+const ChecklistItem = require("./ChecklistItem")(sequelize, Sequelize.DataTypes);
 
 // Define associations
 User.hasMany(Experience, {
@@ -195,6 +199,46 @@ SalesOpportunity.belongsTo(User, {
   as: "assignedUser",
 });
 
+// Marketing Plan associations
+User.hasMany(MarketingPlan, {
+  foreignKey: "userId",
+  as: "marketingPlans",
+});
+MarketingPlan.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+MarketingPlan.hasMany(MarketingObjective, {
+  foreignKey: "planId",
+  as: "objectives",
+  onDelete: "CASCADE",
+});
+MarketingObjective.belongsTo(MarketingPlan, {
+  foreignKey: "planId",
+  as: "plan",
+});
+
+MarketingObjective.hasMany(KeyResult, {
+  foreignKey: "objectiveId",
+  as: "keyResults",
+  onDelete: "CASCADE",
+});
+KeyResult.belongsTo(MarketingObjective, {
+  foreignKey: "objectiveId",
+  as: "objective",
+});
+
+KeyResult.hasMany(ChecklistItem, {
+  foreignKey: "keyResultId",
+  as: "checklist",
+  onDelete: "CASCADE",
+});
+ChecklistItem.belongsTo(KeyResult, {
+  foreignKey: "keyResultId",
+  as: "keyResult",
+});
+
 const models = {
   sequelize,
   Sequelize,
@@ -217,6 +261,10 @@ const models = {
   SalesOpportunity,
   Address,
   Service,
+  MarketingPlan,
+  MarketingObjective,
+  KeyResult,
+  ChecklistItem,
 };
 
 module.exports = models;
