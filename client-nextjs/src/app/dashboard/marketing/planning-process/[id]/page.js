@@ -758,7 +758,7 @@ export default function PlanningProcessDetailPage() {
 
             {/* 진행률 표시 */}
             <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-white/90">
                   전체 진행률
                 </span>
