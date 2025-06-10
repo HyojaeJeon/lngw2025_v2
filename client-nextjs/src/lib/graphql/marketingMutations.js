@@ -1,5 +1,4 @@
-
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const UPDATE_MARKETING_PLAN = gql`
   mutation UpdateMarketingPlan($id: ID!, $input: MarketingPlanInput!) {
@@ -30,8 +29,6 @@ export const GET_USERS_FOR_ASSIGNMENT = gql`
     usersCount
   }
 `;
-
-import { gql } from '@apollo/client';
 
 // 콘텐츠 관리 뮤테이션
 export const CREATE_CONTENT = gql`
