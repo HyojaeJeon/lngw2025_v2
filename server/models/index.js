@@ -69,6 +69,7 @@ const MarketingPlan = require("./MarketingPlan")(sequelize, Sequelize.DataTypes)
 const MarketingObjective = require("./MarketingObjective")(sequelize, Sequelize.DataTypes);
 const KeyResult = require("./KeyResult")(sequelize, Sequelize.DataTypes);
 const ChecklistItem = require("./ChecklistItem")(sequelize, Sequelize.DataTypes);
+const Category = require("./Category")(sequelize, Sequelize.DataTypes);
 
 // Define associations
 User.hasMany(Experience, {
@@ -265,6 +266,9 @@ const models = {
   MarketingObjective,
   KeyResult,
   ChecklistItem,
+  Category,
+  sequelize,
+  Sequelize
 };
 
 module.exports = models;

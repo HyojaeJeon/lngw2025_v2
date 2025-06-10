@@ -14,7 +14,7 @@ const baseTypeDefs = gql`
     _empty: String
   }
 
-  
+
 
   type EmergencyContact {
     id: ID!
@@ -191,12 +191,14 @@ const dashboardSchema = require("./marketing/dashboard");
 const engagementSchema = require("./marketing/engagement");
 const insightsSchema = require("./marketing/insights");
 const postsSchema = require("./marketing/posts");
+const categorySchema = require('./category');
 
 // 모든 스키마 병합
 module.exports = mergeTypeDefs([
   baseTypeDefs,
   authSchema,
   customerSchema,
+  categorySchema,
   contentSchema,
   dashboardSchema,
   monitoringSchema,

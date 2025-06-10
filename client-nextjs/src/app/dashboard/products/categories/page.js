@@ -1,190 +1,179 @@
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.js";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { useLanguage } from "@/contexts/languageContext.js";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
+import { GET_CATEGORIES, CHECK_CATEGORY_CODE } from "@/lib/graphql/categoryQueries.js";
+import { CREATE_CATEGORY, UPDATE_CATEGORY, DELETE_CATEGORY } from "@/lib/graphql/categoryMutations.js";
+import { LoadingModal } from "@/components/ui/LoadingModal.js";
+import debounce from 'lodash.debounce';
 
-// 기본 카테고리 데이터 (다국어 지원)
-const mockCategories = [
-  {
-    id: 1,
-    code: "FILLER",
-    names: {
-      ko: "필러",
-      vi: "Filler",
-      en: "Filler",
-    },
-    descriptions: {
-      ko: "주름 개선 및 볼륨 증대용 필러",
-      vi: "Filler để cải thiện nếp nhăn và tăng thể tích",
-      en: "Fillers for wrinkle improvement and volume enhancement",
-    },
-    parentId: null,
-    level: 1,
-    sortOrder: 1,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 2,
-    code: "BOTOX",
-    names: {
-      ko: "보톡스",
-      vi: "Botox",
-      en: "Botox",
-    },
-    descriptions: {
-      ko: "근육 이완을 통한 주름 개선",
-      vi: "Cải thiện nếp nhăn thông qua thư giãn cơ",
-      en: "Wrinkle improvement through muscle relaxation",
-    },
-    parentId: null,
-    level: 1,
-    sortOrder: 2,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 3,
-    code: "LIFTING",
-    names: {
-      ko: "리프팅실",
-      vi: "Chỉ nâng cơ",
-      en: "Lifting Thread",
-    },
-    descriptions: {
-      ko: "얼굴 라인 개선용 리프팅 실",
-      vi: "Chỉ nâng cơ để cải thiện đường nét khuôn mặt",
-      en: "Lifting threads for facial line improvement",
-    },
-    parentId: null,
-    level: 1,
-    sortOrder: 3,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 4,
-    code: "SKINBOOSTER",
-    names: {
-      ko: "스킨부스터",
-      vi: "Skin Booster",
-      en: "Skin Booster",
-    },
-    descriptions: {
-      ko: "피부 수분 공급 및 탄력 개선",
-      vi: "Cung cấp độ ẩm và cải thiện độ đàn hồi da",
-      en: "Skin hydration and elasticity improvement",
-    },
-    parentId: null,
-    level: 1,
-    sortOrder: 4,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 5,
-    code: "FILLER_HA",
-    names: {
-      ko: "히알루론산 필러",
-      vi: "Filler Hyaluronic Acid",
-      en: "Hyaluronic Acid Filler",
-    },
-    descriptions: {
-      ko: "히알루론산 기반 필러",
-      vi: "Filler dựa trên axit hyaluronic",
-      en: "Hyaluronic acid based filler",
-    },
-    parentId: 1,
-    level: 2,
-    sortOrder: 1,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 6,
-    code: "FILLER_PLLA",
-    names: {
-      ko: "PLLA 필러",
-      vi: "Filler PLLA",
-      en: "PLLA Filler",
-    },
-    descriptions: {
-      ko: "폴리락틱산 기반 필러",
-      vi: "Filler dựa trên axit polylactic",
-      en: "Poly-L-lactic acid based filler",
-    },
-    parentId: 1,
-    level: 2,
-    sortOrder: 2,
-    isActive: true,
-    createdAt: "2024-01-01",
-  },
-];
-
-const CategoryForm = ({ category, onSave, onCancel, isOpen, categories }) => {
+const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
   const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     code: "",
     names: { ko: "", vi: "", en: "" },
     descriptions: { ko: "", vi: "", en: "" },
-    parentId: null,
-    sortOrder: 1,
     isActive: true,
   });
 
+  const [errors, setErrors] = useState({});
+  const [codeCheckResult, setCodeCheckResult] = useState(null);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+
+  const [createCategory, { loading: createLoading }] = useMutation(CREATE_CATEGORY);
+  const [updateCategory, { loading: updateLoading }] = useMutation(UPDATE_CATEGORY);
+  const [checkCategoryCode] = useLazyQuery(CHECK_CATEGORY_CODE);
+
+  const loading = createLoading || updateLoading;
+
   useEffect(() => {
     if (category) {
-      setFormData(category);
+      setFormData({
+        code: category.code || "",
+        names: category.names || { ko: "", vi: "", en: "" },
+        descriptions: category.descriptions || { ko: "", vi: "", en: "" },
+        isActive: category.isActive !== undefined ? category.isActive : true,
+      });
     } else {
       setFormData({
         code: "",
         names: { ko: "", vi: "", en: "" },
         descriptions: { ko: "", vi: "", en: "" },
-        parentId: null,
-        sortOrder: 1,
         isActive: true,
       });
     }
-  }, [category]);
+    setErrors({});
+    setCodeCheckResult(null);
+  }, [category, isOpen]);
 
-  const handleSubmit = (e) => {
+  const debouncedCodeCheck = useMemo(
+    () => debounce(async (code) => {
+      if (!code || code.trim().length === 0) {
+        setCodeCheckResult(null);
+        setIsCheckingCode(false);
+        return;
+      }
+
+      if (category && code === category.code) {
+        setCodeCheckResult(null);
+        setIsCheckingCode(false);
+        return;
+      }
+
+      try {
+        const { data } = await checkCategoryCode({
+          variables: { code: code.trim().toUpperCase() }
+        });
+
+        if (data?.checkCategoryCode) {
+          setCodeCheckResult(data.checkCategoryCode);
+        }
+      } catch (error) {
+        console.error('코드 중복 검사 오류:', error);
+        setCodeCheckResult({
+          isAvailable: false,
+          message: '코드 중복 검사 중 오류가 발생했습니다.'
+        });
+      }
+      setIsCheckingCode(false);
+    }, 500),
+    [category, checkCategoryCode]
+  );
+
+  const handleCodeChange = (value) => {
+    const upperValue = value.toUpperCase();
+    setFormData(prev => ({ ...prev, code: upperValue }));
+    
+    if (!category || upperValue !== category.code) {
+      setIsCheckingCode(true);
+      debouncedCodeCheck(upperValue);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.code.trim()) {
+      newErrors.code = "카테고리 코드는 필수입니다.";
+    }
+
+    if (!formData.names.ko.trim()) {
+      newErrors.nameKo = "한국어 이름은 필수입니다.";
+    }
+
+    if (!formData.names.vi.trim()) {
+      newErrors.nameVi = "베트남어 이름은 필수입니다.";
+    }
+
+    if (codeCheckResult && !codeCheckResult.isAvailable) {
+      newErrors.code = codeCheckResult.message;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.code || !formData.names.ko) {
-      alert("카테고리 코드와 한국어 이름은 필수입니다.");
+    if (!validateForm()) {
       return;
     }
 
-    const categoryData = {
-      ...formData,
-      id: category ? category.id : Date.now(),
-      level: formData.parentId ? 2 : 1,
-      createdAt: category
-        ? category.createdAt
-        : new Date().toISOString().split("T")[0],
-    };
+    try {
+      const input = {
+        code: formData.code.trim().toUpperCase(),
+        names: {
+          ko: formData.names.ko.trim(),
+          vi: formData.names.vi.trim(),
+          en: formData.names.en.trim() || formData.names.ko.trim()
+        },
+        descriptions: {
+          ko: formData.descriptions.ko.trim() || null,
+          vi: formData.descriptions.vi.trim() || null,
+          en: formData.descriptions.en.trim() || null
+        },
+        isActive: formData.isActive
+      };
 
-    onSave(categoryData);
+      if (category) {
+        await updateCategory({
+          variables: { id: category.id, input },
+          refetchQueries: [{ query: GET_CATEGORIES }]
+        });
+      } else {
+        await createCategory({
+          variables: { input },
+          refetchQueries: [{ query: GET_CATEGORIES }]
+        });
+      }
+
+      onSave();
+    } catch (error) {
+      console.error('카테고리 저장 오류:', error);
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        alert(`오류: ${error.graphQLErrors[0].message}`);
+      } else {
+        alert('카테고리 저장 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   const handleNameChange = (lang, value) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       names: { ...prev.names, [lang]: value },
     }));
   };
 
   const handleDescriptionChange = (lang, value) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       descriptions: { ...prev.descriptions, [lang]: value },
     }));
@@ -192,216 +181,218 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen, categories }) => {
 
   if (!isOpen) return null;
 
-  const parentCategories = categories.filter((cat) => cat.level === 1);
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-          {category ? "카테고리 수정" : "카테고리 추가"}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              카테고리 코드 *
-            </label>
-            <Input
-              value={formData.code}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  code: e.target.value.toUpperCase(),
-                }))
-              }
-              placeholder="예: FILLER, BOTOX"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              상위 카테고리
-            </label>
-            <select
-              value={formData.parentId || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  parentId: e.target.value ? parseInt(e.target.value) : null,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">상위 카테고리 (최상위)</option>
-              {parentCategories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.names[language] || cat.names.ko}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                한국어 이름 *
-              </label>
-              <Input
-                value={formData.names.ko}
-                onChange={(e) => handleNameChange("ko", e.target.value)}
-                placeholder="한국어 카테고리 이름"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                베트남어 이름
-              </label>
-              <Input
-                value={formData.names.vi}
-                onChange={(e) => handleNameChange("vi", e.target.value)}
-                placeholder="Tên danh mục tiếng Việt"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                영어 이름
-              </label>
-              <Input
-                value={formData.names.en}
-                onChange={(e) => handleNameChange("en", e.target.value)}
-                placeholder="English category name"
-              />
+    <>
+      {loading && <LoadingModal message="카테고리를 저장하고 있습니다..." />}
+      
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {category ? "카테고리 수정" : "카테고리 추가"}
+              </h2>
+              <button
+                onClick={onCancel}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* 카테고리 코드 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
-                한국어 설명
-              </label>
-              <textarea
-                value={formData.descriptions.ko}
-                onChange={(e) => handleDescriptionChange("ko", e.target.value)}
-                placeholder="한국어 설명"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                베트남어 설명
-              </label>
-              <textarea
-                value={formData.descriptions.vi}
-                onChange={(e) => handleDescriptionChange("vi", e.target.value)}
-                placeholder="Mô tả tiếng Việt"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                영어 설명
-              </label>
-              <textarea
-                value={formData.descriptions.en}
-                onChange={(e) => handleDescriptionChange("en", e.target.value)}
-                placeholder="English description"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                정렬 순서
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                카테고리 코드 <span className="text-red-500">*</span>
               </label>
               <Input
-                type="number"
-                value={formData.sortOrder}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    sortOrder: parseInt(e.target.value),
-                  }))
-                }
-                min="1"
+                value={formData.code}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                placeholder="예: FILLER, BOTOX"
+                className={errors.code ? 'border-red-500' : ''}
+                maxLength={50}
               />
+              {isCheckingCode && (
+                <p className="text-sm text-blue-600 mt-1">코드 중복 검사 중...</p>
+              )}
+              {codeCheckResult && (
+                <p className={`text-sm mt-1 ${codeCheckResult.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                  {codeCheckResult.message}
+                </p>
+              )}
+              {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
             </div>
 
-            <div className="flex items-center space-x-2 pt-6">
+            {/* 다국어 이름 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">카테고리 이름</h3>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  한국어 이름 <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={formData.names.ko}
+                  onChange={(e) => handleNameChange("ko", e.target.value)}
+                  placeholder="한국어 카테고리 이름"
+                  className={errors.nameKo ? 'border-red-500' : ''}
+                />
+                {errors.nameKo && <p className="text-red-500 text-sm mt-1">{errors.nameKo}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  베트남어 이름 <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={formData.names.vi}
+                  onChange={(e) => handleNameChange("vi", e.target.value)}
+                  placeholder="Tên danh mục tiếng Việt"
+                  className={errors.nameVi ? 'border-red-500' : ''}
+                />
+                {errors.nameVi && <p className="text-red-500 text-sm mt-1">{errors.nameVi}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  영어 이름 (선택사항)
+                </label>
+                <Input
+                  value={formData.names.en}
+                  onChange={(e) => handleNameChange("en", e.target.value)}
+                  placeholder="English category name"
+                />
+              </div>
+            </div>
+
+            {/* 다국어 설명 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">카테고리 설명 (선택사항)</h3>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  한국어 설명
+                </label>
+                <textarea
+                  value={formData.descriptions.ko}
+                  onChange={(e) => handleDescriptionChange("ko", e.target.value)}
+                  placeholder="한국어 설명"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  rows="3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  베트남어 설명
+                </label>
+                <textarea
+                  value={formData.descriptions.vi}
+                  onChange={(e) => handleDescriptionChange("vi", e.target.value)}
+                  placeholder="Mô tả tiếng Việt"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  rows="3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  영어 설명
+                </label>
+                <textarea
+                  value={formData.descriptions.en}
+                  onChange={(e) => handleDescriptionChange("en", e.target.value)}
+                  placeholder="English description"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  rows="3"
+                />
+              </div>
+            </div>
+
+            {/* 활성 상태 */}
+            <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isActive: e.target.checked,
-                  }))
-                }
+                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
                 className="rounded"
               />
-              <label htmlFor="isActive" className="text-sm font-medium">
-                활성
+              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                활성 상태
               </label>
             </div>
-          </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              취소
-            </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              {category ? "수정" : "추가"}
-            </Button>
-          </div>
-        </form>
+            {/* 버튼 */}
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                disabled={loading}
+              >
+                취소
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={loading || (codeCheckResult && !codeCheckResult.isAvailable)}
+              >
+                {category ? "수정" : "추가"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
 export default function ProductCategoriesPage() {
   const { t, language } = useLanguage();
-  const [categories, setCategories] = useState(mockCategories);
-  const [filteredCategories, setFilteredCategories] = useState(mockCategories);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [sortConfig, setSortConfig] = useState({
-    key: "sortOrder",
-    direction: "asc",
-  });
+  const [sortConfig, setSortConfig] = useState({ key: "sortOrder", direction: "asc" });
 
-  // 필터링 및 검색
-  useEffect(() => {
+  const { data, loading, error, refetch } = useQuery(GET_CATEGORIES);
+  const [deleteCategory] = useMutation(DELETE_CATEGORY);
+
+  const categories = data?.categories || [];
+
+  // 필터링된 카테고리
+  const filteredCategories = useMemo(() => {
     let filtered = categories;
 
     if (searchKeyword) {
       filtered = filtered.filter(
         (category) =>
           category.code.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          category.names.ko
-            .toLowerCase()
-            .includes(searchKeyword.toLowerCase()) ||
-          category.names.vi
-            .toLowerCase()
-            .includes(searchKeyword.toLowerCase()) ||
+          category.names.ko.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          category.names.vi.toLowerCase().includes(searchKeyword.toLowerCase()) ||
           category.names.en.toLowerCase().includes(searchKeyword.toLowerCase()),
       );
     }
 
-    setFilteredCategories(filtered);
-  }, [categories, searchKeyword]);
+    // 정렬
+    filtered.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      if (sortConfig.key === "name") {
+        aValue = a.names[language] || a.names.ko;
+        bValue = b.names[language] || b.names.ko;
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [categories, searchKeyword, sortConfig, language]);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -409,21 +400,6 @@ export default function ProductCategoriesPage() {
       direction = "desc";
     }
     setSortConfig({ key, direction });
-
-    const sorted = [...filteredCategories].sort((a, b) => {
-      let aValue = a[key];
-      let bValue = b[key];
-
-      if (key === "name") {
-        aValue = a.names[language] || a.names.ko;
-        bValue = b.names[language] || b.names.ko;
-      }
-
-      if (aValue < bValue) return direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
-    setFilteredCategories(sorted);
   };
 
   const handleEdit = (category) => {
@@ -431,23 +407,28 @@ export default function ProductCategoriesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (categoryId) => {
+  const handleDelete = async (categoryId) => {
     if (window.confirm("정말로 이 카테고리를 삭제하시겠습니까?")) {
-      setCategories(categories.filter((c) => c.id !== categoryId));
+      try {
+        await deleteCategory({
+          variables: { id: categoryId },
+          refetchQueries: [{ query: GET_CATEGORIES }]
+        });
+      } catch (error) {
+        console.error('카테고리 삭제 오류:', error);
+        if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+          alert(`오류: ${error.graphQLErrors[0].message}`);
+        } else {
+          alert('카테고리 삭제 중 오류가 발생했습니다.');
+        }
+      }
     }
   };
 
-  const handleSaveCategory = (categoryData) => {
-    if (editingCategory) {
-      setCategories(
-        categories.map((c) => (c.id === editingCategory.id ? categoryData : c)),
-      );
-    } else {
-      setCategories([...categories, categoryData]);
-    }
-
+  const handleSaveCategory = () => {
     setShowForm(false);
     setEditingCategory(null);
+    refetch();
   };
 
   const handleCancelForm = () => {
@@ -474,27 +455,8 @@ export default function ProductCategoriesPage() {
     );
   };
 
-  const getLevelBadge = (level) => {
-    const levelColors = {
-      1: "bg-blue-100 text-blue-800",
-      2: "bg-purple-100 text-purple-800",
-      3: "bg-orange-100 text-orange-800",
-    };
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${levelColors[level] || "bg-gray-100 text-gray-800"}`}
-      >
-        {level}단계
-      </span>
-    );
-  };
-
-  const getParentName = (parentId) => {
-    if (!parentId) return "-";
-    const parent = categories.find((c) => c.id === parentId);
-    return parent ? parent.names[language] || parent.names.ko : "-";
-  };
+  if (loading) return <div className="p-6">로딩 중...</div>;
+  if (error) return <div className="p-6">오류가 발생했습니다: {error.message}</div>;
 
   return (
     <div className="space-y-6 p-6">
@@ -566,19 +528,6 @@ export default function ProductCategoriesPage() {
                     이름 {getSortIcon("name")}
                   </th>
                   <th className="text-left p-3 font-semibold">설명</th>
-                  <th className="text-left p-3 font-semibold">상위 카테고리</th>
-                  <th
-                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                    onClick={() => handleSort("level")}
-                  >
-                    레벨 {getSortIcon("level")}
-                  </th>
-                  <th
-                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                    onClick={() => handleSort("sortOrder")}
-                  >
-                    정렬순서 {getSortIcon("sortOrder")}
-                  </th>
                   <th className="text-left p-3 font-semibold">상태</th>
                   <th className="text-left p-3 font-semibold">작업</th>
                 </tr>
@@ -604,17 +553,9 @@ export default function ProductCategoriesPage() {
                     </td>
                     <td className="p-3">
                       <div className="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
-                        {category.descriptions[language] ||
-                          category.descriptions.ko}
+                        {category.descriptions?.[language] || category.descriptions?.ko || '-'}
                       </div>
                     </td>
-                    <td className="p-3">
-                      <span className="text-sm">
-                        {getParentName(category.parentId)}
-                      </span>
-                    </td>
-                    <td className="p-3">{getLevelBadge(category.level)}</td>
-                    <td className="p-3 text-center">{category.sortOrder}</td>
                     <td className="p-3">{getStatusBadge(category.isActive)}</td>
                     <td className="p-3">
                       <div className="flex space-x-2">
@@ -738,7 +679,6 @@ export default function ProductCategoriesPage() {
         onSave={handleSaveCategory}
         onCancel={handleCancelForm}
         isOpen={showForm}
-        categories={categories}
       />
     </div>
   );

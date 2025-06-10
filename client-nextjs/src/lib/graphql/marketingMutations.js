@@ -1,18 +1,43 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
+// 마케팅 계획 뮤테이션
 export const UPDATE_MARKETING_PLAN = gql`
   mutation UpdateMarketingPlan($id: ID!, $input: MarketingPlanInput!) {
     updateMarketingPlan(id: $id, input: $input) {
       id
       title
       description
+      status
       startDate
       endDate
-      manager
-      targetPersona
-      coreMessage
-      status
-      updatedAt
+      budget
+      objectives {
+        id
+        title
+        description
+        status
+        targetValue
+        currentValue
+        unit
+        keyResults {
+          id
+          title
+          description
+          targetValue
+          currentValue
+          unit
+          dueDate
+          status
+          checklist {
+            id
+            title
+            description
+            completed
+            completedAt
+            sortOrder
+          }
+        }
+      }
     }
   }
 `;

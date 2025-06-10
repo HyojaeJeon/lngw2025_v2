@@ -13,6 +13,7 @@ const abtestResolvers = require("../resolvers/marketing/abtest");
 const engagementResolvers = require("../resolvers/marketing/engagement");
 const authResolvers = require("../resolvers/auth");
 const customerResolvers = require("../resolvers/customer");
+const categoryResolvers = require('../resolvers/category');
 
 // Date 스칼라 타입 처리
 const scalarResolvers = {
@@ -46,4 +47,5 @@ module.exports = merge(
   postsResolvers,
   authResolvers,
   customerResolvers,
+  categoryResolvers,
 );
