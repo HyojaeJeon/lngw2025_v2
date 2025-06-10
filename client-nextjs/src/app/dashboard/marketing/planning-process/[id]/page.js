@@ -392,18 +392,18 @@ export default function PlanningProcessDetailPage() {
   };
 
   const editKR = useCallback((id, updates) => {
-    setKeyResults(prev => 
-      prev.map(kr => kr.id === id ? { ...kr, ...updates } : kr)
+    setKeyResults((prev) =>
+      prev.map((kr) => (kr.id === id ? { ...kr, ...updates } : kr)),
     );
   }, []);
 
   const deleteKR = useCallback((id) => {
-    setKeyResults(prev => prev.filter(kr => kr.id !== id));
+    setKeyResults((prev) => prev.filter((kr) => kr.id !== id));
   }, []);
 
   // 목표 확장/축소 토글 함수
   const toggleObjectiveCollapse = (objectiveId) => {
-    setCollapsedObjectives(prev => {
+    setCollapsedObjectives((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(objectiveId)) {
         newSet.delete(objectiveId);
@@ -418,7 +418,7 @@ export default function PlanningProcessDetailPage() {
   const handleEditObjective = (objective) => {
     setEditingObjective({
       ...objective,
-      originalIndex: objectives.findIndex(obj => obj.id === objective.id)
+      originalIndex: objectives.findIndex((obj) => obj.id === objective.id),
     });
     setShowEditObjectiveModal(true);
   };
@@ -442,16 +442,18 @@ export default function PlanningProcessDetailPage() {
       // });
 
       // 현재는 프론트엔드에서만 처리
-      setObjectives(prev => {
-        const updatedObjectives = prev.map(obj => 
-          obj.id === objectiveToDelete.id 
-            ? { ...obj, isActive: false }
-            : obj
+      setObjectives((prev) => {
+        const updatedObjectives = prev.map((obj) =>
+          obj.id === objectiveToDelete.id ? { ...obj, isActive: false } : obj,
         );
 
         // 비활성화된 목표를 최하단으로 이동
-        const activeObjectives = updatedObjectives.filter(obj => obj.isActive);
-        const inactiveObjectives = updatedObjectives.filter(obj => !obj.isActive);
+        const activeObjectives = updatedObjectives.filter(
+          (obj) => obj.isActive,
+        );
+        const inactiveObjectives = updatedObjectives.filter(
+          (obj) => !obj.isActive,
+        );
 
         return [...activeObjectives, ...inactiveObjectives];
       });
@@ -459,7 +461,7 @@ export default function PlanningProcessDetailPage() {
       setShowDeleteConfirmModal(false);
       setObjectiveToDelete(null);
     } catch (error) {
-      console.error('목표 비활성화 중 오류 발생:', error);
+      console.error("목표 비활성화 중 오류 발생:", error);
     }
   };
 
@@ -467,12 +469,12 @@ export default function PlanningProcessDetailPage() {
   const saveEditedObjective = () => {
     if (!editingObjective) return;
 
-    setObjectives(prev => 
-      prev.map(obj => 
-        obj.id === editingObjective.id 
+    setObjectives((prev) =>
+      prev.map((obj) =>
+        obj.id === editingObjective.id
           ? { ...obj, title: editingObjective.title }
-          : obj
-      )
+          : obj,
+      ),
     );
 
     setShowEditObjectiveModal(false);
@@ -849,23 +851,23 @@ export default function PlanningProcessDetailPage() {
 
         <div className="grid gap-6">
           {objectives.map((objective, objIndex) => {
-                const isCollapsed = collapsedObjectives.has(objective.id);
-                const isInactive = !objective.isActive;
+            const isCollapsed = collapsedObjectives.has(objective.id);
+            const isInactive = !objective.isActive;
 
-                return (
-                <Card 
-                  key={objective.id} 
-                  className={`bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 relative ${
-                    isInactive ? 'opacity-50' : ''
-                  }`}
-                >
-                  {isInactive && (
-                    <div className="absolute inset-0 bg-gray-500 bg-opacity-30 rounded-lg flex items-center justify-center z-10">
-                      <span className="text-gray-700 dark:text-gray-300 font-medium bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-md">
-                        비활성화된 목표입니다
-                      </span>
-                    </div>
-                  )}
+            return (
+              <Card
+                key={objective.id}
+                className={`bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 relative ${
+                  isInactive ? "opacity-50" : ""
+                }`}
+              >
+                {isInactive && (
+                  <div className="absolute inset-0 bg-gray-500 bg-opacity-30 rounded-lg flex items-center justify-center z-10">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-md">
+                      비활성화된 목표입니다
+                    </span>
+                  </div>
+                )}
 
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -894,7 +896,7 @@ export default function PlanningProcessDetailPage() {
                               <stop offset="100%" stopColor="#8B5CF6" />
                             </linearGradient>
                           </defs>
-                        </svg```python
+                        </svg>
                       </div>
                       <div>
                         <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
@@ -949,171 +951,172 @@ export default function PlanningProcessDetailPage() {
                 </CardHeader>
 
                 {!isCollapsed && (
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-teal-500 rounded text-white font-bold flex items-center justify-center text-xs">
-                        KR
-                      </div>
-                      핵심 결과 (Key Results)
-                    </h4>
-
-                    {objective.keyResults.map((kr, index) => (
-                      <div
-                        key={kr.id}
-                        className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h5 className="font-medium text-gray-900 dark:text-white">
-                            {kr.description}
-                          </h5>
-                          <Badge
-                            variant="outline"
-                            className={
-                              kr.type === "numeric"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-green-50 text-green-700 border-green-200"
-                            }
-                          >
-                            {kr.type === "numeric"
-                              ? "수치 기반"
-                              : "체크리스트 기반"}
-                          </Badge>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-teal-500 rounded text-white font-bold flex items-center justify-center text-xs">
+                          KR
                         </div>
+                        핵심 결과 (Key Results)
+                      </h4>
 
-                        {kr.type === "numeric" && (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">
-                                현재: {kr.currentValue.toLocaleString()}
-                                {kr.unit} / 목표:{" "}
-                                {parseFloat(kr.target).toLocaleString()}
-                                {kr.unit}
-                              </span>
-                              <span className="font-semibold text-blue-600">
-                                {Math.min(
-                                  Math.round(
-                                    (kr.currentValue / parseFloat(kr.target)) *
-                                      100,
-                                  ),
-                                  100,
-                                )}
-                                %
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                              <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700 shadow-sm"
-                                style={{
-                                  width: `${Math.min((kr.currentValue / parseFloat(kr.target)) * 100, 100)}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
-
-                        {kr.type === "checklist" && (
-                          <div className="space-y-3">
-                            <div className="space-y-2">
-                              {kr.checklist.map((item, itemIndex) => (
-                                <div
-                                  key={itemIndex}
-                                  className="flex items-center gap-3 group"
-                                >
-                                  <button
-                                    onClick={() =>
-                                      toggleChecklistItem(kr.id, itemIndex)
-                                    }
-                                    className="flex-shrink-0"
-                                  >
-                                    {item.completed ? (
-                                      <CheckCircle className="w-5 h-5 text-green-500" />
-                                    ) : (
-                                      <Circle className="w-5 h-5 text-gray-400" />
-                                    )}
-                                  </button>
-                                  <Input
-                                    value={item.text}
-                                    onChange={(e) =>
-                                      updateChecklistItem(
-                                        kr.id,
-                                        itemIndex,
-                                        e.target.value,
-                                      )
-                                    }
-                                    className={`flex-1 bg-transparent border-none p-0 h-auto focus:ring-0 
-                                  ${item.completed ? "line-through text-gray-500" : ""}`}
-                                    placeholder="체크리스트 항목을 입력하세요"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() =>
-                                      removeChecklistItem(kr.id, itemIndex)
-                                    }
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-500 hover:text-red-700"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-
-                            <Button
-                              size="sm"
+                      {objective.keyResults.map((kr, index) => (
+                        <div
+                          key={kr.id}
+                          className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h5 className="font-medium text-gray-900 dark:text-white">
+                              {kr.description}
+                            </h5>
+                            <Badge
                               variant="outline"
-                              onClick={() => addChecklistItem(kr.id)}
-                              className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              className={
+                                kr.type === "numeric"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : "bg-green-50 text-green-700 border-green-200"
+                              }
                             >
-                              <Plus className="w-4 h-4" />
-                              항목 추가
-                            </Button>
-
-                            {kr.checklist.length > 0 && (
-                              <div className="mt-4">
-                                <div className="flex items-center justify-between text-sm mb-2">
-                                  <span className="text-gray-600 dark:text-gray-400">
-                                    완료:{" "}
-                                    {
-                                      kr.checklist.filter(
-                                        (item) => item.completed,
-                                      ).length
-                                    }{" "}
-                                    / {kr.checklist.length}
-                                  </span>
-                                  <span className="font-semibold text-green-600">
-                                    {kr.checklist.length > 0
-                                      ? Math.round(
-                                          (kr.checklist.filter(
-                                            (item) => item.completed,
-                                          ).length /
-                                            kr.checklist.length) *
-                                            100,
-                                        )
-                                      : 0}
-                                    %
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                                  <div
-                                    className="bg-gradient-to-r from-green-500 to-teal-500 h-3 rounded-full transition-all duration-700 shadow-sm"
-                                    style={{
-                                      width: `${kr.checklist.length > 0 ? (kr.checklist.filter((item) => item.completed).length / kr.checklist.length) * 100 : 0}%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            )}
+                              {kr.type === "numeric"
+                                ? "수치 기반"
+                                : "체크리스트 기반"}
+                            </Badge>
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
+
+                          {kr.type === "numeric" && (
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  현재: {kr.currentValue.toLocaleString()}
+                                  {kr.unit} / 목표:{" "}
+                                  {parseFloat(kr.target).toLocaleString()}
+                                  {kr.unit}
+                                </span>
+                                <span className="font-semibold text-blue-600">
+                                  {Math.min(
+                                    Math.round(
+                                      (kr.currentValue /
+                                        parseFloat(kr.target)) *
+                                        100,
+                                    ),
+                                    100,
+                                  )}
+                                  %
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                                <div
+                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                  style={{
+                                    width: `${Math.min((kr.currentValue / parseFloat(kr.target)) * 100, 100)}%`,
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+
+                          {kr.type === "checklist" && (
+                            <div className="space-y-3">
+                              <div className="space-y-2">
+                                {kr.checklist.map((item, itemIndex) => (
+                                  <div
+                                    key={itemIndex}
+                                    className="flex items-center gap-3 group"
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        toggleChecklistItem(kr.id, itemIndex)
+                                      }
+                                      className="flex-shrink-0"
+                                    >
+                                      {item.completed ? (
+                                        <CheckCircle className="w-5 h-5 text-green-500" />
+                                      ) : (
+                                        <Circle className="w-5 h-5 text-gray-400" />
+                                      )}
+                                    </button>
+                                    <Input
+                                      value={item.text}
+                                      onChange={(e) =>
+                                        updateChecklistItem(
+                                          kr.id,
+                                          itemIndex,
+                                          e.target.value,
+                                        )
+                                      }
+                                      className={`flex-1 bg-transparent border-none p-0 h-auto focus:ring-0 
+                                  ${item.completed ? "line-through text-gray-500" : ""}`}
+                                      placeholder="체크리스트 항목을 입력하세요"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() =>
+                                        removeChecklistItem(kr.id, itemIndex)
+                                      }
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-500 hover:text-red-700"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addChecklistItem(kr.id)}
+                                className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              >
+                                <Plus className="w-4 h-4" />
+                                항목 추가
+                              </Button>
+
+                              {kr.checklist.length > 0 && (
+                                <div className="mt-4">
+                                  <div className="flex items-center justify-between text-sm mb-2">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      완료:{" "}
+                                      {
+                                        kr.checklist.filter(
+                                          (item) => item.completed,
+                                        ).length
+                                      }{" "}
+                                      / {kr.checklist.length}
+                                    </span>
+                                    <span className="font-semibold text-green-600">
+                                      {kr.checklist.length > 0
+                                        ? Math.round(
+                                            (kr.checklist.filter(
+                                              (item) => item.completed,
+                                            ).length /
+                                              kr.checklist.length) *
+                                              100,
+                                          )
+                                        : 0}
+                                      %
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                                    <div
+                                      className="bg-gradient-to-r from-green-500 to-teal-500 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                      style={{
+                                        width: `${kr.checklist.length > 0 ? (kr.checklist.filter((item) => item.completed).length / kr.checklist.length) * 100 : 0}%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
                 )}
-                </Card>
-              );
-              })}
+              </Card>
+            );
+          })}
 
           {objectives.filter((obj) => obj.isActive).length === 0 && (
             <div className="text-center py-12">
