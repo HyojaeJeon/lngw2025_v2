@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
   Card,
@@ -14,32 +14,32 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useLanguage } from "@/contexts/languageContext.js";
 import {
-  ArrowLeft,
   Target,
   Calendar,
-  User,
-  Edit,
-  Save,
-  X,
+  Users,
+  MessageSquare,
   Plus,
+  Edit,
   Trash2,
+  ArrowLeft,
+  X,
+  Save,
   CheckCircle,
   Circle,
+  Clock,
+  User,
   AlertCircle,
   TrendingUp,
   BarChart3,
-  Settings,
+  Award,
+  Zap,
   Eye,
-  EyeOff,
+  Settings,
+  RefreshCw,
+  ChevronRight,
   ChevronDown,
   ChevronUp,
   Activity,
-  Users,
-  MessageSquare,
-  Clock,
-  Zap,
-  Award,
-  RefreshCw,
 } from "lucide-react";
 
 export default function PlanningProcessDetailPage() {
@@ -90,6 +90,11 @@ export default function PlanningProcessDetailPage() {
     unit: "",
     checklist: [],
   });
+  const [editingObjective, setEditingObjective] = useState(null);
+  const [showEditObjectiveModal, setShowEditObjectiveModal] = useState(false);
+  const [objectiveToDelete, setObjectiveToDelete] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [collapsedObjectives, setCollapsedObjectives] = useState(new Set());
 
   // 사용자 목록 (담당자 선택용)
   const availableUsers = [
@@ -384,6 +389,94 @@ export default function PlanningProcessDetailPage() {
         ),
       );
     }
+  };
+
+  const editKR = useCallback((id, updates) => {
+    setKeyResults(prev => 
+      prev.map(kr => kr.id === id ? { ...kr, ...updates } : kr)
+    );
+  }, []);
+
+  const deleteKR = useCallback((id) => {
+    setKeyResults(prev => prev.filter(kr => kr.id !== id));
+  }, []);
+
+  // 목표 확장/축소 토글 함수
+  const toggleObjectiveCollapse = (objectiveId) => {
+    setCollapsedObjectives(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(objectiveId)) {
+        newSet.delete(objectiveId);
+      } else {
+        newSet.add(objectiveId);
+      }
+      return newSet;
+    });
+  };
+
+  // 목표 수정 함수
+  const handleEditObjective = (objective) => {
+    setEditingObjective({
+      ...objective,
+      originalIndex: objectives.findIndex(obj => obj.id === objective.id)
+    });
+    setShowEditObjectiveModal(true);
+  };
+
+  // 목표 삭제 확인 함수
+  const handleDeleteObjective = (objective) => {
+    setObjectiveToDelete(objective);
+    setShowDeleteConfirmModal(true);
+  };
+
+  // 목표 비활성화 함수
+  const confirmDeleteObjective = async () => {
+    if (!objectiveToDelete) return;
+
+    try {
+      // 백엔드 API 호출 (실제 구현 시 사용)
+      // await fetch(`/api/objectives/${objectiveToDelete.id}`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ isActive: false })
+      // });
+
+      // 현재는 프론트엔드에서만 처리
+      setObjectives(prev => {
+        const updatedObjectives = prev.map(obj => 
+          obj.id === objectiveToDelete.id 
+            ? { ...obj, isActive: false }
+            : obj
+        );
+
+        // 비활성화된 목표를 최하단으로 이동
+        const activeObjectives = updatedObjectives.filter(obj => obj.isActive);
+        const inactiveObjectives = updatedObjectives.filter(obj => !obj.isActive);
+
+        return [...activeObjectives, ...inactiveObjectives];
+      });
+
+      setShowDeleteConfirmModal(false);
+      setObjectiveToDelete(null);
+    } catch (error) {
+      console.error('목표 비활성화 중 오류 발생:', error);
+    }
+  };
+
+  // 목표 수정 저장 함수
+  const saveEditedObjective = () => {
+    if (!editingObjective) return;
+
+    setObjectives(prev => 
+      prev.map(obj => 
+        obj.id === editingObjective.id 
+          ? { ...obj, title: editingObjective.title }
+          : obj
+      )
+    );
+
+    setShowEditObjectiveModal(false);
+    setEditingObjective(null);
   };
 
   // 커스텀 드롭다운 컴포넌트
@@ -755,31 +848,29 @@ export default function PlanningProcessDetailPage() {
         </div>
 
         <div className="grid gap-6">
-          {objectives
-            .filter((obj) => obj.isActive)
-            .map((objective, objIndex) => (
-              <Card
-                key={objective.id}
-                className="shadow-lg border-0 hover:shadow-xl transition-all duration-300"
-              >
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 border-b">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white font-bold flex items-center justify-center text-sm">
-                        O
-                      </div>
-                      <CardTitle className="text-xl text-gray-900 dark:text-white">
-                        {objective.title}
-                      </CardTitle>
+          {objectives.map((objective, objIndex) => {
+                const isCollapsed = collapsedObjectives.has(objective.id);
+                const isInactive = !objective.isActive;
+
+                return (
+                <Card 
+                  key={objective.id} 
+                  className={`bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 relative ${
+                    isInactive ? 'opacity-50' : ''
+                  }`}
+                >
+                  {isInactive && (
+                    <div className="absolute inset-0 bg-gray-500 bg-opacity-30 rounded-lg flex items-center justify-center z-10">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-md">
+                        비활성화된 목표입니다
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {calculateObjectiveProgress(objective)}%
-                        </span>
-                        <p className="text-xs text-gray-500">진행률</p>
-                      </div>
-                      <div className="w-12 h-12 relative">
+                  )}
+
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
                         <svg
                           className="w-12 h-12 transform -rotate-90"
                           viewBox="0 0 36 36"
@@ -803,12 +894,61 @@ export default function PlanningProcessDetailPage() {
                               <stop offset="100%" stopColor="#8B5CF6" />
                             </linearGradient>
                           </defs>
-                        </svg>
+                        </svg```python
                       </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                          {objective.title}
+                        </CardTitle>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {calculateObjectiveProgress(objective)}% 완료
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 관리 버튼들 */}
+                    <div className="flex items-center gap-2">
+                      {/* 확장/축소 버튼 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleObjectiveCollapse(objective.id)}
+                        className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                        disabled={isInactive}
+                      >
+                        {isCollapsed ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronUp className="w-4 h-4" />
+                        )}
+                      </Button>
+
+                      {/* 수정 버튼 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditObjective(objective)}
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                        disabled={isInactive}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+
+                      {/* 삭제 버튼 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteObjective(objective)}
+                        className="hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                        disabled={isInactive}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
 
+                {!isCollapsed && (
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -903,7 +1043,7 @@ export default function PlanningProcessDetailPage() {
                                     }
                                     className={`flex-1 bg-transparent border-none p-0 h-auto focus:ring-0 
                                   ${item.completed ? "line-through text-gray-500" : ""}`}
-                                    placeholder="체크리스트 항  �을 입력하세요"
+                                    placeholder="체크리스트 항목을 입력하세요"
                                   />
                                   <Button
                                     size="sm"
@@ -970,8 +1110,10 @@ export default function PlanningProcessDetailPage() {
                     ))}
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+                )}
+                </Card>
+              );
+              })}
 
           {objectives.filter((obj) => obj.isActive).length === 0 && (
             <div className="text-center py-12">
