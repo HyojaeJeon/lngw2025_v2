@@ -27,7 +27,7 @@ const commonConfig = {
 
 module.exports = {
   development: {
-    dialect: "sqlite",
+    dialect: "mysql",
     storage: "./database/lngw2025_dev.sqlite",
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
