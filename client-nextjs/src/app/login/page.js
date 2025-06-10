@@ -171,14 +171,11 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
         <Card
-          className="w-full max-w-md transform transition-all duration-500 
-                       shadow-xl hover:shadow-2xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+          className="w-full max-w-md transform transition-all duration-500 shadow-xl hover:shadow-2xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
         >
           <CardHeader className="text-center pb-6">
             <div
-              className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 
-                          rounded-full flex items-center justify-center mb-4 
-                          animate-pulse shadow-lg"
+              className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-lg"
             >
               <svg
                 className="w-8 h-8 text-white"
@@ -195,8 +192,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <CardTitle
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
-                               bg-clip-text text-transparent"
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
             >
               {t("login.title")}
             </CardTitle>
@@ -222,8 +218,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="transition-all duration-300 focus:scale-105 focus:shadow-md
-                          border-gray-300 dark:border-gray-600 focus:border-blue-500"
+                  className="transition-all duration-300 focus:scale-105 focus:shadow-md border-gray-300 dark:border-gray-600 focus:border-blue-500"
                 />
               </div>
 
@@ -243,8 +238,7 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="transition-all duration-300 focus:scale-105 focus:shadow-md
-                            border-gray-300 dark:border-gray-600 focus:border-blue-500 pr-10"
+                    className="transition-all duration-300 focus:scale-105 focus:shadow-md border-gray-300 dark:border-gray-600 focus:border-blue-500 pr-10"
                   />
                   <button
                     type="button"
@@ -312,9 +306,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600
-                        transition-all duration-300 transform hover:shadow-lg
-                        disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -351,8 +343,7 @@ export default function LoginPage() {
                   type="button"
                   variant="link"
                   onClick={() => router.push("/register")}
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                          transition-colors duration-300 hover:underline"
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300 hover:underline"
                 >
                   {t("login.register.link")}
                 </Button>

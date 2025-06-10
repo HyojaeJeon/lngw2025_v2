@@ -82,5 +82,66 @@ module.exports = (sequelize, DataTypes) => {
     },
   );
 
+  User.associate = (models) => {
+    // Experience와의 관계
+    User.hasMany(models.Experience, {
+      foreignKey: "userId",
+      as: "experiences",
+    });
+
+    // Skill과의 관계
+    User.hasMany(models.Skill, {
+      foreignKey: "userId",
+      as: "skills",
+    });
+
+    // EmergencyContact와의 관계
+    User.hasMany(models.EmergencyContact, {
+      foreignKey: "userId",
+      as: "emergencyContact",
+    });
+
+    // Content와의 관계
+    User.hasMany(models.Content, {
+      foreignKey: "userId",
+      as: "contents",
+    });
+
+    // Customer 관계 (User can have many customers assigned)
+    User.hasMany(models.Customer, {
+      foreignKey: "assignedUserId",
+      as: "assignedCustomers",
+    });
+
+    // SalesOpportunity 관계
+    User.hasMany(models.SalesOpportunity, {
+      foreignKey: "assignedUserId",
+      as: "assignedOpportunities",
+    });
+
+    // MarketingPlan 관계
+    User.hasMany(models.MarketingPlan, {
+      foreignKey: "userId",
+      as: "marketingPlans",
+    });
+
+    // SalesItem 관계 (영업사원)
+    User.hasMany(models.SalesItem, {
+      foreignKey: "salesRepId",
+      as: "salesItems",
+    });
+
+    // StockMovement 관계 (처리자/확인자)
+    User.hasMany(models.StockMovement, {
+      foreignKey: "processedBy",
+      as: "processedMovements",
+    });
+
+    User.hasMany(models.StockMovement, {
+      foreignKey: "confirmedBy",
+      as: "confirmedMovements",
+    });
+  };
+
   return User;
 };

@@ -4,19 +4,12 @@ const config = require("../config/config.js");
 const env = process.env.NODE_ENV || "development";
 const dbConfig = config[env];
 
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
-  {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect,
-    timezone: dbConfig.timezone,
-    logging: dbConfig.logging,
-    pool: dbConfig.pool,
-  },
-);
+const sequelize = new Sequelize({
+  dialect: dbConfig.dialect,
+  storage: dbConfig.storage,
+  logging: dbConfig.logging,
+  pool: dbConfig.pool,
+});
 
 // Import models
 const User = require("./User")(sequelize, Sequelize.DataTypes);
@@ -70,176 +63,16 @@ const MarketingObjective = require("./MarketingObjective")(sequelize, Sequelize.
 const KeyResult = require("./KeyResult")(sequelize, Sequelize.DataTypes);
 const ChecklistItem = require("./ChecklistItem")(sequelize, Sequelize.DataTypes);
 const Category = require("./Category")(sequelize, Sequelize.DataTypes);
+const Product = require("./Product")(sequelize, Sequelize.DataTypes);
+const ProductModel = require("./ProductModel")(sequelize, Sequelize.DataTypes);
+const ProductTag = require("./ProductTag")(sequelize, Sequelize.DataTypes);
+const SalesItem = require("./SalesItem")(sequelize, Sequelize.DataTypes);
+const Payment = require("./Payment")(sequelize, Sequelize.DataTypes);
+const Warehouse = require("./Warehouse")(sequelize, Sequelize.DataTypes);
+const InventoryRecord = require("./InventoryRecord")(sequelize, Sequelize.DataTypes);
+const StockMovement = require("./StockMovement")(sequelize, Sequelize.DataTypes);
 
-// Define associations
-User.hasMany(Experience, {
-  foreignKey: "userId",
-  as: "experiences",
-});
-Experience.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
-
-User.hasMany(Skill, {
-  foreignKey: "userId",
-  as: "skills",
-});
-Skill.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
-
-User.hasMany(EmergencyContact, {
-  foreignKey: "userId",
-  as: "emergencyContact",
-});
-EmergencyContact.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
-
-Content.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
-User.hasMany(Content, {
-  foreignKey: "userId",
-  as: "contents",
-});
-
-Content.hasMany(ScheduledPost, {
-  foreignKey: "contentId",
-  as: "scheduledPosts",
-});
-
-ScheduledPost.belongsTo(Content, {
-  foreignKey: "contentId",
-  as: "content",
-});
-
-Content.hasMany(PostingLog, {
-  foreignKey: "contentId",
-  as: "postingLogs",
-});
-
-PostingLog.belongsTo(Content, {
-  foreignKey: "contentId",
-  as: "content",
-});
-
-ABTestGroup.hasMany(ABTestVariant, {
-  foreignKey: "groupId",
-  as: "variants",
-});
-
-ABTestVariant.belongsTo(ABTestGroup, {
-  foreignKey: "groupId",
-  as: "group",
-});
-
-TrendAnalysis.hasMany(TrendingKeyword, {
-  foreignKey: "trendId",
-  as: "keywords",
-});
-
-TrendingKeyword.belongsTo(TrendAnalysis, {
-  foreignKey: "trendId",
-  as: "trend",
-});
-
-// Customer - User associations (User can have many customers assigned)
-User.hasMany(Customer, {
-  foreignKey: "assignedUserId",
-  as: "assignedCustomers",
-});
-Customer.belongsTo(User, {
-  foreignKey: "assignedUserId",
-  as: "assignedUser",
-});
-
-// Customer - ContactPerson associations
-Customer.hasMany(ContactPerson, {
-  foreignKey: "customerId",
-  as: "contacts",
-  onDelete: "CASCADE",
-});
-ContactPerson.belongsTo(Customer, {
-  foreignKey: "customerId",
-  as: "customer",
-});
-
-// Customer - CustomerImage associations
-Customer.hasMany(CustomerImage, {
-  foreignKey: "customerId",
-  as: "facilityImages",
-  onDelete: "CASCADE",
-});
-CustomerImage.belongsTo(Customer, {
-  foreignKey: "customerId",
-  as: "customer",
-});
-
-// Customer - SalesOpportunity associations
-Customer.hasMany(SalesOpportunity, {
-  foreignKey: "customerId",
-  as: "opportunities",
-});
-SalesOpportunity.belongsTo(Customer, {
-  foreignKey: "customerId",
-  as: "customer",
-});
-
-// User - SalesOpportunity associations
-User.hasMany(SalesOpportunity, {
-  foreignKey: "assignedUserId",
-  as: "assignedOpportunities",
-});
-SalesOpportunity.belongsTo(User, {
-  foreignKey: "assignedUserId",
-  as: "assignedUser",
-});
-
-// Marketing Plan associations
-User.hasMany(MarketingPlan, {
-  foreignKey: "userId",
-  as: "marketingPlans",
-});
-MarketingPlan.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
-
-MarketingPlan.hasMany(MarketingObjective, {
-  foreignKey: "planId",
-  as: "objectives",
-  onDelete: "CASCADE",
-});
-MarketingObjective.belongsTo(MarketingPlan, {
-  foreignKey: "planId",
-  as: "plan",
-});
-
-MarketingObjective.hasMany(KeyResult, {
-  foreignKey: "objectiveId",
-  as: "keyResults",
-  onDelete: "CASCADE",
-});
-KeyResult.belongsTo(MarketingObjective, {
-  foreignKey: "objectiveId",
-  as: "objective",
-});
-
-KeyResult.hasMany(ChecklistItem, {
-  foreignKey: "keyResultId",
-  as: "checklist",
-  onDelete: "CASCADE",
-});
-ChecklistItem.belongsTo(KeyResult, {
-  foreignKey: "keyResultId",
-  as: "keyResult",
-});
-
+// 모든 모델이 로드된 후 관계 설정
 const models = {
   sequelize,
   Sequelize,
@@ -267,8 +100,21 @@ const models = {
   KeyResult,
   ChecklistItem,
   Category,
-  sequelize,
-  Sequelize
+  Product,
+  ProductModel,
+  ProductTag,
+  SalesItem,
+  Payment,
+  Warehouse,
+  InventoryRecord,
+  StockMovement
 };
+
+// Associate 함수 호출 - 모든 모델이 준비된 후
+Object.keys(models).forEach(modelName => {
+  if (models[modelName].associate) {
+    models[modelName].associate(models);
+  }
+});
 
 module.exports = models;

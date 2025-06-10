@@ -1,22 +1,9 @@
-
 const { gql } = require('apollo-server-express');
 
-const categoryTypeDefs = gql`
-  type Category {
-    id: ID!
-    code: String!
-    names: CategoryNames!
-    descriptions: CategoryDescriptions
-    parentId: ID
-    parent: Category
-    children: [Category!]
-    level: Int!
-    sortOrder: Int!
-    isActive: Boolean!
-    createdAt: String!
-    updatedAt: String!
-  }
-
+const categorySchemaExtensions = gql`
+  # ====================
+  # CATEGORY SPECIFIC TYPES
+  # ====================
   type CategoryNames {
     ko: String!
     vi: String!
@@ -29,6 +16,14 @@ const categoryTypeDefs = gql`
     en: String
   }
 
+  type CategoryCodeCheckResult {
+    isAvailable: Boolean!
+    message: String!
+  }
+
+  # ====================
+  # CATEGORY INPUT TYPES
+  # ====================
   input CategoryNamesInput {
     ko: String!
     vi: String!
@@ -51,11 +46,19 @@ const categoryTypeDefs = gql`
     isActive: Boolean
   }
 
-  type CategoryCodeCheckResult {
-    isAvailable: Boolean!
-    message: String!
+  input CategoryUpdateInput {
+    code: String
+    names: CategoryNamesInput
+    descriptions: CategoryDescriptionsInput
+    parentId: ID
+    level: Int
+    sortOrder: Int
+    isActive: Boolean
   }
 
+  # ====================
+  # CATEGORY QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     categories(parentId: ID, level: Int, isActive: Boolean): [Category!]!
     category(id: ID!): Category
@@ -70,4 +73,4 @@ const categoryTypeDefs = gql`
   }
 `;
 
-module.exports = categoryTypeDefs;
+module.exports = categorySchemaExtensions;

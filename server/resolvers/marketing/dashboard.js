@@ -1,57 +1,65 @@
-
 const models = require("../../models");
 const moment = require("moment");
 const { Op } = require("sequelize");
+const { 
+  createError, 
+  requireAuth, 
+  requireRole, 
+  handleDatabaseError 
+} = require("../../lib/errors");
 
 const dashboardResolvers = {
   Query: {
-    marketingStats: async () => {
-      const today = moment().startOf("day").toDate();
-      const weekAgo = moment().subtract(7, "days").startOf("day").toDate();
-      const monthAgo = moment().subtract(30, "days").startOf("day").toDate();
+    marketingStats: async (parent, args, { lang }) => {
+      try {
+        const today = moment().startOf("day").toDate();
+        const weekAgo = moment().subtract(7, "days").startOf("day").toDate();
+        const monthAgo = moment().subtract(30, "days").startOf("day").toDate();
 
-      const [
-        todayPosts,
-        weekPosts,
-        monthPosts,
-        pendingApproval,
-        errors,
-        activeABTests,
-        completedABTests,
-        trendingKeywords,
-      ] = await Promise.all([
-        models.Content.count({ where: { createdAt: { [Op.gte]: today } } }),
-        models.Content.count({ where: { createdAt: { [Op.gte]: weekAgo } } }),
-        models.Content.count({ where: { createdAt: { [Op.gte]: monthAgo } } }),
-        models.Content.count({ where: { status: "pending" } }),
-        models.PostingLog.count({
-          where: { level: "error", createdAt: { [Op.gte]: today } },
-        }),
-        models.ABTestGroup.count({ where: { status: "active" } }),
-        models.ABTestGroup.count({ where: { status: "completed" } }),
-        models.TrendingKeyword.count(),
-      ]);
+        const [
+          todayPosts,
+          weekPosts,
+          monthPosts,
+          pendingApproval,
+          errors,
+          activeABTests,
+          completedABTests,
+          trendingKeywords,
+        ] = await Promise.all([
+          models.Content.count({ where: { createdAt: { [Op.gte]: today } } }),
+          models.Content.count({ where: { createdAt: { [Op.gte]: weekAgo } } }),
+          models.Content.count({ where: { createdAt: { [Op.gte]: monthAgo } } }),
+          models.Content.count({ where: { status: "pending" } }),
+          models.PostingLog.count({
+            where: { level: "error", createdAt: { [Op.gte]: today } },
+          }),
+          models.ABTestGroup.count({ where: { status: "active" } }),
+          models.ABTestGroup.count({ where: { status: "completed" } }),
+          models.TrendingKeyword.count(),
+        ]);
 
-      return {
-        totalPosts: {
-          today: todayPosts,
-          week: weekPosts,
-          month: monthPosts,
-        },
-        pendingApproval,
-        errors,
-        abTestGroups: {
-          active: activeABTests,
-          completed: completedABTests,
-        },
-        trendingKeywords,
-      };
+        return {
+          totalPosts: {
+            today: todayPosts,
+            week: weekPosts,
+            month: monthPosts,
+          },
+          pendingApproval,
+          errors,
+          abTestGroups: {
+            active: activeABTests,
+            completed: completedABTests,
+          },
+          trendingKeywords,
+        };
+      } catch (error) {
+        console.error('Error fetching marketing stats:', error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
     },
 
-    marketingOverview: async (parent, args, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    marketingOverview: async (parent, args, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const totalPlans = await models.MarketingPlan.count();
@@ -77,14 +85,12 @@ const dashboardResolvers = {
         return overview;
       } catch (error) {
         console.error('마케팅 개요 조회 오류:', error);
-        throw new Error('마케팅 개요를 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    users: async (parent, { offset = 0, limit = 10 }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    users: async (parent, { offset = 0, limit = 10 }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const users = await models.User.findAll({
@@ -97,27 +103,23 @@ const dashboardResolvers = {
         return users;
       } catch (error) {
         console.error('사용자 목록 조회 오류:', error);
-        throw new Error('사용자 목록을 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    usersCount: async (parent, args, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    usersCount: async (parent, args, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         return await models.User.count();
       } catch (error) {
         console.error('사용자 수 조회 오류:', error);
-        throw new Error('사용자 수를 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    marketingPlans: async (parent, { userId, status, limit = 10, offset = 0 }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    marketingPlans: async (parent, { userId, status, limit = 10, offset = 0 }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const where = {};
@@ -157,14 +159,12 @@ const dashboardResolvers = {
         return plans;
       } catch (error) {
         console.error('마케팅 계획 목록 조회 오류:', error);
-        throw new Error('마케팅 계획 목록을 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    marketingPlan: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    marketingPlan: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const plan = await models.MarketingPlan.findByPk(id, {
@@ -195,20 +195,21 @@ const dashboardResolvers = {
         });
 
         if (!plan) {
-          throw new Error('마케팅 계획을 찾을 수 없습니다.');
+          throw createError('MARKETING_PLAN_NOT_FOUND', lang);
         }
 
         return plan;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('마케팅 계획 조회 오류:', error);
-        throw new Error('마케팅 계획을 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "MARKETING_PLAN_NOT_FOUND");
       }
     },
 
-    marketingPlanObjectives: async (parent, { planId }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    marketingPlanObjectives: async (parent, { planId }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const objectives = await models.MarketingObjective.findAll({
@@ -232,16 +233,14 @@ const dashboardResolvers = {
         return objectives;
       } catch (error) {
         console.error('마케팅 목표 조회 오류:', error);
-        throw new Error('마케팅 목표를 불러오는데 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     }
   },
 
   Mutation: {
-    createMarketingPlan: async (parent, { input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    createMarketingPlan: async (parent, { input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const plan = await models.MarketingPlan.create({
@@ -260,20 +259,18 @@ const dashboardResolvers = {
         });
       } catch (error) {
         console.error('마케팅 계획 생성 오류:', error);
-        throw new Error('마케팅 계획 생성에 실패했습니다.');
+        handleDatabaseError(error, lang, "MARKETING_PLAN_CREATE_FAILED");
       }
     },
 
-    updateMarketingPlan: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    updateMarketingPlan: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const plan = await models.MarketingPlan.findByPk(id);
 
         if (!plan) {
-          throw new Error('마케팅 계획을 찾을 수 없습니다.');
+          throw createError('MARKETING_PLAN_NOT_FOUND', lang);
         }
 
         await plan.update(input);
@@ -304,41 +301,43 @@ const dashboardResolvers = {
           ]
         });
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('마케팅 계획 업데이트 오류:', error);
-        throw new Error('마케팅 계획 업데이트에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    deleteMarketingPlan: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    deleteMarketingPlan: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const plan = await models.MarketingPlan.findByPk(id);
 
         if (!plan) {
-          throw new Error('마케팅 계획을 찾을 수 없습니다.');
+          throw createError('MARKETING_PLAN_NOT_FOUND', lang);
         }
 
         await plan.destroy();
         return true;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('마케팅 계획 삭제 오류:', error);
-        throw new Error('마케팅 계획 삭제에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    toggleChecklistItem: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    toggleChecklistItem: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const item = await models.ChecklistItem.findByPk(id);
 
         if (!item) {
-          throw new Error('체크리스트 항목을 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         const completed = !item.completed;
@@ -349,15 +348,16 @@ const dashboardResolvers = {
 
         return item;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('체크리스트 토글 오류:', error);
-        throw new Error('체크리스트 토글에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    createMarketingObjective: async (parent, { planId, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    createMarketingObjective: async (parent, { planId, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const objective = await models.MarketingObjective.create({
@@ -381,20 +381,18 @@ const dashboardResolvers = {
         });
       } catch (error) {
         console.error('마케팅 목표 생성 오류:', error);
-        throw new Error('마케팅 목표 생성에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    updateMarketingObjective: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    updateMarketingObjective: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const objective = await models.MarketingObjective.findByPk(id);
 
         if (!objective) {
-          throw new Error('마케팅 목표를 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await objective.update(input);
@@ -414,35 +412,37 @@ const dashboardResolvers = {
           ]
         });
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('마케팅 목표 업데이트 오류:', error);
-        throw new Error('마케팅 목표 업데이트에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    deleteMarketingObjective: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    deleteMarketingObjective: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const objective = await models.MarketingObjective.findByPk(id);
 
         if (!objective) {
-          throw new Error('마케팅 목표를 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await objective.destroy();
         return true;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('마케팅 목표 삭제 오류:', error);
-        throw new Error('마케팅 목표 삭제에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    createKeyResult: async (parent, { objectiveId, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    createKeyResult: async (parent, { objectiveId, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const keyResult = await models.KeyResult.create({
@@ -460,20 +460,18 @@ const dashboardResolvers = {
         });
       } catch (error) {
         console.error('핵심 결과 생성 오류:', error);
-        throw new Error('핵심 결과 생성에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    updateKeyResult: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    updateKeyResult: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const keyResult = await models.KeyResult.findByPk(id);
 
         if (!keyResult) {
-          throw new Error('핵심 결과를 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await keyResult.update(input);
@@ -487,35 +485,37 @@ const dashboardResolvers = {
           ]
         });
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('핵심 결과 업데이트 오류:', error);
-        throw new Error('핵심 결과 업데이트에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    deleteKeyResult: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    deleteKeyResult: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const keyResult = await models.KeyResult.findByPk(id);
 
         if (!keyResult) {
-          throw new Error('핵심 결과를 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await keyResult.destroy();
         return true;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error('핵심 결과 삭제 오류:', error);
-        throw new Error('핵심 결과 삭제에 실패했습니다.');
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    createChecklistItem: async (parent, { keyResultId, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    createChecklistItem: async (parent, { keyResultId, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const item = await models.ChecklistItem.create({
@@ -525,48 +525,50 @@ const dashboardResolvers = {
 
         return item;
       } catch (error) {
-        console.error('체크리스트 항목 생성 오류:', error);
-        throw new Error('체크리스트 항목 생성에 실패했습니다.');
+        console.error('체크리스트 생성 오류:', error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    updateChecklistItem: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    updateChecklistItem: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const item = await models.ChecklistItem.findByPk(id);
 
         if (!item) {
-          throw new Error('체크리스트 항목을 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await item.update(input);
         return item;
       } catch (error) {
-        console.error('체크리스트 항목 업데이트 오류:', error);
-        throw new Error('체크리스트 항목 업데이트에 실패했습니다.');
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error('체크리스트 업데이트 오류:', error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    deleteChecklistItem: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error('인증이 필요합니다.');
-      }
+    deleteChecklistItem: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const item = await models.ChecklistItem.findByPk(id);
 
         if (!item) {
-          throw new Error('체크리스트 항목을 찾을 수 없습니다.');
+          throw createError('NOT_FOUND', lang);
         }
 
         await item.destroy();
         return true;
       } catch (error) {
-        console.error('체크리스트 항목 삭제 오류:', error);
-        throw new Error('체크리스트 항목 삭제에 실패했습니다.');
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error('체크리스트 삭제 오류:', error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     }
   }

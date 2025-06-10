@@ -1,16 +1,9 @@
 const { gql } = require("apollo-server-express");
 
-const abtestSchema = gql`
-  type ABTestStats {
-    totalTests: Int!
-    activeTests: Int!
-    completedTests: Int!
-    avgImprovement: Float!
-    topPerformingVariant: ABTestVariant
-    active: Int!
-    completed: Int!
-  }
-
+const abtestSchemaExtensions = gql`
+  # ====================
+  # ABTEST INPUT TYPES
+  # ====================
   input ABTestGroupInput {
     name: String!
     description: String
@@ -36,6 +29,9 @@ const abtestSchema = gql`
     revenue: Float
   }
 
+  # ====================
+  # ABTEST QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     abTestGroups(status: String): [ABTestGroup!]!
     abTestGroup(id: ID!): ABTestGroup
@@ -58,4 +54,4 @@ const abtestSchema = gql`
   }
 `;
 
-module.exports = abtestSchema;
+module.exports = abtestSchemaExtensions;

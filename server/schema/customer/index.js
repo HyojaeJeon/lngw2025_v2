@@ -1,30 +1,10 @@
 const { gql } = require("apollo-server-express");
 
-const customerTypeDefs = gql`
-  extend type Query {
-    customers(limit: Int, offset: Int, search: String): [Customer!]!
-    customer(id: ID!): Customer
-    checkCompanyName(name: String!): CompanyNameCheckResult!
-    addresses(limit: Int, offset: Int): [Address!]!
-    services(limit: Int, offset: Int): [Service!]!
-    users(limit: Int, offset: Int, search: String): [User!]!
-  }
-
-  extend type Mutation {
-    createCustomer(input: CustomerInput!): Customer!
-    updateCustomer(id: ID!, input: CustomerInput!): Customer!
-    deleteCustomer(id: ID!): MutationResponse!
-    createAddress(input: AddressInput!): Address!
-    createService(input: ServiceInput!): Service!
-    addContactPerson(customerId: ID!, input: ContactPersonInput!): ContactPerson!
-    updateContactPerson(id: ID!, input: ContactPersonInput!): ContactPerson!
-    deleteContactPerson(id: ID!): MutationResponse!
-    addCustomerImage(customerId: ID!, input: CustomerImageInput!): CustomerImage!
-    deleteCustomerImage(id: ID!): MutationResponse!
-  }
-
-  type Customer {
-    id: ID!
+const customerSchemaExtensions = gql`
+  # ====================
+  # CUSTOMER INPUT TYPES
+  # ====================
+  input CustomerInput {
     name: String!
     contactName: String
     email: String
@@ -33,36 +13,40 @@ const customerTypeDefs = gql`
     companyType: String
     grade: String
     address: String
+    city: String
+    district: String
+    province: String
+    detailAddress: String
     assignedUserId: ID
-    assignedUser: User
-    status: String!
-    contacts: [ContactPerson!]
-    images: [CustomerImage!]
+    status: String
     contactDepartment: String
     contactBirthDate: Date
     profileImage: String
+    facilityImages: [String!]
     facebook: String
     tiktok: String
-    facilityImages: [CustomerImage!]
     instagram: String
-    opportunities: [SalesOpportunity!]
-    createdAt: Date!
-    updatedAt: Date!
+    contacts: [ContactPersonInput!]
   }
 
-  type CustomerImage {
-    id: ID!
-    customerId: ID!
-    imageUrl: String!
-    imageType: String!
-    description: String
-    sortOrder: Int
-    createdAt: Date!
-    updatedAt: Date!
+  input CustomerUpdateInput {
+    name: String
+    contactName: String
+    email: String
+    phone: String
+    industry: String
+    companyType: String
+    grade: String
+    address: String
+    assignedUserId: ID
+    status: String
+    profileImage: String
+    facebook: String
+    tiktok: String
+    instagram: String
   }
 
-  type ContactPerson {
-    id: ID!
+  input ContactPersonInput {
     name: String!
     department: String
     position: String
@@ -73,31 +57,42 @@ const customerTypeDefs = gql`
     tiktok: String
     instagram: String
     profileImage: String
-    createdAt: Date!
-    updatedAt: Date!
   }
 
+  input CustomerImageInput {
+    imageUrl: String!
+    imageType: String
+    description: String
+    sortOrder: Int
+  }
+
+  input AddressInput {
+    name: String!
+    country: String!
+    state: String
+    city: String!
+    district: String
+    street: String
+    buildingNumber: String
+    zipCode: String
+    fullAddress: String!
+    isDefault: Boolean
+  }
+
+  input ServiceInput {
+    name: String!
+    price: Float!
+    description: String
+    category: String
+    status: String
+  }
+
+  # ====================
+  # CUSTOMER RESPONSE TYPES (specific to customer schema)
+  # ====================
   type CompanyNameCheckResult {
     exists: Boolean!
     message: String!
-  }
-
-  type SalesOpportunity {
-    id: ID!
-    title: String!
-    description: String
-    customerId: ID
-    assignedUserId: ID
-    assignedUser: User
-    expectedAmount: Float
-    stage: String!
-    probability: Int!
-    expectedCloseDate: Date
-    actualCloseDate: Date
-    source: String
-    priority: String!
-    createdAt: Date!
-    updatedAt: Date!
   }
 
   type Address {
@@ -127,72 +122,37 @@ const customerTypeDefs = gql`
     updatedAt: Date!
   }
 
-  input CustomerInput {
-    name: String!
-    contactName: String
-    email: String
-    phone: String
-    industry: String
-    companyType: String
+  # ====================
+  # CUSTOMER QUERIES & MUTATIONS
+  # ====================
+  extend type Query {
+    customers(limit: Int, offset: Int, search: String, filter: CustomerFilter): [Customer!]!
+    customer(id: ID!): Customer
+    checkCompanyName(name: String!): CompanyNameCheckResult!
+    addresses(limit: Int, offset: Int): [Address!]!
+    services(limit: Int, offset: Int): [Service!]!
+    users(limit: Int, offset: Int, search: String): [User!]!
+  }
+
+  extend type Mutation {
+    createCustomer(input: CustomerInput!): Customer!
+    updateCustomer(id: ID!, input: CustomerInput!): Customer!
+    deleteCustomer(id: ID!): MutationResponse!
+    createAddress(input: AddressInput!): Address!
+    createService(input: ServiceInput!): Service!
+    addContactPerson(customerId: ID!, input: ContactPersonInput!): ContactPerson!
+    updateContactPerson(id: ID!, input: ContactPersonInput!): ContactPerson!
+    deleteContactPerson(id: ID!): MutationResponse!
+    addCustomerImage(customerId: ID!, input: CustomerImageInput!): CustomerImage!
+    deleteCustomerImage(id: ID!): MutationResponse!
+  }
+
+  input CustomerFilter {
+    search: String
+    status: String
     grade: String
-    address: String
-    city: String
-    district: String
-    province: String
-    detailAddress: String
     assignedUserId: ID
-    status: String
-    contactDepartment: String
-    contactBirthDate: Date
-    profileImage: String
-    facilityImages: [String!]
-    facebook: String
-    tiktok: String
-    instagram: String
-    contacts: [ContactPersonInput!]
   }
+`;
 
-  input ContactPersonInput {
-    name: String!
-    department: String
-    position: String
-    phone: String
-    email: String
-    birthDate: Date
-    facebook: String
-    tiktok: String
-    instagram: String
-    profileImage: String
-  }
-
-  input AddressInput {
-    name: String!
-    country: String!
-    state: String
-    city: String!
-    district: String
-    street: String
-    buildingNumber: String
-    zipCode: String
-    fullAddress: String!
-    isDefault: Boolean
-  }
-
-  input ServiceInput {
-    name: String!
-    price: Float!
-    description: String
-    category: String
-    status: String
-  }
-
-  input CustomerImageInput {
-    imageUrl: String!
-    imageType: String
-    description: String
-    sortOrder: Int
-  }
-
-  `;
-
-module.exports = customerTypeDefs;
+module.exports = customerSchemaExtensions;

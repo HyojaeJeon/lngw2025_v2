@@ -1,28 +1,9 @@
 const { gql } = require("apollo-server-express");
 
-const engagementSchema = gql`
-  type MarketingEngagement {
-    id: ID!
-    platform: String!
-    type: String!
-    message: String!
-    username: String!
-    timestamp: Date!
-    status: String!
-    response: String
-    sentiment: String
-  }
-
-  type AutomationRule {
-    id: ID!
-    name: String!
-    platform: String!
-    trigger: String!
-    action: String!
-    isActive: Boolean!
-    responses: [String]
-  }
-
+const engagementSchemaExtensions = gql`
+  # ====================
+  # ENGAGEMENT INPUT TYPES
+  # ====================
   input AutomationRuleInput {
     name: String!
     platform: String!
@@ -31,6 +12,9 @@ const engagementSchema = gql`
     responses: [String]
   }
 
+  # ====================
+  # ENGAGEMENT QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     marketingEngagements(platform: String, limit: Int): [MarketingEngagement]
     automationRules: [AutomationRule]
@@ -42,4 +26,4 @@ const engagementSchema = gql`
   }
 `;
 
-module.exports = engagementSchema;
+module.exports = engagementSchemaExtensions;

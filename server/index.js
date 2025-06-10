@@ -4,10 +4,28 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const typeDefs = require("./schema/typeDefs");
-const resolvers = require("./schema/resolvers");
+const typeDefs = require("./schema");
+const resolvers = require("./resolvers");
 const models = require("./models");
 const seedData = require("./seeders");
+
+// ====================
+// 언어 파싱 헬퍼 함수
+// ====================
+const getLanguageFromHeaders = (headers) => {
+  const langHeader = headers['accept-language'] || headers['x-language'];
+  if (!langHeader) return 'en'; // 기본값은 영어
+
+  // Accept-Language 헤더 파싱: "ko-KR,ko;q=0.9,en;q=0.8" 형태
+  const langs = langHeader.split(',');
+  const primaryLang = langs[0].split('-')[0].split(';')[0].toLowerCase().trim();
+  
+  if (['ko', 'en', 'vi'].includes(primaryLang)) {
+    return primaryLang;
+  }
+  
+  return 'en'; // 지원하지 않는 언어일 경우 영어로 대체
+};
 
 if (process.env.NODE_ENV === "production") {
   // Docker 컨테이너 내부에서 윈도우 호스트 MySQL에 연결할 때
@@ -82,8 +100,23 @@ async function startServer() {
     resolvers,
     introspection: process.env.APOLLO_INTROSPECTION === "true",
     playground: process.env.APOLLO_PLAYGROUND === "true",
+    formatError: (formattedError, error) => {
+      // Apollo Server에서 기본으로 제공하는 에러 포맷팅을 그대로 사용하되,
+      // 커스텀 로깅 등을 추가할 수 있습니다.
+      console.error("GraphQL Error:", {
+        message: formattedError.message,
+        code: formattedError.extensions?.code,
+        errorKey: formattedError.extensions?.errorKey,
+        locations: formattedError.locations,
+        path: formattedError.path,
+      });
+      return formattedError;
+    },
     context: async ({ req }) => {
       let user = null;
+      
+      // 언어 정보 추출
+      const lang = getLanguageFromHeaders(req.headers);
 
       try {
         const authHeader = req.headers.authorization;
@@ -115,7 +148,7 @@ async function startServer() {
         user = null;
       }
 
-      return { user };
+      return { user, lang };
     },
   });
   await server.start();
@@ -149,14 +182,14 @@ async function startServer() {
   // 4) DB 연결 & Express 서버 시작
   // ──────────────────────────────────────────────────────────────────────────
   try {
-    console.log("Connecting to database...");
+    console.log("Connecting to SQLite database...");
     await models.sequelize.authenticate();
     console.log("Database connection established successfully.");
 
     if (process.env.NODE_ENV === "development") {
-      // 데이터베이스 동기화
+      // 데이터베이스 동기화 (SQLite용)
       console.log("Syncing database...");
-      await models.sequelize.sync({ force: false, alter: true }); // 테이블을 완전히 재생성
+      await models.sequelize.sync({ force: true }); // SQLite에서는 force로 테이블 재생성
       console.log("Database synced successfully.");
       const userCount = await models.User.count();
       if (userCount === 0) {

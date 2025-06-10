@@ -1,17 +1,26 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
 const { Customer, User, ContactPerson, CustomerImage } = require("../../models");
+const { 
+  createError, 
+  requireAuth, 
+  requireRole, 
+  handleDatabaseError 
+} = require("../../lib/errors");
 
 const customerResolvers = {
   Query: {
-    users: async (parent, { limit = 10, offset = 0, search }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    users: async (parent, { limit = 10, offset = 0, search }, { user, lang }) => {
+      requireAuth(user, lang);
 
       const whereCondition = search
         ? {
-            [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }, { department: { [Op.like]: `%${search}%` } }, { position: { [Op.like]: `%${search}%` } }],
+            [Op.or]: [
+              { name: { [Op.like]: `%${search}%` } }, 
+              { email: { [Op.like]: `%${search}%` } }, 
+              { department: { [Op.like]: `%${search}%` } }, 
+              { position: { [Op.like]: `%${search}%` } }
+            ],
           }
         : {};
 
@@ -27,38 +36,56 @@ const customerResolvers = {
         return users || [];
       } catch (error) {
         console.error("Users query error:", error);
-        return [];
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    checkCompanyName: async (_, { name }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    checkCompanyName: async (_, { name }, { user, lang }) => {
+      requireAuth(user, lang);
+      
       try {
         const existingCustomer = await Customer.findOne({
           where: { name },
         });
 
+        const exists = !!existingCustomer;
         return {
-          exists: !!existingCustomer,
-          message: existingCustomer ? "Company name already exists" : "Company name is available",
+          exists,
+          message: exists ? "Company name already exists" : "Company name is available",
         };
       } catch (error) {
         console.error("Error checking company name:", error);
-        throw new Error("Failed to check company name");
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
-    customers: async (parent, { limit = 10, offset = 0, search }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
+
+    customers: async (parent, { limit = 10, offset = 0, search, filter }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      const whereCondition = {};
+      
+      // search와 filter.search 모두 처리
+      const searchTerm = search || filter?.search;
+      if (searchTerm) {
+        whereCondition[Op.or] = [
+          { name: { [Op.like]: `%${searchTerm}%` } }, 
+          { email: { [Op.like]: `%${searchTerm}%` } }, 
+          { industry: { [Op.like]: `%${searchTerm}%` } }
+        ];
       }
 
-      const whereCondition = search
-        ? {
-            [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }, { industry: { [Op.like]: `%${search}%` } }],
-          }
-        : {};
+      // 추가 필터 조건들
+      if (filter?.status) {
+        whereCondition.status = filter.status;
+      }
+
+      if (filter?.grade) {
+        whereCondition.grade = filter.grade;
+      }
+
+      if (filter?.assignedUserId) {
+        whereCondition.assignedUserId = filter.assignedUserId;
+      }
 
       try {
         const customers = await Customer.findAll({
@@ -83,14 +110,12 @@ const customerResolvers = {
         return customers;
       } catch (error) {
         console.error("Error fetching customers:", error);
-        throw new Error("Failed to fetch customers");
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
 
-    customer: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    customer: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const customer = await Customer.findByPk(id, {
@@ -114,29 +139,72 @@ const customerResolvers = {
         });
 
         if (!customer) {
-          throw new Error("Customer not found");
+          throw createError("CUSTOMER_NOT_FOUND", lang);
         }
 
         return customer;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error("Error fetching customer:", error);
-        throw new Error("Failed to fetch customer");
+        handleDatabaseError(error, lang, "CUSTOMER_NOT_FOUND");
+      }
+    },
+
+    addresses: async (parent, { limit = 10, offset = 0 }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const addresses = await models.Address.findAll({
+          limit,
+          offset,
+          order: [["createdAt", "DESC"]],
+        });
+
+        return addresses;
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
+    },
+
+    services: async (parent, { limit = 10, offset = 0 }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const services = await models.Service.findAll({
+          limit,
+          offset,
+          order: [["createdAt", "DESC"]],
+        });
+
+        return services;
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
     },
   },
 
   Mutation: {
-    createCustomer: async (parent, { input }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    createCustomer: async (parent, { input }, { user, lang }) => {
+      requireAuth(user, lang);
 
-      // 1) 트랜잭션 시작
+      // 트랜잭션 시작
       const transaction = await models.sequelize.transaction();
 
       try {
-        // 2) customer 생성 (주소 매핑 처리)
         const { contacts, facilityImages, city, district, province, detailAddress, ...customerData } = input;
+
+        // 회사명 중복 확인
+        const existingCustomer = await Customer.findOne({
+          where: { name: customerData.name },
+        }, { transaction });
+
+        if (existingCustomer) {
+          throw createError("COMPANY_NAME_EXISTS", lang);
+        }
 
         // 주소 정보를 address 필드로 통합
         let fullAddress = "";
@@ -153,17 +221,16 @@ const customerResolvers = {
           { transaction }
         );
 
-        // 3) contacts가 있으면 bulkInsert
+        // contacts가 있으면 bulkInsert
         if (Array.isArray(contacts) && contacts.length > 0) {
           const contactsData = contacts.map((contact) => {
-            // contact.birthDate: "2025-06-25" (문자열) 혹은 이미 Date 객체일 수 있음
             let parsedBirthDate = null;
             if (contact.birthDate) {
               parsedBirthDate = contact.birthDate instanceof Date ? contact.birthDate : new Date(contact.birthDate);
             }
             return {
               ...contact,
-              birthDate: parsedBirthDate, // ← 키 이름은 반드시 모델 컬럼명(birthDate)과 동일
+              birthDate: parsedBirthDate,
               customerId: customer.id,
             };
           });
@@ -173,9 +240,8 @@ const customerResolvers = {
           });
         }
 
-        // 4) facilityImages가 있으면 bulkInsert
+        // facilityImages가 있으면 bulkInsert
         if (facilityImages && facilityImages.length > 0) {
-          // (참고) facilityImages 배열이 실제로 image 객체인지, 문자열(URL)인지 확인 필요
           const imagesData = facilityImages.map((img, index) => ({
             imageUrl: typeof img === "string" ? img : img.url,
             customerId: customer.id,
@@ -187,10 +253,10 @@ const customerResolvers = {
           });
         }
 
-        // 5) 생성 작업 모두 성공 시 커밋
+        // 생성 작업 모두 성공 시 커밋
         await transaction.commit();
 
-        // 6) (트랜잭션 외부) 생성된 Customer를 연관 모델과 함께 조회
+        // 생성된 Customer를 연관 모델과 함께 조회
         const createdCustomer = await models.Customer.findByPk(customer.id, {
           include: [
             {
@@ -205,8 +271,6 @@ const customerResolvers = {
             {
               model: models.CustomerImage,
               as: "images",
-              // 정렬을 include 옵션 안에서 지정하려면 include 안의 order 속성에 넣어야 합니다.
-              // 예: { model: models.CustomerImage, as: "images", order: [["sortOrder", "ASC"]] }
             },
           ],
           order: [[{ model: models.CustomerImage, as: "images" }, "sortOrder", "ASC"]],
@@ -214,30 +278,46 @@ const customerResolvers = {
 
         return createdCustomer;
       } catch (error) {
-        // 7) 생성 단계에서 문제가 발생한 경우에만 트랜잭션 롤백
+        // 생성 단계에서 문제가 발생한 경우에만 트랜잭션 롤백
         console.error("Create customer error:", error);
         try {
           await transaction.rollback();
         } catch (rollbackError) {
           console.error("Rollback error:", rollbackError);
         }
-        throw new Error("Failed to create customer: " + error.message);
+        
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "CUSTOMER_CREATE_FAILED");
       }
     },
 
-    updateCustomer: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    updateCustomer: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
-        // Get current customer data
+        // 현재 고객 데이터 확인
         const currentCustomer = await Customer.findByPk(id);
         if (!currentCustomer) {
-          throw new Error("Customer not found");
+          throw createError("CUSTOMER_NOT_FOUND", lang);
         }
 
-        // Filter out unchanged fields
+        // 회사명 중복 확인 (다른 고객과 중복되는지)
+        if (input.name && input.name !== currentCustomer.name) {
+          const existingCustomer = await Customer.findOne({
+            where: { 
+              name: input.name,
+              id: { [Op.ne]: id }
+            },
+          });
+
+          if (existingCustomer) {
+            throw createError("COMPANY_NAME_EXISTS", lang);
+          }
+        }
+
+        // 변경된 필드 확인
         const changedFields = {};
         Object.keys(input).forEach((key) => {
           if (input[key] !== currentCustomer[key]) {
@@ -245,7 +325,7 @@ const customerResolvers = {
           }
         });
 
-        // If no fields changed, return current customer
+        // 변경된 필드가 없으면 현재 고객 반환
         if (Object.keys(changedFields).length === 0) {
           const customer = await Customer.findByPk(id, {
             include: [
@@ -289,7 +369,7 @@ const customerResolvers = {
         });
 
         if (updatedRowsCount === 0) {
-          throw new Error("Customer not found or no changes made");
+          throw createError("CUSTOMER_NOT_FOUND", lang);
         }
 
         const updatedCustomer = await Customer.findByPk(id, {
@@ -329,103 +409,167 @@ const customerResolvers = {
 
         return updatedCustomer;
       } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
         console.error("Error updating customer:", error);
-        throw new Error("Failed to update customer");
+        handleDatabaseError(error, lang, "CUSTOMER_UPDATE_FAILED");
       }
     },
 
-    deleteCustomer: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    deleteCustomer: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
-      const customer = await models.Customer.findByPk(id);
-      if (!customer) {
-        throw new Error("Customer not found");
-      }
+      try {
+        const customer = await models.Customer.findByPk(id);
+        if (!customer) {
+          throw createError("CUSTOMER_NOT_FOUND", lang);
+        }
 
-      await customer.destroy();
-      return { success: true, message: "Customer deleted successfully" };
+        await customer.destroy();
+        return { success: true, message: "Customer deleted successfully" };
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error deleting customer:", error);
+        handleDatabaseError(error, lang, "CUSTOMER_DELETE_FAILED");
+      }
     },
 
-    addContactPerson: async (parent, { customerId, input }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
+    addContactPerson: async (parent, { customerId, input }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const customer = await models.Customer.findByPk(customerId);
+        if (!customer) {
+          throw createError("CUSTOMER_NOT_FOUND", lang);
+        }
+
+        const contactPerson = await models.ContactPerson.create({
+          ...input,
+          customerId: customerId,
+        });
+
+        return contactPerson;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error adding contact person:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
-
-      const customer = await models.Customer.findByPk(customerId);
-      if (!customer) {
-        throw new Error("Customer not found");
-      }
-
-      const contactPerson = await models.ContactPerson.create({
-        ...input,
-        customerId: customerId,
-      });
-
-      return contactPerson;
     },
 
-    updateContactPerson: async (parent, { id, input }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    updateContactPerson: async (parent, { id, input }, { user, lang }) => {
+      requireAuth(user, lang);
 
-      const contactPerson = await models.ContactPerson.findByPk(id);
-      if (!contactPerson) {
-        throw new Error("Contact person not found");
-      }
+      try {
+        const contactPerson = await models.ContactPerson.findByPk(id);
+        if (!contactPerson) {
+          throw createError("NOT_FOUND", lang);
+        }
 
-      await contactPerson.update(input);
-      return contactPerson;
+        await contactPerson.update(input);
+        return contactPerson;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error updating contact person:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
     },
 
-    deleteContactPerson: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    deleteContactPerson: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
-      const contactPerson = await models.ContactPerson.findByPk(id);
-      if (!contactPerson) {
-        throw new Error("Contact person not found");
-      }
+      try {
+        const contactPerson = await models.ContactPerson.findByPk(id);
+        if (!contactPerson) {
+          throw createError("NOT_FOUND", lang);
+        }
 
-      await contactPerson.destroy();
-      return { success: true, message: "Contact person deleted successfully" };
+        await contactPerson.destroy();
+        return { success: true, message: "Contact person deleted successfully" };
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error deleting contact person:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
     },
 
-    addCustomerImage: async (parent, { customerId, input }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
+    addCustomerImage: async (parent, { customerId, input }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const customer = await models.Customer.findByPk(customerId);
+        if (!customer) {
+          throw createError("CUSTOMER_NOT_FOUND", lang);
+        }
+
+        const customerImage = await models.CustomerImage.create({
+          ...input,
+          customerId: customerId,
+        });
+
+        return customerImage;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error adding customer image:", error);
+        handleDatabaseError(error, lang, "FILE_UPLOAD_FAILED");
       }
-
-      const customer = await models.Customer.findByPk(customerId);
-      if (!customer) {
-        throw new Error("Customer not found");
-      }
-
-      const customerImage = await models.CustomerImage.create({
-        ...input,
-        customerId: customerId,
-      });
-
-      return customerImage;
     },
 
-    deleteCustomerImage: async (parent, { id }, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
-      }
+    deleteCustomerImage: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
 
-      const customerImage = await models.CustomerImage.findByPk(id);
-      if (!customerImage) {
-        throw new Error("Customer image not found");
-      }
+      try {
+        const customerImage = await models.CustomerImage.findByPk(id);
+        if (!customerImage) {
+          throw createError("NOT_FOUND", lang);
+        }
 
-      await customerImage.destroy();
-      return { success: true, message: "Customer image deleted successfully" };
+        await customerImage.destroy();
+        return { success: true, message: "Customer image deleted successfully" };
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error deleting customer image:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
+    },
+
+    createAddress: async (parent, { input }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const address = await models.Address.create(input);
+        return address;
+      } catch (error) {
+        console.error("Error creating address:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
+    },
+
+    createService: async (parent, { input }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const service = await models.Service.create(input);
+        return service;
+      } catch (error) {
+        console.error("Error creating service:", error);
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
     },
   },
+
   ContactPerson: {
     birthDate(contact) {
       if (!contact.birthDate) {
@@ -435,6 +579,7 @@ const customerResolvers = {
       return contact.birthDate instanceof Date ? contact.birthDate : new Date(contact.birthDate);
     },
   },
+
   Customer: {
     contacts: async (customer) => {
       return await models.ContactPerson.findAll({

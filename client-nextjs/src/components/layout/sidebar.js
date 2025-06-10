@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLanguage } from "../../contexts/languageContext.js";
+import { useTranslation } from "../../hooks/useLanguage.js";
 import { ChevronDown, ChevronRight, Menu, X, GripVertical } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
@@ -334,7 +334,7 @@ export function ResizableSidebar({ children }) {
   const [isResizing, setIsResizing] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const activeMenuRef = useRef(null);
 
   const toggleSubmenu = (itemName) => {
@@ -497,37 +497,20 @@ export function ResizableSidebar({ children }) {
             ${isResizing ? "bg-blue-500" : ""}
           `}
           onMouseDown={startResizing}
-        >
-          <div className="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-            <GripVertical className="w-3 h-3 text-gray-400 hover:text-blue-600" />
-          </div>
-        </div>
+        ></div>
       </aside>
 
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 overflow-auto">{children}</div>
-
-      {/* 리사이즈 중 오버레이 */}
-      {isResizing && <div className="fixed inset-0 cursor-col-resize z-50" />}
+      {/* 메인 컨텐츠 */}
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   );
 }
 
-// 기존 모바일용 사이드바 (호환성 유지)
+// 모바일용 사이드바
 export function Sidebar({ isOpen, onToggle }) {
-  const pathname = usePathname();
-  const { t } = useLanguage();
   const [expandedMenus, setExpandedMenus] = useState({});
-  const activeMenuRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen && activeMenuRef.current) {
-      activeMenuRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [isOpen]);
+  const pathname = usePathname();
+  const { t } = useTranslation();
 
   const toggleSubmenu = (itemName) => {
     setExpandedMenus((prev) => ({
@@ -542,7 +525,7 @@ export function Sidebar({ isOpen, onToggle }) {
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* 오버레이 */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -550,31 +533,35 @@ export function Sidebar({ isOpen, onToggle }) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* 사이드바 */}
       <aside
         className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        bg-white dark:bg-gray-800 w-64 h-screen shadow-lg flex flex-col
-        transition-all duration-300 ease-in-out transform
-        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-      `}
+          fixed left-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg z-50
+          transform transition-transform duration-300 ease-in-out lg:hidden
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
       >
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {t("sidebar.menuTitle")}
-          </h2>
-          <button
-            onClick={onToggle}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200
-                     hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <div className="p-6 h-full flex flex-col">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                {t("sidebar.companyName")}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("sidebar.subTitle")}
+              </p>
+            </div>
+            <button
+              onClick={onToggle}
+              className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-        <div className="p-6 flex-1 overflow-y-auto">
-          <nav className="space-y-2">
+          {/* 네비게이션 */}
+          <nav className="space-y-2 flex-1 overflow-y-auto">
             {sidebarItems.map((item) => {
               const itemIsActive = isActive(item.href);
               const submenuIsActive = hasActiveSubmenu(item.submenu);
@@ -586,34 +573,28 @@ export function Sidebar({ isOpen, onToggle }) {
                   <div className="flex items-center">
                     <Link
                       href={item.href}
-                      ref={
-                        itemIsActive || submenuIsActive ? activeMenuRef : null
-                      }
-                      onClick={() => onToggle()}
+                      onClick={onToggle}
                       className={`
                         flex items-center flex-1 px-4 py-3 text-sm font-medium rounded-lg
                         transition-all duration-300 ease-in-out group
-                        transform hover:scale-105 hover:shadow-md
                         ${
                           itemIsActive || submenuIsActive
-                            ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-sm"
+                            ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         }
                       `}
                     >
                       <span
                         className={`
-                        mr-3 transition-transform duration-300 group-hover:rotate-12
+                        mr-3 transition-transform duration-300
                         ${itemIsActive || submenuIsActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}
                       `}
                       >
                         {item.icon}
                       </span>
-                      <span className="transition-all duration-300 group-hover:translate-x-1">
-                        {t(item.name)}
-                      </span>
+                      <span>{t(item.name)}</span>
                       {(itemIsActive || submenuIsActive) && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
+                        <div className="ml-auto w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
                       )}
                     </Link>
 
@@ -625,15 +606,15 @@ export function Sidebar({ isOpen, onToggle }) {
                           ml-2 p-2 rounded-md transition-all duration-300
                           ${
                             itemIsActive || submenuIsActive
-                              ? "text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800"
-                              : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-gray-500 dark:text-gray-400"
                           }
                         `}
                       >
                         {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 transition-transform duration-300" />
+                          <ChevronDown className="w-4 h-4" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 transition-transform duration-300" />
+                          <ChevronRight className="w-4 h-4" />
                         )}
                       </button>
                     )}
@@ -644,7 +625,7 @@ export function Sidebar({ isOpen, onToggle }) {
                     <div
                       className={`
                       overflow-hidden transition-all duration-300 ease-in-out
-                      ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}
+                      ${isExpanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}
                     `}
                     >
                       <div className="ml-6 mt-2 space-y-1">
@@ -654,10 +635,9 @@ export function Sidebar({ isOpen, onToggle }) {
                             <Link
                               key={subItem.name}
                               href={subItem.href}
-                              onClick={() => onToggle()}
+                              onClick={onToggle}
                               className={`
                                 block px-4 py-2 text-sm rounded-md transition-all duration-300
-                                transform hover:scale-105 hover:translate-x-1
                                 ${
                                   subIsActive
                                     ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-l-2 border-blue-500"

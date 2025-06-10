@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -11,8 +10,8 @@ import {
 } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/contexts/languageContext.js";
-import { ProductForm } from "@/components/products/ProductForm.js";
+import { useTranslation, useLocaleFormat } from "@/hooks/useLanguage.js";
+import ProductAddModal from "@/components/products/ProductAddModal.js";
 
 // Mock data for demonstration
 const mockCategories = [
@@ -80,21 +79,9 @@ const mockProducts = [
   }
 ];
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
-};
-
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('ko-KR').format(num);
-};
-
 export default function ProductsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
+  const { formatCurrency, formatNumber } = useLocaleFormat();
   const [products, setProducts] = useState(mockProducts);
   const [filteredProducts, setFilteredProducts] = useState(mockProducts);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -143,7 +130,7 @@ export default function ProductsPage() {
   };
 
   const handleDelete = (productId) => {
-    if (window.confirm('정말로 이 제품을 삭제하시겠습니까?')) {
+    if (window.confirm(t('products.confirmDelete') || '정말로 이 제품을 삭제하시겠습니까?')) {
       setProducts(products.filter(p => p.id !== productId));
     }
   };
@@ -177,9 +164,9 @@ export default function ProductsPage() {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      active: { label: '활성', className: 'bg-green-100 text-green-800' },
-      inactive: { label: '비활성', className: 'bg-gray-100 text-gray-800' },
-      discontinued: { label: '단종', className: 'bg-red-100 text-red-800' }
+      active: { label: t('products.active'), className: 'bg-green-100 text-green-800' },
+      inactive: { label: t('products.inactive'), className: 'bg-gray-100 text-gray-800' },
+      discontinued: { label: t('products.discontinued') || '단종', className: 'bg-red-100 text-red-800' }
     };
     const statusInfo = statusMap[status] || statusMap.active;
     return (
@@ -190,261 +177,274 @@ export default function ProductsPage() {
   };
 
   return (
-
-      <div className="space-y-6 p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">제품 관리</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              제품 정보를 등록하고 관리합니다.
-            </p>
-          </div>
-          <Button 
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            + 신제품 등록
-          </Button>
+    <div className="space-y-6 p-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t('products.title')}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            {t('products.subtitle')}
+          </p>
         </div>
-
-        {/* 필터 및 검색 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>필터 및 검색</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">카테고리</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">전체 카테고리</option>
-                  {mockCategories.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">검색</label>
-                <Input
-                  placeholder="제품명, 코드, 설명으로 검색..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSelectedCategory("");
-                    setSearchKeyword("");
-                  }}
-                  className="w-full"
-                >
-                  필터 초기화
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 제품 목록 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>제품 목록 ({filteredProducts.length}개)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th 
-                      className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => handleSort('name')}
-                    >
-                      제품명 {getSortIcon('name')}
-                    </th>
-                    <th 
-                      className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => handleSort('code')}
-                    >
-                      제품코드 {getSortIcon('code')}
-                    </th>
-                    <th 
-                      className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => handleSort('category')}
-                    >
-                      카테고리 {getSortIcon('category')}
-                    </th>
-                    <th 
-                      className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => handleSort('price')}
-                    >
-                      판매가 {getSortIcon('price')}
-                    </th>
-                    <th 
-                      className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => handleSort('currentStock')}
-                    >
-                      재고 {getSortIcon('currentStock')}
-                    </th>
-                    <th className="text-left p-3 font-semibold">상태</th>
-                    <th className="text-left p-3 font-semibold">모델 수</th>
-                    <th className="text-left p-3 font-semibold">작업</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((product) => (
-                    <tr key={product.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="p-3">
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{product.description}</div>
-                        </div>
-                      </td>
-                      <td className="p-3 font-mono text-sm">{product.code}</td>
-                      <td className="p-3">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <div className="font-medium">{formatCurrency(product.price)}</div>
-                          <div className="text-gray-500">소비자가: {formatCurrency(product.consumerPrice)}</div>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <div className="font-medium">{formatNumber(product.currentStock)}개</div>
-                          <div className="text-gray-500">판매: {formatNumber(product.soldQuantity)}개</div>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        {getStatusBadge(product.status)}
-                      </td>
-                      <td className="p-3">
-                        <span className="font-medium">{product.modelsCount}개</span>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEdit(product)}
-                          >
-                            수정
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(product.id)}
-                            className="text-red-600 hover:bg-red-50"
-                          >
-                            삭제
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  검색 조건에 맞는 제품이 없습니다.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 통계 카드들 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">📦</span>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">총 제품 수</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{products.length}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <span className="text-green-600 font-semibold">✅</span>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">활성 제품</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {products.filter(p => p.status === 'active').length}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <span className="text-yellow-600 font-semibold">📊</span>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">총 재고</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {formatNumber(products.reduce((sum, p) => sum + p.currentStock, 0))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <span className="text-purple-600 font-semibold">💰</span>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">총 판매량</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {formatNumber(products.reduce((sum, p) => sum + p.soldQuantity, 0))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Product Form Modal */}
-        <ProductForm
-          product={editingProduct}
-          onSave={handleSaveProduct}
-          onCancel={handleCancelForm}
-          isOpen={showAddForm}
-        />
+        <Button 
+          onClick={() => setShowAddForm(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          + {t('products.addNew')}
+        </Button>
       </div>
-    
+
+      {/* 필터 및 검색 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('common.filter')} 및 {t('common.search')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {t('products.category')}
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">{t('products.filterByCategory')}</option>
+                {mockCategories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {t('common.search')}
+              </label>
+              <Input
+                placeholder={t('products.searchPlaceholder')}
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSelectedCategory("");
+                  setSearchKeyword("");
+                }}
+                className="w-full"
+              >
+                {t('common.clear')} {t('common.filter')}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 제품 목록 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {t('products.list')} ({filteredProducts.length}{t('common.count')})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('name')}
+                  >
+                    {t('products.name')} {getSortIcon('name')}
+                  </th>
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('code')}
+                  >
+                    {t('products.sku')} {getSortIcon('code')}
+                  </th>
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('category')}
+                  >
+                    {t('products.category')} {getSortIcon('category')}
+                  </th>
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('price')}
+                  >
+                    {t('products.price')} {getSortIcon('price')}
+                  </th>
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('currentStock')}
+                  >
+                    {t('products.stock')} {getSortIcon('currentStock')}
+                  </th>
+                  <th className="text-left p-3 font-semibold">{t('products.status')}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.models') || '모델 수'}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product) => (
+                  <tr key={product.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="p-3">
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{product.description}</div>
+                      </div>
+                    </td>
+                    <td className="p-3 font-mono text-sm">{product.code}</td>
+                    <td className="p-3">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <div className="text-sm">
+                        <div className="font-medium">{formatCurrency(product.price, 'KRW')}</div>
+                        <div className="text-gray-500">{t('products.consumerPrice') || '소비자가'}: {formatCurrency(product.consumerPrice, 'KRW')}</div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="text-sm">
+                        <div className="font-medium">{formatNumber(product.currentStock)}{t('common.count')}</div>
+                        <div className="text-gray-500">{t('products.sold') || '판매'}: {formatNumber(product.soldQuantity)}{t('common.count')}</div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {getStatusBadge(product.status)}
+                    </td>
+                    <td className="p-3">
+                      <span className="font-medium">{product.modelsCount}{t('common.count')}</span>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEdit(product)}
+                        >
+                          {t('common.edit')}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          {t('common.delete')}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                {t('products.noProducts')}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 통계 카드들 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-blue-600 font-semibold">📦</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {t('common.total')} {t('products.list')}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{products.length}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <span className="text-green-600 font-semibold">✅</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {t('products.active')} {t('products.list')}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {products.filter(p => p.status === 'active').length}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <span className="text-yellow-600 font-semibold">📊</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {t('common.total')} {t('products.stock')}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatNumber(products.reduce((sum, p) => sum + p.currentStock, 0))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <span className="text-purple-600 font-semibold">💰</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {t('common.total')} {t('products.soldQuantity') || '판매량'}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatNumber(products.reduce((sum, p) => sum + p.soldQuantity, 0))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Product Add Modal */}
+      <ProductAddModal
+        isOpen={showAddForm}
+        onClose={handleCancelForm}
+        onSuccess={handleSaveProduct}
+      />
+    </div>
   );
 }

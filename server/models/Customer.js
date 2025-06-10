@@ -86,5 +86,39 @@ module.exports = (sequelize, DataTypes) => {
     },
   );
 
+  Customer.associate = (models) => {
+    // User와의 관계 (담당 영업사원)
+    Customer.belongsTo(models.User, {
+      foreignKey: "assignedUserId",
+      as: "assignedUser",
+    });
+
+    // ContactPerson과의 관계
+    Customer.hasMany(models.ContactPerson, {
+      foreignKey: "customerId",
+      as: "contacts",
+      onDelete: "CASCADE",
+    });
+
+    // CustomerImage와의 관계
+    Customer.hasMany(models.CustomerImage, {
+      foreignKey: "customerId",
+      as: "facilityImages",
+      onDelete: "CASCADE",
+    });
+
+    // SalesOpportunity와의 관계
+    Customer.hasMany(models.SalesOpportunity, {
+      foreignKey: "customerId",
+      as: "opportunities",
+    });
+
+    // SalesItem과의 관계
+    Customer.hasMany(models.SalesItem, {
+      foreignKey: "customerId",
+      as: "salesItems",
+    });
+  };
+
   return Customer;
 };

@@ -1,26 +1,13 @@
 const { gql } = require("apollo-server-express");
 
-const authTypeDefs = gql`
-  type AuthPayload {
-    token: String!
-    user: User!
-  }
-
+const authSchemaExtensions = gql`
+  # ====================
+  # AUTH INPUT TYPES
+  # ====================
   input LoginInput {
     email: String!
     password: String!
     rememberMe: Boolean
-  }
-
-  input EmergencyContactInput {
-    name: String!
-    relationship: String!
-    phoneNumber: String!
-  }
-
-  input SkillInput {
-    name: String!
-    level: String
   }
 
   input RegisterInput {
@@ -43,28 +30,22 @@ const authTypeDefs = gql`
     experiences: [ExperienceInput]
   }
 
-  input ExperienceInput {
-    company: String!
-    position: String!
-    period: String!
-    description: String
-  }
-
-  type EmergencyContact {
+  input EmergencyContactInput {
     name: String!
     relationship: String!
     phoneNumber: String!
   }
 
-  type Experience {
-    id: ID!
+  input SkillInput {
+    name: String!
+    level: String
+  }
+
+  input ExperienceInput {
     company: String!
     position: String!
     period: String!
     description: String
-    userId: ID!
-    createdAt: Date!
-    updatedAt: Date!
   }
 
   input UserUpdateInput {
@@ -99,30 +80,23 @@ const authTypeDefs = gql`
     skills: [SkillInput]
   }
 
-  type User {
-    id: ID!
-    email: String!
-    name: String
-    role: String
-    department: String
-    position: String
-    phoneNumber: String
-    nationality: String
-    joinDate: Date
-    birthDate: Date
-    address: String
-    employeeId: String
-    visaStatus: String
-    avatar: String
-    emergencyContact: [EmergencyContact]
-    skills: [Skill]
-    experiences: [Experience]
-    createdAt: Date
-    updatedAt: Date
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
   }
 
+  # ====================
+  # AUTH QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     me: User!
+    employees(filter: EmployeeFilter): [User!]!
+  }
+
+  input EmployeeFilter {
+    search: String
+    role: String
+    department: String
   }
 
   extend type Mutation {
@@ -132,11 +106,6 @@ const authTypeDefs = gql`
     verifyCurrentPassword(currentPassword: String!): Boolean
     changePassword(input: ChangePasswordInput!): Boolean
   }
-
-  input ChangePasswordInput {
-    currentPassword: String!
-    newPassword: String!
-  }
 `;
 
-module.exports = authTypeDefs;
+module.exports = authSchemaExtensions;

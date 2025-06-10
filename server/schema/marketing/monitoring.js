@@ -1,26 +1,9 @@
 const { gql } = require("apollo-server-express");
 
-const monitoringSchema = gql`
-  type SystemHealth {
-    overallStatus: String!
-    activePlatforms: Int!
-    totalErrors: Int!
-    averageResponseTime: Float!
-    systemUptime: Float!
-    memoryUsage: Float!
-    cpuUsage: Float!
-  }
-
-  type AlertRule {
-    id: ID!
-    name: String!
-    platform: String
-    condition: String!
-    threshold: Float!
-    isActive: Boolean!
-    lastTriggered: Date
-  }
-
+const monitoringSchemaExtensions = gql`
+  # ====================
+  # MONITORING INPUT TYPES
+  # ====================
   input CreateAlertRuleInput {
     name: String!
     platform: String
@@ -28,6 +11,9 @@ const monitoringSchema = gql`
     threshold: Float!
   }
 
+  # ====================
+  # MONITORING QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     platformStats: [PlatformStat!]!
     postingLogs(platform: String, level: String, limit: Int): [PostingLog!]!
@@ -45,4 +31,4 @@ const monitoringSchema = gql`
   }
 `;
 
-module.exports = monitoringSchema;
+module.exports = monitoringSchemaExtensions;

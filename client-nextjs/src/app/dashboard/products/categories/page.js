@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -6,7 +5,7 @@ import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import { GET_CATEGORIES, CHECK_CATEGORY_CODE } from "@/lib/graphql/categoryQueries.js";
 import { CREATE_CATEGORY, UPDATE_CATEGORY, DELETE_CATEGORY } from "@/lib/graphql/categoryMutations.js";
@@ -14,7 +13,7 @@ import { LoadingModal } from "@/components/ui/LoadingModal.js";
 import debounce from 'lodash.debounce';
 
 const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
-  const { t, language } = useLanguage();
+  const { t, currentLanguage } = useTranslation();
   const [formData, setFormData] = useState({
     code: "",
     names: { ko: "", vi: "", en: "" },
@@ -78,12 +77,12 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
         console.error('코드 중복 검사 오류:', error);
         setCodeCheckResult({
           isAvailable: false,
-          message: '코드 중복 검사 중 오류가 발생했습니다.'
+          message: t('products.categories.codeCheckError')
         });
       }
       setIsCheckingCode(false);
     }, 500),
-    [category, checkCategoryCode]
+    [category, checkCategoryCode, t]
   );
 
   const handleCodeChange = (value) => {
@@ -100,15 +99,15 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
     const newErrors = {};
 
     if (!formData.code.trim()) {
-      newErrors.code = "카테고리 코드는 필수입니다.";
+      newErrors.code = t('products.categories.codeRequired');
     }
 
     if (!formData.names.ko.trim()) {
-      newErrors.nameKo = "한국어 이름은 필수입니다.";
+      newErrors.nameKo = t('products.categories.nameKoRequired');
     }
 
     if (!formData.names.vi.trim()) {
-      newErrors.nameVi = "베트남어 이름은 필수입니다.";
+      newErrors.nameVi = t('products.categories.nameViRequired');
     }
 
     if (codeCheckResult && !codeCheckResult.isAvailable) {
@@ -158,9 +157,9 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
     } catch (error) {
       console.error('카테고리 저장 오류:', error);
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        alert(`오류: ${error.graphQLErrors[0].message}`);
+        alert(`${t('common.error')}: ${error.graphQLErrors[0].message}`);
       } else {
-        alert('카테고리 저장 중 오류가 발생했습니다.');
+        alert(t('products.categories.saveError'));
       }
     }
   };
@@ -183,14 +182,14 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
   return (
     <>
-      {loading && <LoadingModal message="카테고리를 저장하고 있습니다..." />}
+      {loading && <LoadingModal message={t('products.categories.saving')} />}
       
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {category ? "카테고리 수정" : "카테고리 추가"}
+                {category ? t('products.categories.edit') : t('products.categories.add')}
               </h2>
               <button
                 onClick={onCancel}
@@ -205,7 +204,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
             {/* 카테고리 코드 */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                카테고리 코드 <span className="text-red-500">*</span>
+                {t('products.categories.code')} <span className="text-red-500">*</span>
               </label>
               <Input
                 value={formData.code}
@@ -215,7 +214,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
                 maxLength={50}
               />
               {isCheckingCode && (
-                <p className="text-sm text-blue-600 mt-1">코드 중복 검사 중...</p>
+                <p className="text-sm text-blue-600 mt-1">{t('products.categories.checkingCode')}</p>
               )}
               {codeCheckResult && (
                 <p className={`text-sm mt-1 ${codeCheckResult.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
@@ -227,11 +226,13 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
             {/* 다국어 이름 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">카테고리 이름</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                {t('products.categories.categoryNames')}
+              </h3>
               
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  한국어 이름 <span className="text-red-500">*</span>
+                  {t('products.categories.nameKo')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   value={formData.names.ko}
@@ -244,7 +245,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  베트남어 이름 <span className="text-red-500">*</span>
+                  {t('products.categories.nameVi')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   value={formData.names.vi}
@@ -257,7 +258,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  영어 이름 (선택사항)
+                  {t('products.categories.nameEnOptional')}
                 </label>
                 <Input
                   value={formData.names.en}
@@ -269,11 +270,13 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
             {/* 다국어 설명 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">카테고리 설명 (선택사항)</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                {t('products.categories.descriptionsOptional')}
+              </h3>
               
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  한국어 설명
+                  {t('products.categories.descriptionKo')}
                 </label>
                 <textarea
                   value={formData.descriptions.ko}
@@ -286,7 +289,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  베트남어 설명
+                  {t('products.categories.descriptionVi')}
                 </label>
                 <textarea
                   value={formData.descriptions.vi}
@@ -299,7 +302,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  영어 설명
+                  {t('products.categories.descriptionEn')}
                 </label>
                 <textarea
                   value={formData.descriptions.en}
@@ -321,7 +324,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
                 className="rounded"
               />
               <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                활성 상태
+                {t('products.categories.isActive')}
               </label>
             </div>
 
@@ -333,14 +336,14 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
                 onClick={onCancel}
                 disabled={loading}
               >
-                취소
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="submit" 
                 className="bg-blue-600 hover:bg-blue-700"
                 disabled={loading || (codeCheckResult && !codeCheckResult.isAvailable)}
               >
-                {category ? "수정" : "추가"}
+                {category ? t('common.edit') : t('common.add')}
               </Button>
             </div>
           </form>
@@ -351,7 +354,7 @@ const CategoryForm = ({ category, onSave, onCancel, isOpen }) => {
 };
 
 export default function ProductCategoriesPage() {
-  const { t, language } = useLanguage();
+  const { t, currentLanguage } = useTranslation();
   const [searchKeyword, setSearchKeyword] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -382,8 +385,8 @@ export default function ProductCategoriesPage() {
       let bValue = b[sortConfig.key];
 
       if (sortConfig.key === "name") {
-        aValue = a.names[language] || a.names.ko;
-        bValue = b.names[language] || b.names.ko;
+        aValue = a.names[currentLanguage] || a.names.ko;
+        bValue = b.names[currentLanguage] || b.names.ko;
       }
 
       if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
@@ -392,7 +395,7 @@ export default function ProductCategoriesPage() {
     });
 
     return filtered;
-  }, [categories, searchKeyword, sortConfig, language]);
+  }, [categories, searchKeyword, sortConfig, currentLanguage]);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -408,7 +411,7 @@ export default function ProductCategoriesPage() {
   };
 
   const handleDelete = async (categoryId) => {
-    if (window.confirm("정말로 이 카테고리를 삭제하시겠습니까?")) {
+    if (window.confirm(t('products.categories.confirmDelete'))) {
       try {
         await deleteCategory({
           variables: { id: categoryId },
@@ -417,9 +420,9 @@ export default function ProductCategoriesPage() {
       } catch (error) {
         console.error('카테고리 삭제 오류:', error);
         if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-          alert(`오류: ${error.graphQLErrors[0].message}`);
+          alert(`${t('common.error')}: ${error.graphQLErrors[0].message}`);
         } else {
-          alert('카테고리 삭제 중 오류가 발생했습니다.');
+          alert(t('products.categories.deleteError'));
         }
       }
     }
@@ -450,44 +453,44 @@ export default function ProductCategoriesPage() {
           isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
         }`}
       >
-        {isActive ? "활성" : "비활성"}
+        {isActive ? t('products.active') : t('products.inactive')}
       </span>
     );
   };
 
-  if (loading) return <div className="p-6">로딩 중...</div>;
-  if (error) return <div className="p-6">오류가 발생했습니다: {error.message}</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}</div>;
+  if (error) return <div className="p-6">{t('common.error')}: {error.message}</div>;
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            카테고리 관리
+            {t('products.categories.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            제품 카테고리를 등록하고 관리합니다.
+            {t('products.categories.subtitle')}
           </p>
         </div>
         <Button
           onClick={() => setShowForm(true)}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          + 카테고리 추가
+          + {t('products.categories.add')}
         </Button>
       </div>
 
       {/* 검색 */}
       <Card>
         <CardHeader>
-          <CardTitle>검색 및 필터</CardTitle>
+          <CardTitle>{t('products.categories.searchFilter')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">검색</label>
+              <label className="block text-sm font-medium mb-2">{t('common.search')}</label>
               <Input
-                placeholder="카테고리 코드, 이름으로 검색..."
+                placeholder={t('products.categories.searchPlaceholder')}
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -498,7 +501,7 @@ export default function ProductCategoriesPage() {
                 onClick={() => setSearchKeyword("")}
                 className="w-full"
               >
-                검색 초기화
+                {t('common.clear')} {t('common.filter')}
               </Button>
             </div>
           </div>
@@ -508,71 +511,65 @@ export default function ProductCategoriesPage() {
       {/* 카테고리 목록 */}
       <Card>
         <CardHeader>
-          <CardTitle>카테고리 목록 ({filteredCategories.length}개)</CardTitle>
+          <CardTitle>
+            {t('products.categories.title')} ({filteredCategories.length}{t('common.count')})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th
+                  <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                    onClick={() => handleSort("code")}
+                    onClick={() => handleSort('code')}
                   >
-                    코드 {getSortIcon("code")}
+                    {t('products.categories.code')} {getSortIcon('code')}
                   </th>
-                  <th
+                  <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                    onClick={() => handleSort("name")}
+                    onClick={() => handleSort('name')}
                   >
-                    이름 {getSortIcon("name")}
+                    {t('products.name')} {getSortIcon('name')}
                   </th>
-                  <th className="text-left p-3 font-semibold">설명</th>
-                  <th className="text-left p-3 font-semibold">상태</th>
-                  <th className="text-left p-3 font-semibold">작업</th>
+                  <th className="text-left p-3 font-semibold">{t('products.description')}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.status')}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCategories.map((category) => (
-                  <tr
-                    key={category.id}
-                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
+                  <tr key={category.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="p-3 font-mono text-sm">{category.code}</td>
                     <td className="p-3">
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {category.names[language] || category.names.ko}
-                        </div>
-                        {language !== "ko" && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {category.names.ko}
-                          </div>
-                        )}
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {category.names[currentLanguage] || category.names.ko}
                       </div>
                     </td>
                     <td className="p-3">
-                      <div className="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
-                        {category.descriptions?.[language] || category.descriptions?.ko || '-'}
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {category.descriptions[currentLanguage] || category.descriptions.ko || '-'}
                       </div>
                     </td>
-                    <td className="p-3">{getStatusBadge(category.isActive)}</td>
+                    <td className="p-3">
+                      {getStatusBadge(category.isActive)}
+                    </td>
                     <td className="p-3">
                       <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
+                        <Button 
+                          variant="outline" 
                           size="sm"
                           onClick={() => handleEdit(category)}
                         >
-                          수정
+                          {t('common.edit')}
                         </Button>
-                        <Button
-                          variant="outline"
+                        <Button 
+                          variant="outline" 
                           size="sm"
                           onClick={() => handleDelete(category.id)}
                           className="text-red-600 hover:bg-red-50"
                         >
-                          삭제
+                          {t('common.delete')}
                         </Button>
                       </div>
                     </td>
@@ -583,95 +580,12 @@ export default function ProductCategoriesPage() {
 
             {filteredCategories.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                검색 조건에 맞는 카테고리가 없습니다.
+                {t('products.noProducts')}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-
-      {/* 통계 카드들 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold">📁</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  총 카테고리
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {categories.length}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-green-600 font-semibold">✅</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  활성 카테고리
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {categories.filter((c) => c.isActive).length}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <span className="text-purple-600 font-semibold">🏷️</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  1단계 카테고리
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {categories.filter((c) => c.level === 1).length}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <span className="text-orange-600 font-semibold">📂</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  2단계 카테고리
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {categories.filter((c) => c.level === 2).length}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Category Form Modal */}
       <CategoryForm

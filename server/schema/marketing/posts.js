@@ -1,6 +1,9 @@
 const { gql } = require("apollo-server-express");
 
-const postsSchema = gql`
+const postsSchemaExtensions = gql`
+  # ====================
+  # POSTS INPUT TYPES
+  # ====================
   input SchedulePostInput {
     contentId: ID!
     scheduledTime: Date!
@@ -8,6 +11,9 @@ const postsSchema = gql`
     mode: String = "Manual"
   }
 
+  # ====================
+  # POSTS QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     scheduledPosts(limit: Int, offset: Int): [ScheduledPost!]!
     scheduledPost(id: ID!): ScheduledPost
@@ -22,4 +28,4 @@ const postsSchema = gql`
   }
 `;
 
-module.exports = postsSchema;
+module.exports = postsSchemaExtensions;

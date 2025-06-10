@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "db:start": "mysqld --user=$(whoami) --datadir=/home/runner/workspace/mysql-data --socket=/tmp/mysql.sock --port=3306 &",
+    "db:start": "mysqld --user=$(whoami) --datadir=$(pwd)/../mysql-data --socket=/tmp/mysql.sock --port=3306 &",
     "dev": "npm run db:start && nodemon index.js",
     "seed": "node seeders/index.js"
   },

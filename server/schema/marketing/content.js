@@ -1,21 +1,9 @@
 const { gql } = require("apollo-server-express");
 
-const contentSchema = gql`
-  type ContentResponse {
-    contents: [Content!]!
-    total: Int!
-    hasMore: Boolean!
-  }
-
-  type ContentStats {
-    total: Int!
-    approved: Int!
-    pending: Int!
-    rejected: Int!
-    scheduled: Int!
-    published: Int!
-  }
-
+const contentSchemaExtensions = gql`
+  # ====================
+  # CONTENT INPUT TYPES
+  # ====================
   input ContentInput {
     title: String!
     description: String
@@ -25,6 +13,18 @@ const contentSchema = gql`
     keywords: String
     platforms: [String!]
     aiGenerated: Boolean
+    confidence: Float
+  }
+
+  input ContentUpdateInput {
+    title: String
+    description: String
+    content: String
+    mediaType: String
+    mode: String
+    keywords: String
+    status: String
+    platforms: [String!]
     confidence: Float
   }
 
@@ -41,6 +41,9 @@ const contentSchema = gql`
     uploadOption: String
   }
 
+  # ====================
+  # CONTENT QUERIES & MUTATIONS
+  # ====================
   extend type Query {
     contents(
       limit: Int
@@ -67,4 +70,4 @@ const contentSchema = gql`
   }
 `;
 
-module.exports = contentSchema;
+module.exports = contentSchemaExtensions;

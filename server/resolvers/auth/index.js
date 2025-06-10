@@ -1,6 +1,24 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const models = require("../../models");
+const { 
+  createError, 
+  requireAuth, 
+  requireRole, 
+  handleDatabaseError 
+} = require("../../lib/errors");
+
+// ====================
+// 유효성 검사 헬퍼 함수
+// ====================
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const validatePassword = (password) => {
+  return password && password.length >= 8;
+};
 
 const authResolvers = {
   User: {
@@ -23,34 +41,90 @@ const authResolvers = {
       return new Date(parent.birthDate);
     },
   },
+
   Query: {
-    me: async (_, __, { user }) => {
-      if (!user) {
-        throw new Error("Authentication required");
+    me: async (_, __, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const userData = await models.User.findByPk(user.id, {
+          include: [
+            {
+              model: models.EmergencyContact,
+              as: "emergencyContact",
+            },
+            {
+              model: models.Skill,
+              as: "skills",
+            },
+            {
+              model: models.Experience,
+              as: "experiences",
+            },
+          ],
+        });
+
+        if (!userData) {
+          throw createError("USER_NOT_FOUND", lang);
+        }
+
+        return userData;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "USER_NOT_FOUND");
       }
+    },
 
-      const userData = await models.User.findByPk(user.id, {
-        include: [
-          {
-            model: models.EmergencyContact,
-            as: "emergencyContact",
-          },
-          {
-            model: models.Skill,
-            as: "skills",
-          },
-          {
-            model: models.Experience,
-            as: "experiences",
-          },
-        ],
-      });
+    employees: async (_, { filter }, { user, lang }) => {
+      requireAuth(user, lang);
+      
+      try {
+        const where = {};
+        
+        if (filter?.search) {
+          where[models.Sequelize.Op.or] = [
+            { name: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
+            { email: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
+            { department: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
+          ];
+        }
 
-      return userData;
+        if (filter?.role) {
+          // SALES 역할 필터링 시 department가 'Sales'인 사용자 찾기
+          if (filter.role === 'SALES') {
+            where.department = 'Sales';
+          } else {
+            where.role = filter.role;
+          }
+        }
+
+        if (filter?.department) {
+          where.department = filter.department;
+        }
+
+        const employees = await models.User.findAll({
+          where,
+          include: [
+            {
+              model: models.Experience,
+              as: "experiences",
+              order: [["createdAt", "DESC"]],
+            },
+          ],
+          order: [["name", "ASC"]],
+        });
+
+        return employees;
+      } catch (error) {
+        handleDatabaseError(error, lang, "EMPLOYEES_FETCH_FAILED");
+      }
     },
   },
+
   Mutation: {
-    register: async (_, { input }) => {
+    register: async (_, { input }, { lang }) => {
       try {
         const {
           email,
@@ -63,22 +137,32 @@ const authResolvers = {
           ...userData
         } = input;
 
-        // Check password confirmation
-        if (password !== confirmPassword) {
-          throw new Error("비밀번호가 일치하지 않습니다.");
+        // 이메일 유효성 검사
+        if (!validateEmail(email)) {
+          throw createError("INVALID_EMAIL", lang);
         }
 
-        // Check if user already exists
+        // 비밀번호 유효성 검사
+        if (!validatePassword(password)) {
+          throw createError("WEAK_PASSWORD", lang);
+        }
+
+        // 비밀번호 확인
+        if (password !== confirmPassword) {
+          throw createError("PASSWORD_MISMATCH", lang);
+        }
+
+        // 기존 사용자 확인
         const existingUser = await models.User.findOne({ where: { email } });
         if (existingUser) {
-          throw new Error("이미 가입된 이메일입니다.");
+          throw createError("USER_ALREADY_EXISTS", lang);
         }
 
-        // Hash password
+        // 비밀번호 해시
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Filter out any undefined or invalid fields
+        // 사용자 데이터 정리
         const cleanUserData = {
           email,
           password: hashedPassword,
@@ -95,13 +179,13 @@ const authResolvers = {
           nationality: userData?.nationality,
           birthDate: userData?.birthDate,
           visaStatus: userData?.visaStatus,
-          role: "editor", // Default role
+          role: "editor", // 기본 역할
         };
 
-        // Create new user
-        const user = await models.User.create(cleanUserData, {});
+        // 새 사용자 생성
+        const user = await models.User.create(cleanUserData);
 
-        // Create related data
+        // 관련 데이터 생성
         if (emergencyContact && emergencyContact.length > 0) {
           await models.EmergencyContact.bulkCreate(
             emergencyContact.map((contact) => ({
@@ -120,7 +204,7 @@ const authResolvers = {
           );
         }
 
-        // Create experiences if provided
+        // 경험 데이터 생성
         if (experienceData && experienceData.length > 0) {
           const experiencesToCreate = experienceData.map((exp) => ({
             company: exp.company,
@@ -130,10 +214,10 @@ const authResolvers = {
             userId: user.id,
           }));
 
-          await models.Experience.bulkCreate(experiencesToCreate, {});
+          await models.Experience.bulkCreate(experiencesToCreate);
         }
 
-        // JWT 토큰 생성 (자동로그인 옵션에 따라 만료시간 설정)
+        // JWT 토큰 생성
         const expiresIn = input.rememberMe ? '30d' : '7d';
         const token = jwt.sign(
           { userId: user.id, email: user.email, rememberMe: input.rememberMe },
@@ -146,13 +230,21 @@ const authResolvers = {
           user,
         };
       } catch (error) {
-        throw new Error(`Registration failed: ${error.message}`);
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "REGISTRATION_FAILED");
       }
     },
 
-    login: async (_, { input }) => {
+    login: async (_, { input }, { lang }) => {
       try {
         const { email, password, rememberMe } = input;
+
+        // 이메일 유효성 검사
+        if (!validateEmail(email)) {
+          throw createError("INVALID_EMAIL", lang);
+        }
 
         const user = await models.User.findOne({
           where: { email },
@@ -166,18 +258,17 @@ const authResolvers = {
         });
 
         if (!user) {
-          throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+          throw createError("INVALID_CREDENTIALS", lang);
         }
 
-        // Verify password
+        // 비밀번호 확인
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-          throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+          throw createError("INVALID_CREDENTIALS", lang);
         }
 
-        // rememberMe가 true이면 30일, false이면 7일
+        // JWT 토큰 생성
         const expiresIn = rememberMe ? "30d" : "7d";
-
         const token = jwt.sign(
           { userId: user.id, email: user.email },
           process.env.JWT_SECRET || "your-secret-key",
@@ -189,32 +280,33 @@ const authResolvers = {
           user,
         };
       } catch (error) {
-        throw new Error(error.message || "로그인 중 오류가 발생했습니다.");
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "LOGIN_FAILED");
       }
     },
 
-    updateUserProfile: async (_, { input }, context) => {
-      if (!context.user) {
-        throw new Error("Not authenticated");
-      }
+    updateUserProfile: async (_, { input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const { emergencyContact, skills, ...userData } = input;
 
-        // Update user basic data
+        // 사용자 기본 데이터 업데이트
         const allowedFields = [
-        "name",
-        "phoneNumber",
-        "address",
-        "nationality",
-        "department",
-        "position",
-        "employeeId",
-        "joinDate",
-        "birthDate",
-        "visaStatus",
-        "avatar",
-      ];
+          "name",
+          "phoneNumber",
+          "address",
+          "nationality",
+          "department",
+          "position",
+          "employeeId",
+          "joinDate",
+          "birthDate",
+          "visaStatus",
+          "avatar",
+        ];
 
         const updates = {};
         allowedFields.forEach(field => {
@@ -224,40 +316,40 @@ const authResolvers = {
         });
 
         await models.User.update(updates, {
-          where: { id: context.user.userId },
+          where: { id: user.userId },
         });
 
-        // Update emergency contacts
+        // 비상 연락처 업데이트
         if (emergencyContact !== undefined) {
           await models.EmergencyContact.destroy({
-            where: { userId: context.user.userId },
+            where: { userId: user.userId },
           });
           if (emergencyContact.length > 0) {
             await models.EmergencyContact.bulkCreate(
               emergencyContact.map((contact) => ({
                 ...contact,
-                userId: context.user.userId,
+                userId: user.userId,
               })),
             );
           }
         }
 
-        // Update skills
+        // 스킬 업데이트
         if (skills !== undefined) {
           await models.Skill.destroy({
-            where: { userId: context.user.userId },
+            where: { userId: user.userId },
           });
           if (skills.length > 0) {
             await models.Skill.bulkCreate(
               skills.map((skill) => ({
                 ...skill,
-                userId: context.user.userId,
+                userId: user.userId,
               })),
             );
           }
         }
 
-        const updatedUser = await models.User.findByPk(context.user.userId, {
+        const updatedUser = await models.User.findByPk(user.userId, {
           include: [
             {
               model: models.Experience,
@@ -269,48 +361,57 @@ const authResolvers = {
           ],
         });
 
-        return updatedUser;
-      } catch (error) {
-        console.error("Update profile error:", error);
-        throw new Error(`Failed to update profile: ${error.message}`);
-      }
-    },
-
-    verifyCurrentPassword: async (_, { currentPassword }, context) => {
-      if (!context.user) {
-        throw new Error("Not authenticated");
-      }
-
-      try {
-        const user = await models.User.findByPk(context.user.userId);
-        if (!user) {
-          throw new Error("User not found");
+        if (!updatedUser) {
+          throw createError("USER_NOT_FOUND", lang);
         }
 
-        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        return isPasswordValid;
+        return updatedUser;
       } catch (error) {
-        console.error("Verify password error:", error);
-        throw new Error(`Failed to verify password: ${error.message}`);
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "PROFILE_UPDATE_FAILED");
       }
     },
 
-    changePassword: async (_, { input }, context) => {
-      if (!context.user) {
-        throw new Error("Not authenticated");
+    verifyCurrentPassword: async (_, { currentPassword }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const userData = await models.User.findByPk(user.userId);
+        if (!userData) {
+          throw createError("USER_NOT_FOUND", lang);
+        }
+
+        const isPasswordValid = await bcrypt.compare(currentPassword, userData.password);
+        return isPasswordValid;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "DATABASE_ERROR");
       }
+    },
+
+    changePassword: async (_, { input }, { user, lang }) => {
+      requireAuth(user, lang);
 
       try {
         const { currentPassword, newPassword } = input;
         
-        const user = await models.User.findByPk(context.user.userId);
-        if (!user) {
-          throw new Error("User not found");
+        // 새 비밀번호 유효성 검사
+        if (!validatePassword(newPassword)) {
+          throw createError("WEAK_PASSWORD", lang);
+        }
+        
+        const userData = await models.User.findByPk(user.userId);
+        if (!userData) {
+          throw createError("USER_NOT_FOUND", lang);
         }
 
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userData.password);
         if (!isCurrentPasswordValid) {
-          throw new Error("Current password is incorrect");
+          throw createError("INCORRECT_CURRENT_PASSWORD", lang);
         }
 
         const saltRounds = 12;
@@ -318,13 +419,15 @@ const authResolvers = {
 
         await models.User.update(
           { password: hashedNewPassword },
-          { where: { id: context.user.userId } }
+          { where: { id: user.userId } }
         );
 
         return true;
       } catch (error) {
-        console.error("Change password error:", error);
-        throw new Error(`Failed to change password: ${error.message}`);
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        handleDatabaseError(error, lang, "PASSWORD_CHANGE_FAILED");
       }
     },
   },

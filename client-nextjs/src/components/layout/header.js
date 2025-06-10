@@ -1,6 +1,5 @@
 'use client'
 
-import { useLanguage } from '../../contexts/languageContext.js'
 import { useTheme } from '../../contexts/themeContext.js'
 import { Button } from '../ui/button.js'
 import { Globe, Moon, Sun, Menu, User, LogOut, Settings } from 'lucide-react'
@@ -9,9 +8,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/authSlice.js'
 import { useState } from 'react'
 import Link from 'next/link'
+import LanguageSelector from '../ui/LanguageSelector.js'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 export default function Header({ onMenuToggle }) {
-  const { language, changeLanguage, t } = useLanguage()
+  const { t } = useTranslation()
   const { theme, toggleTheme } = useTheme()
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -40,30 +41,17 @@ export default function Header({ onMenuToggle }) {
           {/* Page Title */}
           <div>
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-              {t('dashboard') || 'Dashboard'}
+              {t('navigation.dashboard')}
             </h2>
           </div>
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Language Selector */}
-          <div className="relative">
-            <select
-              value={language}
-              onChange={(e) => changeLanguage(e.target.value)}
-              className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-8 py-2 text-sm
-                       text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer pr-8"
-            >
-              <option value="ko">한국어</option>
-              <option value="en">English</option>
-              <option value="vi">Tiếng Việt</option>
-            </select>
-            <Globe className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            <svg className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          {/* Language Selector - 리덕스 기반 컴포넌트로 교체 */}
+          <LanguageSelector 
+            variant="compact"
+            className="dark:bg-gray-800"
+          />
 
           {/* Theme Toggle */}
           <button
@@ -130,7 +118,7 @@ export default function Header({ onMenuToggle }) {
                       onClick={() => setShowUserDropdown(false)}
                     >
                       <User className="w-4 h-4 mr-3" />
-                      {t('profile.manage')}
+                      프로필 관리
                     </Link>
                     <Link
                       href="/dashboard/settings"
@@ -138,14 +126,14 @@ export default function Header({ onMenuToggle }) {
                       onClick={() => setShowUserDropdown(false)}
                     >
                       <Settings className="w-4 h-4 mr-3" />
-                      {t('settings')}
+                      {t('navigation.settings')}
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
                       <LogOut className="w-4 h-4 mr-3" />
-                      {t('logout')}
+                      로그아웃
                     </button>
                   </div>
                 </div>

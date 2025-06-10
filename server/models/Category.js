@@ -1,4 +1,3 @@
-
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -82,6 +81,18 @@ module.exports = (sequelize) => {
     Category.hasMany(Category, {
       as: 'children',
       foreignKey: 'parentId'
+    });
+
+    // Product와의 관계
+    Category.hasMany(models.Product, {
+      foreignKey: 'categoryId',
+      as: 'products'
+    });
+
+    // SalesItem과의 관계
+    Category.hasMany(models.SalesItem, {
+      foreignKey: 'categoryId',
+      as: 'salesItems'
     });
   };
 
