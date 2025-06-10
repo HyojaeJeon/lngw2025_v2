@@ -263,14 +263,14 @@ const types = gql`
   # MARKETING TYPES
   # ====================
   type MarketingStats {
-    totalPosts: PostStats!
+    totalPosts: TotalPosts!
     pendingApproval: Int!
     errors: Int!
     abTestGroups: ABTestStats!
     trendingKeywords: Int!
   }
 
-  type PostStats {
+  type TotalPosts {
     today: Int!
     week: Int!
     month: Int!
