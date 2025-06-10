@@ -1,24 +1,54 @@
+
 import { gql } from '@apollo/client';
 
 // 마케팅 계획 뮤테이션
+export const CREATE_MARKETING_PLAN = gql`
+  mutation CreateMarketingPlan($input: MarketingPlanInput!) {
+    createMarketingPlan(input: $input) {
+      id
+      title
+      description
+      startDate
+      endDate
+      manager
+      targetPersona
+      coreMessage
+      status
+      user {
+        id
+        name
+        email
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const UPDATE_MARKETING_PLAN = gql`
   mutation UpdateMarketingPlan($id: ID!, $input: MarketingPlanInput!) {
     updateMarketingPlan(id: $id, input: $input) {
       id
       title
       description
-      status
       startDate
       endDate
-      budget
+      manager
+      targetPersona
+      coreMessage
+      status
+      user {
+        id
+        name
+        email
+      }
       objectives {
         id
         title
         description
+        priority
         status
-        targetValue
-        currentValue
-        unit
+        progress
         keyResults {
           id
           title
@@ -26,18 +56,19 @@ export const UPDATE_MARKETING_PLAN = gql`
           targetValue
           currentValue
           unit
-          dueDate
           status
+          progress
           checklist {
             id
-            title
-            description
+            text
             completed
             completedAt
             sortOrder
           }
         }
       }
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -51,7 +82,6 @@ export const GET_USERS_FOR_ASSIGNMENT = gql`
       position
       avatar
     }
-    usersCount
   }
 `;
 
@@ -71,10 +101,7 @@ export const CREATE_CONTENT = gql`
       aiGenerated
       confidence
       createdAt
-      user {
-        id
-        name
-      }
+      updatedAt
     }
   }
 `;
@@ -98,207 +125,194 @@ export const UPDATE_CONTENT = gql`
   }
 `;
 
-export const APPROVE_CONTENT = gql`
-  mutation ApproveContent($id: ID!, $reason: String) {
-    approveContent(id: $id, reason: $reason) {
-      id
-      status
-      approvedAt
-    }
-  }
-`;
-
-export const REJECT_CONTENT = gql`
-  mutation RejectContent($id: ID!, $reason: String!) {
-    rejectContent(id: $id, reason: $reason) {
-      id
-      status
-    }
-  }
-`;
-
 export const DELETE_CONTENT = gql`
   mutation DeleteContent($id: ID!) {
-    deleteContent(id: $id)
-  }
-`;
-
-export const GENERATE_CONTENT = gql`
-  mutation GenerateContent($input: GenerateContentInput!) {
-    generateContent(input: $input) {
-      id
-      title
-      description
-      content
-      mediaType
-      mode
-      keywords
-      status
-      platforms
-      aiGenerated
-      confidence
-      createdAt
-    }
-  }
-`;
-
-export const BULK_CONTENT_ACTION = gql`
-  mutation BulkContentAction($ids: [ID!]!, $action: String!, $reason: String) {
-    bulkContentAction(ids: $ids, action: $action, reason: $reason)
-  }
-`;
-
-export const SCHEDULE_CONTENT = gql`
-  mutation ScheduleContent($id: ID!, $scheduledAt: Date!) {
-    scheduleContent(id: $id, scheduledAt: $scheduledAt) {
-      id
-      status
-      scheduledAt
-    }
-  }
-`;
-
-export const PUBLISH_CONTENT = gql`
-  mutation PublishContent($id: ID!) {
-    publishContent(id: $id) {
-      id
-      status
-      publishedAt
-    }
-  }
-`;
-
-// 게시 예약 뮤테이션
-export const SCHEDULE_POST = gql`
-  mutation SchedulePost($input: SchedulePostInput!) {
-    schedulePost(input: $input) {
-      id
-      contentId
-      scheduledTime
-      platform
-      mode
-      approvalStatus
-      scheduleStatus
-      createdAt
-    }
-  }
-`;
-
-export const UPDATE_SCHEDULED_POST = gql`
-  mutation UpdateScheduledPost($id: ID!, $scheduledTime: String!) {
-    updateScheduledPost(id: $id, scheduledTime: $scheduledTime) {
-      id
-      scheduledTime
-      updatedAt
-    }
-  }
-`;
-
-export const CANCEL_SCHEDULED_POST = gql`
-  mutation CancelScheduledPost($id: ID!) {
-    cancelScheduledPost(id: $id) {
-      id
-      scheduleStatus
-      cancelledAt
-    }
-  }
-`;
-
-// A/B 테스트 뮤테이션
-export const CREATE_ABTEST_GROUP = gql`
-  mutation CreateABTestGroup($input: ABTestGroupInput!) {
-    createABTestGroup(input: $input) {
-      id
-      name
-      description
-      status
-      variants {
-        id
-        name
-        content
-      }
-      createdAt
-    }
-  }
-`;
-
-export const START_ABTEST = gql`
-  mutation StartABTest($id: ID!) {
-    startABTest(id: $id) {
-      id
-      status
-      startedAt
-      endDate
-    }
-  }
-`;
-
-export const END_ABTEST = gql`
-  mutation EndABTest($id: ID!) {
-    endABTest(id: $id) {
-      id
-      status
-      endedAt
-      winner
-      confidence
-    }
-  }
-`;
-
-export const DELETE_ABTEST_GROUP = gql`
-  mutation DeleteABTestGroup($id: ID!) {
-    deleteABTestGroup(id: $id) {
+    deleteContent(id: $id) {
       success
       message
     }
   }
 `;
 
-// 참여 관리 뮤테이션
-export const RESPOND_TO_ENGAGEMENT = gql`
-  mutation RespondToEngagement($id: ID!, $response: String!) {
-    respondToEngagement(id: $id, response: $response) {
+export const SCHEDULE_POST = gql`
+  mutation SchedulePost($input: SchedulePostInput!) {
+    schedulePost(input: $input) {
       id
+      contentId
+      platform
+      scheduledTime
       status
-      response
-      timestamp
+      mode
     }
   }
 `;
 
-export const CREATE_AUTOMATION_RULE = gql`
-  mutation CreateAutomationRule($input: AutomationRuleInput!) {
-    createAutomationRule(input: $input) {
+export const CREATE_MARKETING_OBJECTIVE = gql`
+  mutation CreateMarketingObjective($planId: ID!, $input: MarketingObjectiveInput!) {
+    createMarketingObjective(planId: $planId, input: $input) {
       id
-      name
-      platform
-      trigger
-      action
-      isActive
-      responses
-    }
-  }
-`;
-export const UPDATE_AUTOMATION_RULE = gql`
-  mutation UpdateAutomationRule($id: ID!, $input: AutomationRuleInput!) {
-    updateAutomationRule(id: $id, input: $input) {
-      id
-      name
-      platform
-      trigger
-      action
-      isActive
-      responses
+      title
+      description
+      priority
+      status
+      progress
+      keyResults {
+        id
+        title
+        description
+        targetValue
+        currentValue
+        unit
+        status
+        progress
+        checklist {
+          id
+          text
+          completed
+          completedAt
+          sortOrder
+        }
+      }
+      createdAt
       updatedAt
     }
   }
 `;
 
-export const TOGGLE_AUTOMATION_RULE = gql`
-  mutation ToggleAutomationRule($id: ID!) {
-    toggleAutomationRule(id: $id) {
+export const UPDATE_MARKETING_OBJECTIVE = gql`
+  mutation UpdateMarketingObjective($id: ID!, $input: MarketingObjectiveInput!) {
+    updateMarketingObjective(id: $id, input: $input) {
       id
-      isActive
+      title
+      description
+      priority
+      status
+      progress
+      keyResults {
+        id
+        title
+        description
+        targetValue
+        currentValue
+        unit
+        status
+        progress
+        checklist {
+          id
+          text
+          completed
+          completedAt
+          sortOrder
+        }
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_MARKETING_OBJECTIVE = gql`
+  mutation DeleteMarketingObjective($id: ID!) {
+    deleteMarketingObjective(id: $id)
+  }
+`;
+
+export const CREATE_KEY_RESULT = gql`
+  mutation CreateKeyResult($objectiveId: ID!, $input: KeyResultInput!) {
+    createKeyResult(objectiveId: $objectiveId, input: $input) {
+      id
+      title
+      description
+      targetValue
+      currentValue
+      unit
+      status
+      progress
+      checklist {
+        id
+        text
+        completed
+        completedAt
+        sortOrder
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const UPDATE_KEY_RESULT = gql`
+  mutation UpdateKeyResult($id: ID!, $input: KeyResultInput!) {
+    updateKeyResult(id: $id, input: $input) {
+      id
+      title
+      description
+      targetValue
+      currentValue
+      unit
+      status
+      progress
+      checklist {
+        id
+        text
+        completed
+        completedAt
+        sortOrder
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_KEY_RESULT = gql`
+  mutation DeleteKeyResult($id: ID!) {
+    deleteKeyResult(id: $id)
+  }
+`;
+
+export const CREATE_CHECKLIST_ITEM = gql`
+  mutation CreateChecklistItem($keyResultId: ID!, $input: ChecklistItemInput!) {
+    createChecklistItem(keyResultId: $keyResultId, input: $input) {
+      id
+      text
+      completed
+      completedAt
+      sortOrder
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const UPDATE_CHECKLIST_ITEM = gql`
+  mutation UpdateChecklistItem($id: ID!, $input: ChecklistItemInput!) {
+    updateChecklistItem(id: $id, input: $input) {
+      id
+      text
+      completed
+      completedAt
+      sortOrder
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_CHECKLIST_ITEM = gql`
+  mutation DeleteChecklistItem($id: ID!) {
+    deleteChecklistItem(id: $id)
+  }
+`;
+
+export const TOGGLE_CHECKLIST_ITEM = gql`
+  mutation ToggleChecklistItem($id: ID!) {
+    toggleChecklistItem(id: $id) {
+      id
+      text
+      completed
+      completedAt
+      sortOrder
+      updatedAt
     }
   }
 `;

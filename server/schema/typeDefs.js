@@ -1,3 +1,4 @@
+
 const { gql } = require("apollo-server-express");
 const { mergeTypeDefs } = require("@graphql-tools/merge");
 
@@ -14,7 +15,28 @@ const baseTypeDefs = gql`
     _empty: String
   }
 
-
+  # 공통 사용자 타입
+  type User {
+    id: ID!
+    email: String!
+    name: String
+    role: String
+    department: String
+    position: String
+    phoneNumber: String
+    nationality: String
+    joinDate: Date
+    birthDate: Date
+    address: String
+    employeeId: String
+    visaStatus: String
+    avatar: String
+    emergencyContact: [EmergencyContact]
+    skills: [Skill]
+    experiences: [Experience]
+    createdAt: Date
+    updatedAt: Date
+  }
 
   type EmergencyContact {
     id: ID!
@@ -30,6 +52,17 @@ const baseTypeDefs = gql`
     id: ID!
     name: String!
     level: String!
+    userId: ID!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  type Experience {
+    id: ID!
+    company: String!
+    position: String!
+    period: String!
+    description: String
     userId: ID!
     createdAt: Date!
     updatedAt: Date!
