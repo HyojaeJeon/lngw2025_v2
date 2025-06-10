@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function LoadingModal({ isOpen, title = "처리 중...", description = "잠시만 기다려주세요." }) {
+export const LoadingModal = ({ isOpen, title = "처리 중...", description = "잠시만 기다려주세요." }) => {
   if (!isOpen) return null;
 
   return (

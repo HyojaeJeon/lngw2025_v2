@@ -1,3 +1,4 @@
+
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -27,15 +28,19 @@ const commonConfig = {
 
 module.exports = {
   development: {
-    dialect: "mysql",
-    storage: "./database/lngw2025_dev.sqlite",
-    logging: process.env.NODE_ENV === "development" ? console.log : false,
-    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+    username: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "lngw2025_db",
+    host: process.env.DB_HOST || "127.0.0.1",
+    port: process.env.DB_PORT || 3306,
+    ...commonConfig
   },
   production: {
-    dialect: "sqlite",
-    storage: "./database/lngw2025_prod.sqlite",
-    logging: false,
-    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+    username: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "lngw2025_db",
+    host: process.env.DB_HOST || "127.0.0.1",
+    port: process.env.DB_PORT || 3306,
+    ...commonConfig
   },
 };
