@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { useLanguage } from "@/contexts/languageContext.js";
-import { ArrowLeft, Target, Plus, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Target, Plus, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 
 // Custom hooks
 import { usePlanData } from "./_hooks/usePlanData";
@@ -158,24 +158,25 @@ export default function PlanningProcessDetailPage() {
         onEditClick={() => setIsEditMode(true)}
       />
 
-      {/* 목표(Objectives) 섹션 */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Target className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              목표 설정 (OKR)
+      {/* OKR 목표 목록 */}
+      <div className="space-y-4 lg:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+              OKR 목표 설정
             </h2>
           </div>
           <Button
             onClick={() => setShowNewObjectiveModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm sm:text-base w-full sm:w-auto"
           >
-            <Plus className="w-4 h-4" />새 목표 추가
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+            새 목표 추가
           </Button>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4 lg:gap-6 xl:grid-cols-2">
           {objectives
             .filter((obj) => obj.isActive)
             .map((objective) => (
