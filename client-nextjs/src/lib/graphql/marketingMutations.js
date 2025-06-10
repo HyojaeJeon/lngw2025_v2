@@ -1,3 +1,36 @@
+
+import { gql } from '@apollo/client';
+
+export const UPDATE_MARKETING_PLAN = gql`
+  mutation UpdateMarketingPlan($id: ID!, $input: MarketingPlanInput!) {
+    updateMarketingPlan(id: $id, input: $input) {
+      id
+      title
+      description
+      startDate
+      endDate
+      manager
+      targetPersona
+      coreMessage
+      status
+      updatedAt
+    }
+  }
+`;
+
+export const GET_USERS_FOR_ASSIGNMENT = gql`
+  query GetUsersForAssignment($offset: Int, $limit: Int) {
+    users(offset: $offset, limit: $limit) {
+      id
+      name
+      email
+      position
+      avatar
+    }
+    usersCount
+  }
+`;
+
 import { gql } from '@apollo/client';
 
 // 콘텐츠 관리 뮤테이션
