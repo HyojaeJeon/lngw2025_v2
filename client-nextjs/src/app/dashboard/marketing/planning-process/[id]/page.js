@@ -1729,7 +1729,7 @@ export default function PlanningProcessDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl">
             {/* 모달 헤더 */}
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between>
+              <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-bold">새 목표 추가</h3>
                 <Button
                   variant="ghost"
