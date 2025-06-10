@@ -1372,7 +1372,7 @@ export default function PlanningProcessDetailPage() {
                           )}
                         </div>
                       ))}
-                    </div> 
+                    </div>
                   </CardContent>
                 )}
               </Card>
