@@ -69,7 +69,6 @@ export default function PlanningProcessDetailPage() {
     removeChecklistItemInEdit,
     addChecklistItem,
     updateChecklistItem,
-    toggleChecklistItem,
     removeChecklistItem,
   } = objectiveManagement;
 
@@ -139,7 +138,29 @@ export default function PlanningProcessDetailPage() {
     );
   }
 
-  
+  // 체크리스트 항목 토글
+  const toggleChecklistItem = useCallback((krId, itemIndex)=>{
+      console.log('체크리스트 토글:', {
+          krId,
+          itemIndex
+      });
+
+      setEditingObjectiveData(prev => {
+          const keyResults = prev.keyResults.map(kr => {
+              if (kr.id === krId) {
+                  const checklist = [...kr.checklist];
+                  checklist[itemIndex] = {
+                      ...checklist[itemIndex],
+                      completed: !checklist[itemIndex].completed
+                  };
+                  return { ...kr, checklist };
+              }
+              return kr;
+          });
+          return { ...prev, keyResults };
+      });
+  }, [setEditingObjectiveData]);
+
 
   return (
     <div className="w-full space-y-8 max-w-none animate-fadeIn">
