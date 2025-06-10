@@ -1,24 +1,25 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.js";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { Label } from "@/components/ui/label.js";
+import ChecklistItem from "./ChecklistItem";
 import {
+  Target,
+  Plus,
   Edit,
   Save,
   X,
-  Plus,
   Trash2,
   CheckCircle,
   Circle,
+  Calendar,
+  User,
+  AlertCircle,
+  TrendingUp,
   ChevronDown,
   ChevronUp,
+  ListChecks,
 } from "lucide-react";
 import { calculateObjectiveProgress } from "../_utils/calculations";
 import { useLanguage } from "@/contexts/languageContext";
@@ -532,141 +533,81 @@ const ObjectiveCard = ({
                     <div className="space-y-3">
                       <div className="space-y-2">
                         {(kr.checklist || []).map((item, itemIndex) => (
-                          <div
-                            key={itemIndex}
-                            className="flex items-center gap-3 group"
-                          >
-                            {!isEditing && (
-                              <button
-                                onClick={() =>
-                                  handleChecklistClick(kr.id, itemIndex, item.completed)
-                                }
-                                className="flex-shrink-0"
-                              >
-                                {item.completed ? (
-                                  <CheckCircle className="w-5 h-5 text-green-500" />
-                                ) : (
-                                  <Circle className="w-5 h-5 text-gray-400" />
-                                )}
-                              </button>
-                            )}
-                            <Input
-                              value={item.text}
-                              onChange={(e) =>
-                                isEditing
-                                  ? onUpdateChecklistItemInEdit(
-                                      index,
-                                      itemIndex,
-                                      e.target.value,
-                                    )
-                                  : onUpdateChecklistItem(
-                                      kr.id,
-                                      itemIndex,
-                                      e.target.value,
-                                    )
-                              }
-                              className={`flex-1 ${
-                                isEditing
-                                  ? "border-gray-300"
-                                  : "bg-transparent border-none p-0 h-auto focus:ring-0"
-                              } ${
-                                item.completed && !isEditing
-                                  ? "line-through text-gray-500"
-                                  : ""
-                              }`}
-                              placeholder={t('체크리스트 항목을 입력하세요')}
-                              readOnly={!isEditing && item.completed}
-                            />
-                            {isEditing && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                  onRemoveChecklistItemInEdit(index, itemIndex)
-                                }
-                                className="h-auto p-1 text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                            {!isEditing && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                  onRemoveChecklistItem(kr.id, itemIndex)
-                                }
-                                className="h-auto p-1 text-red-500 transition-opacity opacity-0 group-hover:opacity-100 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                          
+                  <ChecklistItem
+                    key={`${index}-${itemIndex}`}
+                    item={item}
+                    index={itemIndex}
+                    isEditing={isEditing}
+                    onToggle={() => onToggleChecklistItem(kr.id, itemIndex)}
+                    onUpdate={(newText) => onUpdateChecklistItem(kr.id, itemIndex, newText)}
+                    onRemove={() => onRemoveChecklistItem(kr.id, itemIndex)}
+                  />
+                ))}
+              </div>
 
-                      {/* + 항목 추가 버튼: 수정 모드일 때만 노출 */}
-                      {isEditing && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onAddChecklistItemInEdit(index)}
-                          className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                        >
-                          <Plus className="w-4 h-4" />
-                          {t('항목 추가')}
-                        </Button>
-                      )}
+              {/* + 항목 추가 버튼: 수정 모드일 때만 노출 */}
+              {isEditing && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onAddChecklistItemInEdit(index)}
+                  className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('항목 추가')}
+                </Button>
+              )}
 
-                      {/* 변경 이력 모달 */}
-                      {showHistoryModal && pendingCheck && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-                            <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                              {t('변경 이력 추가')}
-                            </h3>
-                            <p className="mb-4 text-gray-700">
-                              {t('이 항목을 완료 처리하고 변경 이력을 추가하시겠습니까?')}
-                            </p>
-                            <div className="flex justify-end gap-2">
-                              <Button onClick={handleCancelHistory} variant="outline">
-                                {t('취소')}
-                              </Button>
-                              <Button onClick={handleConfirmHistory} className="bg-blue-600 text-white">
-                                {t('확인')}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+              {/* 변경 이력 모달 */}
+              {showHistoryModal && pendingCheck && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                      {t('변경 이력 추가')}
+                    </h3>
+                    <p className="mb-4 text-gray-700">
+                      {t('이 항목을 완료 처리하고 변경 이력을 추가하시겠습니까?')}
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <Button onClick={handleCancelHistory} variant="outline">
+                        {t('취소')}
+                      </Button>
+                      <Button onClick={handleConfirmHistory} className="bg-blue-600 text-white">
+                        {t('확인')}
+                      </Button>
                     </div>
-                  )}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </div>
-
-      {/* 각 KR 카드 하단에 저장/취소 버튼(수정 모드일 때만) */}
-      {isEditing && (
-        <div className="flex justify-end gap-2 mt-6">
-          <Button
-            onClick={onSaveEdit}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-          >
-            <Save className="w-4 h-4" /> {t('저장')}
-          </Button>
-          <Button
-            onClick={onCancelEdit}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-          >
-            <X className="w-4 h-4" /> {t('취소')}
-          </Button>
+              )}
+            </div>
+          )}
         </div>
-      )}
-    </Card>
-  );
+      );
+    })}
+  </div>
+</CardContent>
+</div>
+
+{/* 각 KR 카드 하단에 저장/취소 버튼(수정 모드일 때만) */}
+{isEditing && (
+  <div className="flex justify-end gap-2 mt-6">
+    <Button
+      onClick={onSaveEdit}
+      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-1"
+    >
+      <Save className="w-4 h-4" /> {t('저장')}
+    </Button>
+    <Button
+      onClick={onCancelEdit}
+      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-1"
+    >
+      <X className="w-4 h-4" /> {t('취소')}
+    </Button>
+  </div>
+)}
+</Card>
+);
 };
 
 export default ObjectiveCard;
