@@ -193,10 +193,6 @@ const customerTypeDefs = gql`
     sortOrder: Int
   }
 
-  type MutationResponse {
-    success: Boolean!
-    message: String
-  }
-`;
+  `;
 
 module.exports = customerTypeDefs;

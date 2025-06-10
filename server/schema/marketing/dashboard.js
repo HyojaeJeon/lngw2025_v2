@@ -41,14 +41,6 @@ const marketingDashboardTypeDefs = gql`
     status: String
   }
 
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-    position: String
-    avatar: String
-  }
-
   extend type Query {
     marketingOverview: MarketingOverview
     users(offset: Int, limit: Int): [User!]!
