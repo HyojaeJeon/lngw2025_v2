@@ -51,7 +51,6 @@ import {
   BookOpen,
   Lightbulb,
   Workflow,
-  FlowChart,
 } from "lucide-react";
 
 export default function MarketingPlanningProcessPage() {
@@ -63,6 +62,8 @@ export default function MarketingPlanningProcessPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedProcess, setSelectedProcess] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 마케팅 계획 데이터
   const [plans, setPlans] = useState([
@@ -216,219 +217,231 @@ export default function MarketingPlanningProcessPage() {
   };
 
   // 계획 목록 렌더링
-  const renderPlanningTab = () => (
-    <div className="space-y-6">
-      {/* 헤더 및 액션 */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            마케팅 계획 관리
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            연간, 분기별 마케팅 전략을 수립하고 관리하세요
-          </p>
-        </div>
-        <Button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          새 계획 작성
-        </Button>
-      </div>
+  const renderPlanningTab = () => {
+    if (loading) {
+      return <div className="flex justify-center items-center h-64">로딩 중...</div>;
+    }
 
-      {/* 검색 및 필터 */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="계획 제목으로 검색..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+    return (
+      <div className="space-y-6">
+        {/* 헤더 및 액션 */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              마케팅 계획 관리
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              연간, 분기별 마케팅 전략을 수립하고 관리하세요
+            </p>
+          </div>
+          <Button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            새 계획 작성
+          </Button>
         </div>
-        <Button variant="outline" size="sm">
-          <Filter className="w-4 h-4 mr-2" />
-          필터
-        </Button>
-      </div>
 
-      {/* 계획 목록 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {plans.map((plan) => (
-          <Card key={plan.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg mb-2">{plan.title}</CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    {getStatusBadge(plan.status)}
-                    <span>진행률: {plan.progress}%</span>
+        {/* 검색 및 필터 */}
+        <div className="flex gap-4 items-center">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="계획 제목으로 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            필터
+          </Button>
+        </div>
+
+        {/* 계획 목록 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {plans.map((plan) => (
+            <Card key={plan.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg mb-2">{plan.title}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      {getStatusBadge(plan.status)}
+                      <span>진행률: {plan.progress}%</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => router.push(`/dashboard/marketing/planning-process/${plan.id}`)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Edit className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => router.push(`/dashboard/marketing/planning-process/${plan.id}`)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Edit className="w-4 h-4" />
-                  </Button>
+
+                {/* 진행률 바 */}
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                    style={{width: `${plan.progress}%`}}
+                  ></div>
                 </div>
-              </div>
+              </CardHeader>
 
-              {/* 진행률 바 */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
-                  style={{width: `${plan.progress}%`}}
-                ></div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {/* 목표 요약 */}
-              <div>
-                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  주요 목표 ({plan.objectives.length}개)
-                </h4>
-                <div className="space-y-1">
-                  {plan.objectives.slice(0, 2).map((obj, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Target className="w-3 h-3 text-blue-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {obj.title}
+              <CardContent className="space-y-4">
+                {/* 목표 요약 */}
+                <div>
+                  <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    주요 목표 ({plan.objectives.length}개)
+                  </h4>
+                  <div className="space-y-1">
+                    {plan.objectives.slice(0, 2).map((obj, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Target className="w-3 h-3 text-blue-500" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {obj.title}
+                        </span>
+                      </div>
+                    ))}
+                    {plan.objectives.length > 2 && (
+                      <span className="text-xs text-gray-500">
+                        +{plan.objectives.length - 2}개 더
                       </span>
-                    </div>
-                  ))}
-                  {plan.objectives.length > 2 && (
-                    <span className="text-xs text-gray-500">
-                      +{plan.objectives.length - 2}개 더
-                    </span>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* 주요 활동 */}
-              <div>
-                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  주요 활동 ({plan.initiatives.length}개)
-                </h4>
-                <div className="space-y-1">
-                  {plan.initiatives.slice(0, 2).map((initiative, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Calendar className="w-3 h-3 text-green-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {initiative.name}
-                      </span>
-                      {initiative.linkedToCampaign && (
-                        <Badge variant="outline" className="text-xs">
-                          캠페인연동
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
+                {/* 주요 활동 */}
+                <div>
+                  <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    주요 활동 ({plan.initiatives.length}개)
+                  </h4>
+                  <div className="space-y-1">
+                    {plan.initiatives.slice(0, 2).map((initiative, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Calendar className="w-3 h-3 text-green-500" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {initiative.name}
+                        </span>
+                        {initiative.linkedToCampaign && (
+                          <Badge variant="outline" className="text-xs">
+                            캠페인연동
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* 메타 정보 */}
-              <div className="flex justify-between text-xs text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <span>생성: {plan.createdAt}</span>
-                <span>수정: {plan.updatedAt}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                {/* 메타 정보 */}
+                <div className="flex justify-between text-xs text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <span>생성: {plan.createdAt}</span>
+                  <span>수정: {plan.updatedAt}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // 프로세스 목록 렌더링
-  const renderWorkflowTab = () => (
-    <div className="space-y-6">
-      {/* 헤더 및 액션 */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            업무 프로세스 관리
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            반복적인 업무를 표준화하여 효율성을 높이세요
-          </p>
+  const renderWorkflowTab = () => {
+    if (loading) {
+      return <div className="flex justify-center items-center h-64">로딩 중...</div>;
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* 헤더 및 액션 */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              업무 프로세스 관리
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              반복적인 업무를 표준화하여 효율성을 높이세요
+            </p>
+          </div>
+          <Button onClick={() => setShowProcessModal(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            새 프로세스 생성
+          </Button>
         </div>
-        <Button onClick={() => setShowProcessModal(true)} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          새 프로세스 생성
-        </Button>
-      </div>
 
-      {/* 프로세스 목록 */}
-      <div className="space-y-4">
-        {processes.map((process) => (
-          <Card key={process.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <CardTitle className="text-lg">{process.name}</CardTitle>
-                    {getStatusBadge(process.status)}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    {process.description}
-                  </p>
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <RotateCcw className="w-4 h-4" />
-                      {process.usageCount}회 사용
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      최근 사용: {process.lastUsed}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setSelectedProcess(process)}>
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              {/* 프로세스 단계 미리보기 */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                  프로세스 단계 ({process.steps.length}단계)
-                </h4>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                  {process.steps.map((step, index) => (
-                    <div key={step.id} className="flex items-center gap-2 flex-shrink-0">
-                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                        {getStepIcon(step.status)}
-                        <span className="text-sm font-medium">{step.name}</span>
-                        <span className="text-xs text-gray-500">({step.duration})</span>
-                      </div>
-                      {index < process.steps.length - 1 && (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                      )}
+        {/* 프로세스 목록 */}
+        <div className="space-y-4">
+          {processes.map((process) => (
+            <Card key={process.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <CardTitle className="text-lg">{process.name}</CardTitle>
+                      {getStatusBadge(process.status)}
                     </div>
-                  ))}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      {process.description}
+                    </p>
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <RotateCcw className="w-4 h-4" />
+                        {process.usageCount}회 사용
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        최근 사용: {process.lastUsed}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setSelectedProcess(process)}>
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardHeader>
+
+              <CardContent>
+                {/* 프로세스 단계 미리보기 */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">
+                    프로세스 단계 ({process.steps.length}단계)
+                  </h4>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                    {process.steps.map((step, index) => (
+                      <div key={step.id} className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                          {getStepIcon(step.status)}
+                          <span className="text-sm font-medium">{step.name}</span>
+                          <span className="text-xs text-gray-500">({step.duration})</span>
+                        </div>
+                        {index < process.steps.length - 1 && (
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // 계획 상세 모달
   const renderPlanDetailModal = () => {
@@ -665,6 +678,8 @@ export default function MarketingPlanningProcessPage() {
 
   // 새 계획 작성 모달
   const renderCreatePlanModal = () => {
+    if (!showCreateModal) return null;
+
     const addObjective = () => {
       setNewPlan(prev => ({
         ...prev,
@@ -1270,6 +1285,8 @@ export default function MarketingPlanningProcessPage() {
 
   // 새 프로세스 생성 모달
   const renderCreateProcessModal = () => {
+    if (!showProcessModal) return null;
+
     const addStep = () => {
       const newId = Math.max(...newProcess.steps.map(s => s.id), 0) + 1;
       setNewProcess(prev => ({
@@ -1587,56 +1604,42 @@ export default function MarketingPlanningProcessPage() {
   };
 
   return (
-    <div className="w-full max-w-none space-y-6 animate-fadeIn">
-      {/* 헤더 */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          마케팅 계획 및 프로세스
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
-          마케팅 활동의 설계도와 작업 매뉴얼을 관리하세요
-        </p>
-      </div>
-
+    <div className="container mx-auto p-6 space-y-6">
       {/* 탭 네비게이션 */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab("planning")}
-            className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === "planning"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-          >
-            <Target className="w-4 h-4" />
-            마케팅 계획
-          </button>
-          <button
-            onClick={() => setActiveTab("workflow")}
-            className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === "workflow"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-          >
-            <Workflow className="w-4 h-4" />
-            업무 프로세스
-          </button>
-        </nav>
+      <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setActiveTab("planning")}
+          className={`px-4 py-2 font-medium text-sm ${
+            activeTab === "planning"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          마케팅 계획
+        </button>
+        <button
+          onClick={() => setActiveTab("workflow")}
+          className={`px-4 py-2 font-medium text-sm ${
+            activeTab === "workflow"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          업무 프로세스
+        </button>
       </div>
 
-      {/* 탭 콘텐츠 */}
+      {/* 메인 컨텐츠 */}
       <div className="mt-6">
         {activeTab === "planning" && renderPlanningTab()}
         {activeTab === "workflow" && renderWorkflowTab()}
       </div>
 
-      {/* 모달들 */}
-      {selectedPlan && renderPlanDetailModal()}
-      {selectedProcess && renderProcessDetailModal()}
+      {/* 모달 */}
       {showCreateModal && renderCreatePlanModal()}
       {showProcessModal && renderCreateProcessModal()}
+      {selectedPlan && renderPlanDetailModal()}
+      {selectedProcess && renderProcessDetailModal()}
     </div>
   );
 }

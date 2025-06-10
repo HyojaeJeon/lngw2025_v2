@@ -5,19 +5,25 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { useLanguage } from "@/contexts/languageContext.js";
-import { ArrowLeft, Target, Plus, AlertCircle, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Target,
+  Plus,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 
 // Custom hooks
-import { usePlanData } from "./_hooks/usePlanData";
-import { useObjectiveManagement } from "./_hooks/useObjectiveManagement";
+import { usePlanData } from "./hooks/usePlanData";
+import { useObjectiveManagement } from "./hooks/useObjectiveManagement";
 
 // Components
-import PlanHeader from "./_components/PlanHeader";
-import ObjectiveCard from "./_components/ObjectiveCard";
-import DeleteConfirmModal from "./_components/_modals/DeleteConfirmModal";
+import PlanHeader from "./components/PlanHeader";
+import ObjectiveCard from "./components/ObjectiveCard";
+import DeleteConfirmModal from "./components/modals/DeleteConfirmModal";
 
 // Utils
-import { calculateObjectiveProgress } from "./_utils/calculations";
+import { calculateObjectiveProgress } from "./utils/calculations";
 
 export default function PlanningProcessDetailPage() {
   const { t } = useLanguage();
@@ -26,7 +32,6 @@ export default function PlanningProcessDetailPage() {
   const planId = params.id;
 
   // Plan data management
-  const planData = usePlanData(planId);
   const {
     plan,
     loading,
@@ -36,15 +41,9 @@ export default function PlanningProcessDetailPage() {
     setKeyResults,
     isEditMode,
     setIsEditMode,
-  } = planData;
+  } = usePlanData(planId);
 
   // Objective management
-  const objectiveManagement = useObjectiveManagement(
-    objectives,
-    setObjectives,
-    keyResults,
-    setKeyResults
-  );
   const {
     collapsedObjectives,
     showDeleteConfirmModal,
@@ -71,37 +70,7 @@ export default function PlanningProcessDetailPage() {
     updateChecklistItem,
     toggleChecklistItem,
     removeChecklistItem,
-  } = objectiveManagement;
-
-  // 핵심 결과(Key Results) 추가 핸들러 (한 번에 1개만, 타입 교체)
-  const onAddKeyResult = (type) => {
-    setEditingObjectiveData((prev) => {
-      const hasNew = prev.keyResults?.some(kr => kr.isNew);
-      let newKR;
-      if (type === 'numeric') {
-        newKR = { id: `${Date.now()}_${Math.random()}`, type: 'numeric', title: '', currentValue: 0, target: 0, unit: '', isNew: true };
-      } else {
-        newKR = { id: `${Date.now()}_${Math.random()}`, type: 'checklist', title: '', checklist: [{ text: '', completed: false }], isNew: true };
-      }
-      let keyResults = prev.keyResults || [];
-      if (hasNew) {
-        // 기존 isNew KR의 type만 교체(내용 초기화)
-        keyResults = keyResults.map(kr => kr.isNew ? newKR : kr);
-      } else {
-        // 새로 추가, 최상단에 위치
-        keyResults = [newKR, ...keyResults];
-      }
-      return { ...prev, keyResults };
-    });
-  };
-
-  // 새로 추가된(isNew) KR 삭제 핸들러
-  const onRemoveNewKeyResult = (id) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.filter(kr => kr.id !== id)
-    }));
-  };
+  } = useObjectiveManagement(objectives, setObjectives, keyResults, setKeyResults);
 
   // 로딩 상태
   if (loading) {
@@ -152,8 +121,8 @@ export default function PlanningProcessDetailPage() {
       </Button>
 
       {/* 헤더 */}
-      <PlanHeader
-        plan={plan}
+      <PlanHeader 
+        plan={plan} 
         objectives={objectives}
         onEditClick={() => setIsEditMode(true)}
       />
@@ -178,40 +147,40 @@ export default function PlanningProcessDetailPage() {
         <div className="grid gap-6">
           {objectives
             .filter((obj) => obj.isActive)
-            .map((objective) => (
-              <ObjectiveCard
-                key={objective.id}
-                objective={objective}
-                isCollapsed={collapsedObjectives.has(objective.id)}
-                isEditing={editingObjectiveId === objective.id}
-                editingObjectiveData={editingObjectiveData}
-                onToggleCollapse={() => toggleObjectiveCollapse(objective.id)}
-                onStartEdit={() => startEditObjective(objective)}
-                onCancelEdit={cancelEditObjective}
-                onSaveEdit={handleSaveEditObjective}
-                onDelete={() => confirmDeleteObjective(objective)}
-                onUpdateTitle={(title) =>
-                  setEditingObjectiveData((prev) => ({ ...prev, title }))
-                }
-                onUpdateDescription={(description) =>
-                  setEditingObjectiveData((prev) => ({
-                    ...prev,
-                    description,
-                  }))
-                }
-                onUpdateKeyResultTitle={updateKeyResultTitle}
-                onUpdateKeyResultValue={updateKeyResultValue}
-                onUpdateChecklistItemInEdit={updateChecklistItemInEdit}
-                onAddChecklistItemInEdit={addChecklistItemInEdit}
-                onRemoveChecklistItemInEdit={removeChecklistItemInEdit}
-                onToggleChecklistItem={toggleChecklistItem}
-                onUpdateChecklistItem={updateChecklistItem}
-                onAddChecklistItem={addChecklistItem}
-                onRemoveChecklistItem={removeChecklistItem}
-                onAddKeyResult={onAddKeyResult}
-                onRemoveNewKeyResult={onRemoveNewKeyResult}
-              />
-            ))}
+            .map((objective) => {
+              const isCollapsed = collapsedObjectives.has(objective.id);
+              const isEditing = editingObjectiveId === objective.id;
+
+              return (
+                <ObjectiveCard
+                  key={objective.id}
+                  objective={objective}
+                  isCollapsed={isCollapsed}
+                  isEditing={isEditing}
+                  editingObjectiveData={editingObjectiveData}
+                  onToggleCollapse={toggleObjectiveCollapse}
+                  onStartEdit={startEditObjective}
+                  onCancelEdit={cancelEditObjective}
+                  onSaveEdit={handleSaveEditObjective}
+                  onDelete={confirmDeleteObjective}
+                  onUpdateTitle={(title) => 
+                    setEditingObjectiveData(prev => ({ ...prev, title }))
+                  }
+                  onUpdateDescription={(description) => 
+                    setEditingObjectiveData(prev => ({ ...prev, description }))
+                  }
+                  onUpdateKeyResultTitle={updateKeyResultTitle}
+                  onUpdateKeyResultValue={updateKeyResultValue}
+                  onUpdateChecklistItemInEdit={updateChecklistItemInEdit}
+                  onAddChecklistItemInEdit={addChecklistItemInEdit}
+                  onRemoveChecklistItemInEdit={removeChecklistItemInEdit}
+                  onToggleChecklistItem={toggleChecklistItem}
+                  onUpdateChecklistItem={updateChecklistItem}
+                  onAddChecklistItem={addChecklistItem}
+                  onRemoveChecklistItem={removeChecklistItem}
+                />
+              );
+            })}
 
           {/* 비활성화된 목표들 표시 */}
           {objectives
@@ -276,16 +245,16 @@ export default function PlanningProcessDetailPage() {
         </div>
       </div>
 
-      {/* 삭제 확인 모달 */}
-      {showDeleteConfirmModal && (
-        <DeleteConfirmModal
-          isOpen={showDeleteConfirmModal}
-          onClose={() => setShowDeleteConfirmModal(false)}
-          onConfirm={handleDeleteObjective}
-          title="목표 삭제"
-          message="이 목표를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-        />
-      )}
+      {/* 목표 삭제 확인 모달 */}
+      <DeleteConfirmModal
+        show={showDeleteConfirmModal}
+        onClose={() => {
+          setObjectiveToDelete(null);
+          setShowDeleteConfirmModal(false);
+        }}
+        onConfirm={handleDeleteObjective}
+        objectiveToDelete={objectiveToDelete}
+      />
     </div>
   );
 }
