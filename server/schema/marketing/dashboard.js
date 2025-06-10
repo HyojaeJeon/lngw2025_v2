@@ -1,9 +1,77 @@
 const { gql } = require("apollo-server-express");
 
-const marketingDashboardSchemaExtensions = gql`
-  # ====================
-  # MARKETING DASHBOARD INPUT TYPES
-  # ====================
+const marketingDashboardTypeDefs = gql`
+  type MarketingOverview {
+    totalCampaigns: Int
+    activeCampaigns: Int
+    completedCampaigns: Int
+    draftCampaigns: Int
+    totalBudget: Float
+    spentBudget: Float
+    remainingBudget: Float
+    conversionRate: Float
+    avgEngagementRate: Float
+    totalImpressions: Int
+    totalClicks: Int
+    totalConversions: Int
+  }
+
+  type MarketingPlan {
+    id: ID!
+    title: String!
+    description: String
+    startDate: String
+    endDate: String
+    manager: String
+    targetPersona: String
+    coreMessage: String
+    status: String
+    userId: ID!
+    user: User
+    objectives: [MarketingObjective!]
+    createdAt: String
+    updatedAt: String
+  }
+
+  type MarketingObjective {
+    id: ID!
+    planId: ID!
+    title: String!
+    description: String
+    priority: String
+    status: String
+    progress: Int
+    keyResults: [KeyResult!]
+    createdAt: String
+    updatedAt: String
+  }
+
+  type KeyResult {
+    id: ID!
+    objectiveId: ID!
+    title: String!
+    description: String
+    targetValue: Float
+    currentValue: Float
+    unit: String
+    status: String
+    progress: Int
+    checklist: [ChecklistItem!]
+    createdAt: String
+    updatedAt: String
+  }
+
+  type ChecklistItem {
+    id: ID!
+    keyResultId: ID!
+    text: String!
+    completed: Boolean!
+    completedAt: String
+    sortOrder: Int
+    createdAt: String
+    updatedAt: String
+  }
+
   input MarketingPlanInput {
     title: String
     description: String
@@ -39,11 +107,27 @@ const marketingDashboardSchemaExtensions = gql`
     sortOrder: Int
   }
 
-  # ====================
-  # MARKETING DASHBOARD QUERIES & MUTATIONS
-  # ====================
+  type MarketingStats {
+    totalPosts: TotalPosts
+    pendingApproval: Int
+    errors: Int
+    abTestGroups: ABTestGroupStats
+    trendingKeywords: Int
+  }
+
+  type TotalPosts {
+    today: Int
+    week: Int
+    month: Int
+  }
+
+  type ABTestGroupStats {
+    active: Int
+    completed: Int
+  }
+
   extend type Query {
-    marketingStats: MarketingStats!
+    marketingStats: MarketingStats
     marketingOverview: MarketingOverview
     users(offset: Int, limit: Int): [User!]!
     usersCount: Int!
@@ -83,4 +167,4 @@ const marketingDashboardSchemaExtensions = gql`
   }
 `;
 
-module.exports = marketingDashboardSchemaExtensions;
+module.exports = marketingDashboardTypeDefs;
