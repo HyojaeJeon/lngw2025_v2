@@ -144,7 +144,7 @@ const ObjectiveCard = ({
                 />
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {t("설명 (선택사항)")}
+                    {t('설명 (선택사항)')}
                   </label>
                   <textarea
                     value={editingObjectiveData.description || ""}
@@ -596,18 +596,22 @@ const ObjectiveCard = ({
                       <div className="space-y-2">
                         {(kr.checklist || []).map((item, itemIndex) => (
                           <ChecklistItem
-                            key={`${index}-${itemIndex}`}
+                            key={itemIndex}
                             item={item}
-                            index={itemIndex}
+                            itemIndex={itemIndex}
+                            krId={kr.id}
+                            krIndex={index}
                             isEditing={isEditing}
-                            onToggle={() =>
-                              onToggleChecklistItem(kr.id, itemIndex)
-                            }
-                            onUpdate={(newText) =>
-                              onUpdateChecklistItem(kr.id, itemIndex, newText)
+                            onToggle={(krId, itemIndex) => handleChecklistClick(krId, itemIndex, item.completed)}
+                            onUpdate={(text) =>
+                              isEditing
+                                ? onUpdateChecklistItemInEdit(index, itemIndex, text)
+                                : onUpdateChecklistItem(kr.id, itemIndex, text)
                             }
                             onRemove={() =>
-                              onRemoveChecklistItem(kr.id, itemIndex)
+                              isEditing
+                                ? onRemoveChecklistItemInEdit(index, itemIndex)
+                                : onRemoveChecklistItem(kr.id, itemIndex)
                             }
                           />
                         ))}

@@ -132,6 +132,12 @@ export const useChecklistManagement = (initialObjectives = []) => {
     removeChecklistItem,
     updateChecklistItem,
     getChecklistProgress,
+    saveChecklistToAPI,
+    toggleChecklistItem,
+    addChecklistItem,
+    removeChecklistItem,
+    updateChecklistItem,
+    getChecklistProgress,
     saveChecklistToAPI
   };
 };

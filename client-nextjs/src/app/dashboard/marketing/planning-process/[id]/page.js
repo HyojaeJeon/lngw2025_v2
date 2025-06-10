@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
@@ -138,6 +138,36 @@ export default function PlanningProcessDetailPage() {
       </div>
     );
   }
+
+  // 체크리스트 항목 토글
+  const toggleChecklistItem = useCallback((krId, itemIndex) => {
+    console.log('체크리스트 토글:', { krId, itemIndex });
+
+    setObjectives(prev => 
+      prev.map(objective => ({
+        ...objective,
+        keyResults: objective.keyResults.map(kr => 
+          kr.id === krId 
+            ? {
+                ...kr,
+                checklist: (kr.checklist || []).map((item, index) => 
+                  index === itemIndex 
+                    ? { 
+                        ...item, 
+                        completed: !item.completed,
+                        completedAt: !item.completed ? new Date().toISOString() : null
+                      }
+                    : item
+                )
+              }
+            : kr
+        )
+      }))
+    );
+
+    // API 저장 로직 (향후 구현)
+    // saveChecklistToAPI(krId, itemIndex, !currentCompleted);
+  }, []);
 
   return (
     <div className="w-full space-y-8 max-w-none animate-fadeIn">
