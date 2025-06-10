@@ -13,18 +13,18 @@ const seedData = require("./seeders");
 // 언어 파싱 헬퍼 함수
 // ====================
 const getLanguageFromHeaders = (headers) => {
-  const langHeader = headers['accept-language'] || headers['x-language'];
-  if (!langHeader) return 'en'; // 기본값은 영어
+  const langHeader = headers["accept-language"] || headers["x-language"];
+  if (!langHeader) return "en"; // 기본값은 영어
 
   // Accept-Language 헤더 파싱: "ko-KR,ko;q=0.9,en;q=0.8" 형태
-  const langs = langHeader.split(',');
-  const primaryLang = langs[0].split('-')[0].split(';')[0].toLowerCase().trim();
-  
-  if (['ko', 'en', 'vi'].includes(primaryLang)) {
+  const langs = langHeader.split(",");
+  const primaryLang = langs[0].split("-")[0].split(";")[0].toLowerCase().trim();
+
+  if (["ko", "en", "vi"].includes(primaryLang)) {
     return primaryLang;
   }
-  
-  return 'en'; // 지원하지 않는 언어일 경우 영어로 대체
+
+  return "en"; // 지원하지 않는 언어일 경우 영어로 대체
 };
 
 if (process.env.NODE_ENV === "production") {
@@ -114,7 +114,7 @@ async function startServer() {
     },
     context: async ({ req }) => {
       let user = null;
-      
+
       // 언어 정보 추출
       const lang = getLanguageFromHeaders(req.headers);
 
@@ -189,7 +189,7 @@ async function startServer() {
     if (process.env.NODE_ENV === "development") {
       // 데이터베이스 동기화 (SQLite용)
       console.log("Syncing database...");
-      await models.sequelize.sync({ force: true }); // SQLite에서는 force로 테이블 재생성
+      await models.sequelize.sync({ force: false, alter: true }); // SQLite에서는 force로 테이블 재생성
       console.log("Database synced successfully.");
       const userCount = await models.User.count();
       if (userCount === 0) {
@@ -199,48 +199,52 @@ async function startServer() {
     }
 
     // 서버 시작 전 포트 확인 및 정리
-  const server_instance = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
-    console.log(
-      `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-    );
-    if (process.env.APOLLO_PLAYGROUND === "true") {
+    const server_instance = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
       console.log(
-        `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
       );
-    }
-  });
+      if (process.env.APOLLO_PLAYGROUND === "true") {
+        console.log(
+          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+        );
+      }
+    });
 
-  // 오류 처리
-  server_instance.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`);
-      const newPort = PORT + 1;
-      console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
-      app.listen(newPort, "0.0.0.0", () => {
-        console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
-        console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`);
+    // 오류 처리
+    server_instance.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.log(
+          `포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`,
+        );
+        const newPort = PORT + 1;
+        console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
+        app.listen(newPort, "0.0.0.0", () => {
+          console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
+          console.log(
+            `🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`,
+          );
+        });
+      } else {
+        console.error("서버 시작 오류:", err);
+        process.exit(1);
+      }
+    });
+
+    // 프로세스 종료 시 정리
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM 신호를 받았습니다. 서버를 정리합니다...");
+      server_instance.close(() => {
+        process.exit(0);
       });
-    } else {
-      console.error('서버 시작 오류:', err);
-      process.exit(1);
-    }
-  });
-
-  // 프로세스 종료 시 정리
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM 신호를 받았습니다. 서버를 정리합니다...');
-    server_instance.close(() => {
-      process.exit(0);
     });
-  });
 
-  process.on('SIGINT', () => {
-    console.log('SIGINT 신호를 받았습니다. 서버를 정리합니다...');
-    server_instance.close(() => {
-      process.exit(0);
+    process.on("SIGINT", () => {
+      console.log("SIGINT 신호를 받았습니다. 서버를 정리합니다...");
+      server_instance.close(() => {
+        process.exit(0);
+      });
     });
-  });
   } catch (error) {
     console.error("Unable to start server:", error);
     process.exit(1);
