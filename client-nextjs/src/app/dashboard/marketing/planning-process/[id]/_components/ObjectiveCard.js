@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -119,6 +119,15 @@ const ObjectiveCard = ({
       }));
     }
   };
+
+  const toggleChecklistItem = useCallback(
+    (krId, itemIndex) => {
+      console.log('체크리스트 토글:', { krId, itemIndex });
+      onToggleChecklistItem(krId, itemIndex);
+    },
+    [onToggleChecklistItem]
+  );
+
 
   return (
     <Card className="transition-all duration-300 border-0 shadow-lg hover:shadow-xl">
