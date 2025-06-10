@@ -1,0 +1,33 @@
+[nodemon] starting `node index.js`
+/home/runner/workspace/server/schema/marketing/dashboard.js:136
+module.exports = contentSchema;
+                 ^
+
+ReferenceError: contentSchema is not defined
+    at Object.<anonymous> (/home/runner/workspace/server/schema/marketing/dashboard.js:136:18)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Module.require (node:internal/modules/cjs/loader:1311:19)
+    at require (node:internal/modules/helpers:179:18)
+    at Object.<anonymous> (/home/runner/workspace/server/schema/typeDefs.js:190:25)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+
+Node.js v20.18.1
+[nodemon] app crashed - waiting for file changes before starting...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+Error starting server: Error: Query.marketingStats defined in resolvers, but not in schema
+    at addResolversToSchema (/home/runner/workspace/server/node_modules/@graphql-tools/schema/cjs/addResolversToSchema.js:73:35)
+    at makeExecutableSchema (/home/runner/workspace/server/node_modules/@graphql-tools/schema/cjs/makeExecutableSchema.js:80:65)
+    at ApolloServer.constructSchema (/home/runner/workspace/server/node_modules/apollo-server-core/dist/ApolloServer.js:361:50)
+    at new ApolloServerBase (/home/runner/workspace/server/node_modules/apollo-server-core/dist/ApolloServer.js:165:75)
+    at new ApolloServer (/home/runner/workspace/server/node_modules/apollo-server-express/dist/ApolloServer.js:13:1)
+    at startServer (/home/runner/workspace/server/index.js:80:18)
+    at Object.<anonymous> (/home/runner/workspace/server/index.js:217:1)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+[nodemon] app crashed - waiting for file changes before starting
