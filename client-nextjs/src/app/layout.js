@@ -1,10 +1,8 @@
-'use client';
-
-import './globals.css'
-import { Inter } from 'next/font/google'
-import ClientLayout from './clientLayout'
-import { Toaster } from '@/components/ui/toaster.js'
-import AuthInitializer from '@/components/ui/AuthInitializer';
+import "./globals.css";
+import { Inter } from "next/font/google";
+import ClientLayout from "./clientLayout";
+import { Toaster } from "@/components/ui/toaster.js";
+import AuthInitializer from "@/components/ui/AuthInitializer";
 
 const inter = Inter({ subsets: ["latin"] });
 
