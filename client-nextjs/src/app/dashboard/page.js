@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.js";
-import { useTranslation } from "@/hooks/useLanguage";
+import { useTranslation } from "@/hooks/useLanguage.js";
 
 const Dashboard = () => {
   const { t } = useTranslation();

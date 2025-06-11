@@ -1,7 +1,8 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import { useQuery } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -11,17 +12,12 @@ import {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { useTranslation, useLocaleFormat } from "@/hooks/useLanguage.js";
+import { useDebounce } from "@/hooks/useDebounce.js";
 import ProductAddModal from "@/components/products/ProductAddModal.js";
+import CustomCategorySelect from "@/components/common/CustomCategorySelect.js";
+import { GET_CATEGORIES } from "@/lib/graphql/categoryQueries.js";
 
-// Mock data for demonstration
-const mockCategories = [
-  { id: 1, name: "IT솔루션", code: "IT", level: 1, parentId: null },
-  { id: 2, name: "소프트웨어", code: "SW", level: 1, parentId: null },
-  { id: 3, name: "하드웨어", code: "HW", level: 1, parentId: null },
-  { id: 4, name: "컨설팅", code: "CS", level: 1, parentId: null },
-  { id: 5, name: "교육", code: "ED", level: 1, parentId: null },
-];
-
+// Mock data for demonstration - 실제 환경에서는 GraphQL 쿼리로 대체
 const mockProducts = [
   {
     id: 1,
@@ -29,6 +25,7 @@ const mockProducts = [
     code: "ERP-001",
     categoryId: 1,
     category: "IT솔루션",
+    modelName: "Enterprise ERP Pro",
     price: 1200000000,
     consumerPrice: 1350000000,
     cost: 720000000,
@@ -47,6 +44,7 @@ const mockProducts = [
     code: "CRM-001",
     categoryId: 1,
     category: "IT솔루션",
+    modelName: "Customer Pro CRM",
     price: 600000000,
     consumerPrice: 750000000,
     cost: 360000000,
@@ -65,6 +63,7 @@ const mockProducts = [
     code: "OFF-001",
     categoryId: 2,
     category: "소프트웨어",
+    modelName: "Office Professional 2024",
     price: 300000000,
     consumerPrice: 350000000,
     cost: 180000000,
@@ -90,6 +89,9 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
+  // 디바운스된 검색어 (500ms 지연)
+  const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
+
   // Filter and search functionality
   useEffect(() => {
     let filtered = products;
@@ -98,16 +100,17 @@ export default function ProductsPage() {
       filtered = filtered.filter(product => product.categoryId === parseInt(selectedCategory));
     }
 
-    if (searchKeyword) {
+    if (debouncedSearchKeyword) {
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        product.code.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchKeyword.toLowerCase())
+        product.name.toLowerCase().includes(debouncedSearchKeyword.toLowerCase()) ||
+        product.code.toLowerCase().includes(debouncedSearchKeyword.toLowerCase()) ||
+        product.modelName.toLowerCase().includes(debouncedSearchKeyword.toLowerCase()) ||
+        product.description.toLowerCase().includes(debouncedSearchKeyword.toLowerCase())
       );
     }
 
     setFilteredProducts(filtered);
-  }, [products, selectedCategory, searchKeyword]);
+  }, [products, selectedCategory, debouncedSearchKeyword]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -139,11 +142,15 @@ export default function ProductsPage() {
     if (editingProduct) {
       // Update existing product
       setProducts(products.map(p => 
-        p.id === editingProduct.id ? productData : p
+        p.id === editingProduct.id ? { ...productData, id: editingProduct.id } : p
       ));
     } else {
       // Add new product
-      setProducts([...products, productData]);
+      const newProduct = {
+        ...productData,
+        id: Math.max(...products.map(p => p.id), 0) + 1
+      };
+      setProducts([...products, newProduct]);
     }
     
     setShowAddForm(false);
@@ -164,8 +171,8 @@ export default function ProductsPage() {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      active: { label: t('products.active'), className: 'bg-green-100 text-green-800' },
-      inactive: { label: t('products.inactive'), className: 'bg-gray-100 text-gray-800' },
+      active: { label: t('products.active') || '활성', className: 'bg-green-100 text-green-800' },
+      inactive: { label: t('products.inactive') || '비활성', className: 'bg-gray-100 text-gray-800' },
       discontinued: { label: t('products.discontinued') || '단종', className: 'bg-red-100 text-red-800' }
     };
     const statusInfo = statusMap[status] || statusMap.active;
@@ -181,50 +188,43 @@ export default function ProductsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('products.title')}
+            {t('products.title') || '제품 관리'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {t('products.subtitle')}
+            {t('products.subtitle') || '제품 정보를 관리하고 재고를 추적하세요'}
           </p>
         </div>
         <Button 
           onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          + {t('products.addNew')}
+          + {t('products.addNew') || '제품 추가'}
         </Button>
       </div>
 
       {/* 필터 및 검색 */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('common.filter')} 및 {t('common.search')}</CardTitle>
+          <CardTitle>{t('common.filter') || '필터'} 및 {t('common.search') || '검색'}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t('products.category')}
+                {t('products.category') || '카테고리'}
               </label>
-              <select
+              <CustomCategorySelect
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">{t('products.filterByCategory')}</option>
-                {mockCategories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedCategory}
+                placeholder={t('products.filterByCategory') || '카테고리로 필터링'}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t('common.search')}
+                {t('common.search') || '검색'}
               </label>
               <Input
-                placeholder={t('products.searchPlaceholder')}
+                placeholder={t('products.searchPlaceholder') || '제품명, 모델명, 코드로 검색...'}
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -238,7 +238,7 @@ export default function ProductsPage() {
                 }}
                 className="w-full"
               >
-                {t('common.clear')} {t('common.filter')}
+                {t('common.clear') || '초기화'} {t('common.filter') || '필터'}
               </Button>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function ProductsPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {t('products.list')} ({filteredProducts.length}{t('common.count')})
+            {t('products.list') || '제품 목록'} ({filteredProducts.length}{t('common.count') || '개'})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -261,35 +261,41 @@ export default function ProductsPage() {
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                     onClick={() => handleSort('name')}
                   >
-                    {t('products.name')} {getSortIcon('name')}
+                    {t('products.name') || '제품명'} {getSortIcon('name')}
+                  </th>
+                  <th 
+                    className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleSort('modelName')}
+                  >
+                    {t('products.modelName') || '모델명'} {getSortIcon('modelName')}
                   </th>
                   <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                     onClick={() => handleSort('code')}
                   >
-                    {t('products.sku')} {getSortIcon('code')}
+                    {t('products.sku') || '제품코드'} {getSortIcon('code')}
                   </th>
                   <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                     onClick={() => handleSort('category')}
                   >
-                    {t('products.category')} {getSortIcon('category')}
+                    {t('products.category') || '카테고리'} {getSortIcon('category')}
                   </th>
                   <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                     onClick={() => handleSort('price')}
                   >
-                    {t('products.price')} {getSortIcon('price')}
+                    {t('products.price') || '가격'} {getSortIcon('price')}
                   </th>
                   <th 
                     className="text-left p-3 font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                     onClick={() => handleSort('currentStock')}
                   >
-                    {t('products.stock')} {getSortIcon('currentStock')}
+                    {t('products.stock') || '재고'} {getSortIcon('currentStock')}
                   </th>
-                  <th className="text-left p-3 font-semibold">{t('products.status')}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.status') || '상태'}</th>
                   <th className="text-left p-3 font-semibold">{t('products.models') || '모델 수'}</th>
-                  <th className="text-left p-3 font-semibold">{t('products.actions')}</th>
+                  <th className="text-left p-3 font-semibold">{t('products.actions') || '작업'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -300,6 +306,9 @@ export default function ProductsPage() {
                         <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">{product.description}</div>
                       </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="font-medium text-gray-900 dark:text-white">{product.modelName}</div>
                     </td>
                     <td className="p-3 font-mono text-sm">{product.code}</td>
                     <td className="p-3">
@@ -315,15 +324,15 @@ export default function ProductsPage() {
                     </td>
                     <td className="p-3">
                       <div className="text-sm">
-                        <div className="font-medium">{formatNumber(product.currentStock)}{t('common.count')}</div>
-                        <div className="text-gray-500">{t('products.sold') || '판매'}: {formatNumber(product.soldQuantity)}{t('common.count')}</div>
+                        <div className="font-medium">{formatNumber(product.currentStock)}{t('common.count') || '개'}</div>
+                        <div className="text-gray-500">{t('products.sold') || '판매'}: {formatNumber(product.soldQuantity)}{t('common.count') || '개'}</div>
                       </div>
                     </td>
                     <td className="p-3">
                       {getStatusBadge(product.status)}
                     </td>
                     <td className="p-3">
-                      <span className="font-medium">{product.modelsCount}{t('common.count')}</span>
+                      <span className="font-medium">{product.modelsCount}{t('common.count') || '개'}</span>
                     </td>
                     <td className="p-3">
                       <div className="flex space-x-2">
@@ -332,7 +341,7 @@ export default function ProductsPage() {
                           size="sm"
                           onClick={() => handleEdit(product)}
                         >
-                          {t('common.edit')}
+                          {t('common.edit') || '수정'}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -340,7 +349,7 @@ export default function ProductsPage() {
                           onClick={() => handleDelete(product.id)}
                           className="text-red-600 hover:bg-red-50"
                         >
-                          {t('common.delete')}
+                          {t('common.delete') || '삭제'}
                         </Button>
                       </div>
                     </td>
@@ -351,7 +360,7 @@ export default function ProductsPage() {
 
             {filteredProducts.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                {t('products.noProducts')}
+                {t('products.noProducts') || '제품이 없습니다'}
               </div>
             )}
           </div>
@@ -370,7 +379,7 @@ export default function ProductsPage() {
               </div>
               <div className="ml-4">
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {t('common.total')} {t('products.list')}
+                  {t('common.total') || '전체'} {t('products.list') || '제품'}
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">{products.length}</div>
               </div>
@@ -388,7 +397,7 @@ export default function ProductsPage() {
               </div>
               <div className="ml-4">
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {t('products.active')} {t('products.list')}
+                  {t('products.active') || '활성'} {t('products.list') || '제품'}
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {products.filter(p => p.status === 'active').length}
@@ -408,7 +417,7 @@ export default function ProductsPage() {
               </div>
               <div className="ml-4">
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {t('common.total')} {t('products.stock')}
+                  {t('common.total') || '전체'} {t('products.stock') || '재고'}
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(products.reduce((sum, p) => sum + p.currentStock, 0))}
@@ -428,7 +437,7 @@ export default function ProductsPage() {
               </div>
               <div className="ml-4">
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {t('common.total')} {t('products.soldQuantity') || '판매량'}
+                  {t('common.total') || '전체'} {t('products.soldQuantity') || '판매량'}
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(products.reduce((sum, p) => sum + p.soldQuantity, 0))}
@@ -444,6 +453,7 @@ export default function ProductsPage() {
         isOpen={showAddForm}
         onClose={handleCancelForm}
         onSuccess={handleSaveProduct}
+        editingProduct={editingProduct}
       />
     </div>
   );
