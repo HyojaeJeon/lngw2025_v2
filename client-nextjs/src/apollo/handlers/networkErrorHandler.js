@@ -1,53 +1,52 @@
+import { notifyError } from '../../utils/notifications.js';
 
-'use client';
-
-import { showNotification } from '../../utils/notifications';
-
-/**
- * 네트워크 에러를 중앙에서 처리하는 함수
- * @param {Error} networkError - Apollo Link에서 전달된 네트워크 에러 객체
- */
-export const handleNetworkError = (networkError) => {
-  console.error(`[Network error]:`, networkError);
-
-  // AbortError 처리 - 무시하고 계속 진행
-  if (networkError.name === "AbortError") {
-    console.log("Request was aborted, ignoring...");
+export const handleNetworkError = (networkError, lang = 'ko') => {
+  if (!networkError) {
     return;
   }
 
-  // CORS 오류 처리
-  if (networkError.message && networkError.message.includes("CORS")) {
-    console.error("CORS error detected");
-    showNotification('서버 연결 설정에 문제가 있습니다. 관리자에게 문의해주세요.');
-    return;
-  }
+  console.error('Network error:', networkError);
 
-  // 인증 오류 (401)
-  if (networkError.statusCode === 401) {
-    showNotification('인증이 만료되었습니다. 다시 로그인해주세요.');
-    localStorage.removeItem("auth_token");
-    sessionStorage.removeItem("auth_token");
-    if (typeof window !== "undefined") {
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1500);
+  // WebSocket 관련 에러는 조용히 처리 (개발 환경에서만 로그)
+  if (networkError.message && (
+    networkError.message.includes('WebSocket') ||
+    networkError.message.includes('__nextjs_original-stack-frames') ||
+    networkError.message.includes('403') && networkError.message.includes('Forbidden')
+  )) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Development environment network issue (non-critical):', networkError.message);
     }
-    return;
+    return; // 사용자에게 알림을 표시하지 않음
   }
 
-  // 서버 오류 (500번대)
-  if (networkError.statusCode >= 500) {
-    showNotification('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-    return;
+  // 네트워크 에러 타입에 따른 처리
+  if (networkError.statusCode) {
+    switch (networkError.statusCode) {
+      case 401:
+        notifyError('인증이 만료되었습니다. 다시 로그인해주세요.');
+        break;
+      case 403:
+        notifyError('접근 권한이 없습니다.');
+        break;
+      case 404:
+        notifyError('요청한 리소스를 찾을 수 없습니다.');
+        break;
+      case 500:
+        notifyError('서버 내부 오류가 발생했습니다.');
+        break;
+      default:
+        notifyError(`네트워크 오류가 발생했습니다 (${networkError.statusCode})`);
+    }
+  } else if (networkError.message) {
+    // 연결 오류 등
+    if (networkError.message.includes('fetch')) {
+      notifyError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    } else if (networkError.message.includes('timeout')) {
+      notifyError('요청 시간이 초과되었습니다. 다시 시도해주세요.');
+    } else {
+      notifyError('네트워크 오류가 발생했습니다.');
+    }
+  } else {
+    notifyError('알 수 없는 네트워크 오류가 발생했습니다.');
   }
-
-  // 클라이언트 오류 (400번대)
-  if (networkError.statusCode >= 400 && networkError.statusCode < 500) {
-    showNotification('잘못된 요청입니다. 입력값을 확인해주세요.');
-    return;
-  }
-
-  // 일반적인 네트워크 연결 오류
-  showNotification('서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.');
 };

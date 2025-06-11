@@ -91,10 +91,18 @@ const categoryResolvers = {
 
     checkCategoryCode: async (parent, args, context) => {
       const { user, lang } = context;
-      const { code } = args;
+      const { code } = args || {};
       requireAuth(user, lang);
 
       try {
+        // 입력 검증
+        if (!code) {
+          return {
+            isAvailable: false,
+            message: "카테고리 코드가 제공되지 않았습니다",
+          };
+        }
+
         const validation = validateCategoryCode(code);
 
         if (!validation.isValid) {
@@ -111,26 +119,34 @@ const categoryResolvers = {
         if (existingCategory) {
           return {
             isAvailable: false,
-            message: "Category code already exists",
+            message: "이미 존재하는 카테고리 코드입니다",
           };
         }
 
         return {
           isAvailable: true,
-          message: "Category code is available",
+          message: "사용 가능한 카테고리 코드입니다",
         };
       } catch (error) {
         console.error("Error checking category code:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
+        return {
+          isAvailable: false,
+          message: "카테고리 코드 확인 중 오류가 발생했습니다",
+        };
       }
     },
 
     categoryByCode: async (parent, args, context) => {
       const { user, lang } = context;
-      const { code } = args;
+      const { code } = args || {};
       requireAuth(user, lang);
 
       try {
+        // 입력 검증
+        if (!code) {
+          return null;
+        }
+
         const category = await models.Category.findOne({
           where: { code },
         });
@@ -144,21 +160,32 @@ const categoryResolvers = {
   },
 
   Mutation: {
-    createCategory: async (args, { user, lang }) => {
+    createCategory: async (parent, { input }, { user, lang }) => {
       console.log("USER LANG : ", user, lang);
-      console.log("args : ", args);
+      console.log("input : ", input);
       requireAuth(user, lang);
 
       try {
+        // 입력 데이터 유효성 검사
+        if (!input) {
+          throw createError("VALIDATION_ERROR", lang, {
+            details: "입력 데이터가 제공되지 않았습니다",
+          });
+        }
+
         // 필수 필드 검증
         const codeValidation = validateCategoryCode(input.code);
         if (!codeValidation.isValid) {
-          throw createError("VALIDATION_ERROR", lang);
+          throw createError("VALIDATION_ERROR", lang, {
+            details: codeValidation.message,
+          });
         }
 
         const namesValidation = validateCategoryNames(input.names);
         if (!namesValidation.isValid) {
-          throw createError("VALIDATION_ERROR", lang);
+          throw createError("VALIDATION_ERROR", lang, {
+            details: namesValidation.message,
+          });
         }
 
         const trimmedCode = codeValidation.code;
@@ -187,10 +214,23 @@ const categoryResolvers = {
       }
     },
 
-    updateCategory: async ({ id, input }, { user, lang }) => {
+    updateCategory: async (parent, { id, input }, { user, lang }) => {
       requireAuth(user, lang);
 
       try {
+        // 입력 검증
+        if (!id) {
+          throw createError("VALIDATION_ERROR", lang, {
+            details: "카테고리 ID가 제공되지 않았습니다",
+          });
+        }
+
+        if (!input) {
+          throw createError("VALIDATION_ERROR", lang, {
+            details: "수정할 데이터가 제공되지 않았습니다",
+          });
+        }
+
         const category = await models.Category.findByPk(id);
 
         if (!category) {
@@ -201,7 +241,9 @@ const categoryResolvers = {
         if (input.names) {
           const namesValidation = validateCategoryNames(input.names);
           if (!namesValidation.isValid) {
-            throw createError("VALIDATION_ERROR", lang);
+            throw createError("VALIDATION_ERROR", lang, {
+              details: namesValidation.message,
+            });
           }
         }
 
@@ -209,7 +251,9 @@ const categoryResolvers = {
         if (input.code && input.code !== category.code) {
           const codeValidation = validateCategoryCode(input.code);
           if (!codeValidation.isValid) {
-            throw createError("VALIDATION_ERROR", lang);
+            throw createError("VALIDATION_ERROR", lang, {
+              details: codeValidation.message,
+            });
           }
 
           const trimmedCode = codeValidation.code;
@@ -239,19 +283,31 @@ const categoryResolvers = {
       }
     },
 
-    deleteCategory: async ({ id }, { user, lang }) => {
+    deleteCategory: async (parent, { id }, { user, lang }) => {
       requireAuth(user, lang);
 
       try {
+        // 입력 검증
+        if (!id) {
+          throw createError("VALIDATION_ERROR", lang, {
+            details: "카테고리 ID가 제공되지 않았습니다",
+          });
+        }
+
         const category = await models.Category.findByPk(id);
 
         if (!category) {
           throw createError("CATEGORY_NOT_FOUND", lang);
         }
 
+        // 하위 카테고리 존재 여부 확인
+        const childCategories = await models.Category.findAll({
+          where: { parentId: id },
+        });
+
         if (childCategories.length > 0) {
           throw createError("VALIDATION_ERROR", lang, {
-            details: "Cannot delete category with child categories",
+            details: "하위 카테고리가 있는 카테고리는 삭제할 수 없습니다",
           });
         }
 
