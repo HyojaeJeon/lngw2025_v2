@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -15,8 +14,12 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
-import { useLanguage } from '@/hooks/useLanguage.js';
-import { GET_CUSTOMER, GET_USERS, CHECK_COMPANY_NAME } from "@/lib/graphql/queries.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
+import {
+  GET_CUSTOMER,
+  GET_USERS,
+  CHECK_COMPANY_NAME,
+} from "@/lib/graphql/queries.js";
 import {
   UPDATE_CUSTOMER,
   ADD_CONTACT_PERSON,
@@ -63,7 +66,7 @@ import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
 
 const AddressSelector = ({ value, onChange, isEditing }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [address, setAddress] = useState({
     province: "",
     district: "",
@@ -95,7 +98,7 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
       if (addressParts.length >= 3) {
         const [provinceName, districtName, wardName, ...detailParts] =
           addressParts;
-        
+
         // Set display values for read mode
         setAddress((prev) => ({
           ...prev,
@@ -107,11 +110,12 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
 
         // For edit mode, try to find matching items in the dropdown lists
         if (isEditing && addressType.provinces.length > 0) {
-          const matchingProvince = addressType.provinces.find(p => 
-            p.full_name.includes(provinceName) || p.name === provinceName
+          const matchingProvince = addressType.provinces.find(
+            (p) =>
+              p.full_name.includes(provinceName) || p.name === provinceName,
           );
           if (matchingProvince) {
-            setSelected(prev => ({ ...prev, province: matchingProvince }));
+            setSelected((prev) => ({ ...prev, province: matchingProvince }));
           }
         }
       }
@@ -337,7 +341,10 @@ const AddressSelector = ({ value, onChange, isEditing }) => {
           className="h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
           onChange={(e) => {
             const newDetailAddress = e.target.value;
-            setAddress((prev) => ({ ...prev, detailAddress: newDetailAddress }));
+            setAddress((prev) => ({
+              ...prev,
+              detailAddress: newDetailAddress,
+            }));
             const fullAddress =
               `${selected.province?.name || address.province || ""} ${selected.district?.name || address.district || ""} ${selected.ward?.name || address.ward || ""} ${newDetailAddress}`.trim();
             onChange(fullAddress);
@@ -1188,10 +1195,10 @@ export default function CustomerDetailPage() {
   const [originalData, setOriginalData] = useState({});
   const [editingContact, setEditingContact] = useState(null);
   const [showAddContact, setShowAddContact] = useState(false);
-  const [nameValidation, setNameValidation] = useState({ 
-    status: null, 
-    message: "", 
-    isChecking: false 
+  const [nameValidation, setNameValidation] = useState({
+    status: null,
+    message: "",
+    isChecking: false,
   });
 
   const customerId = params.id;
@@ -1201,13 +1208,14 @@ export default function CustomerDetailPage() {
     onCompleted: (data) => {
       if (data?.customer) {
         const customer = data.customer;
-        
+
         // Process all fields safely with proper defaults
         const processedCustomer = {
           id: customer.id,
           name: customer.name || "",
           contactName: customer.contactName || "",
-          assignedUserId: customer.assignedUserId || customer.assignedUser?.id || "",
+          assignedUserId:
+            customer.assignedUserId || customer.assignedUser?.id || "",
           industry: customer.industry || "",
           companyType: customer.companyType || "",
           grade: customer.grade || "",
@@ -1229,7 +1237,7 @@ export default function CustomerDetailPage() {
           createdAt: customer.createdAt || null,
           updatedAt: customer.updatedAt || null,
         };
-        
+
         setOriginalData(processedCustomer);
         setEditData(processedCustomer);
       }
@@ -1243,20 +1251,20 @@ export default function CustomerDetailPage() {
   const [checkCompanyName] = useLazyQuery(CHECK_COMPANY_NAME, {
     onCompleted: (data) => {
       setNameValidation({
-        status: data.checkCompanyName.exists ? 'error' : 'success',
-        message: data.checkCompanyName.exists 
-          ? t('customer.name.duplicate') 
-          : t('customer.name.available'),
-        isChecking: false
+        status: data.checkCompanyName.exists ? "error" : "success",
+        message: data.checkCompanyName.exists
+          ? t("customer.name.duplicate")
+          : t("customer.name.available"),
+        isChecking: false,
       });
     },
     onError: () => {
       setNameValidation({
-        status: 'error',
-        message: t('customer.name.checkError'),
-        isChecking: false
+        status: "error",
+        message: t("customer.name.checkError"),
+        isChecking: false,
       });
-    }
+    },
   });
 
   const [updateCustomer] = useMutation(UPDATE_CUSTOMER);
@@ -1291,7 +1299,8 @@ export default function CustomerDetailPage() {
     const currentData = customer || originalData;
     setEditData({
       ...currentData,
-      assignedUserId: currentData.assignedUserId || currentData.assignedUser?.id || "",
+      assignedUserId:
+        currentData.assignedUserId || currentData.assignedUser?.id || "",
       industry: currentData.industry || "",
       companyType: currentData.companyType || "",
       grade: currentData.grade || "",
@@ -1313,7 +1322,10 @@ export default function CustomerDetailPage() {
   const handleSave = async () => {
     try {
       // Check for name validation error
-      if (nameValidation.status === 'error' && editData.name !== originalData.name) {
+      if (
+        nameValidation.status === "error" &&
+        editData.name !== originalData.name
+      ) {
         toast({
           title: "오류",
           description: nameValidation.message,
@@ -1346,12 +1358,12 @@ export default function CustomerDetailPage() {
           title: "알림",
           description: "변경된 내용이 없습니다.",
         });
-        
+
         // Auto dismiss the toast after 3 seconds
         setTimeout(() => {
           dismiss(toastId);
         }, 3000);
-        
+
         setIsEditing(false);
         return;
       }
@@ -1367,7 +1379,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "고객 정보가 성공적으로 업데이트되었습니다.",
       });
-      
+
       // Auto dismiss the toast after 3 seconds
       setTimeout(() => {
         dismiss(toastId);
@@ -1390,7 +1402,7 @@ export default function CustomerDetailPage() {
         description: "고객 정보 업데이트 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       // Auto dismiss the toast after 5 seconds
       setTimeout(() => {
         dismiss(toastId);
@@ -1405,16 +1417,21 @@ export default function CustomerDetailPage() {
     }));
 
     // Check company name for duplicates only if it's different from original
-    if (field === 'name' && value && value !== originalData.name && value.trim() !== '') {
+    if (
+      field === "name" &&
+      value &&
+      value !== originalData.name &&
+      value.trim() !== ""
+    ) {
       setNameValidation({ status: null, message: "", isChecking: true });
-      
+
       // Debounce the API call
       const timeoutId = setTimeout(() => {
         checkCompanyName({ variables: { name: value } });
       }, 500);
-      
+
       return () => clearTimeout(timeoutId);
-    } else if (field === 'name' && value === originalData.name) {
+    } else if (field === "name" && value === originalData.name) {
       // Reset validation if name is back to original
       setNameValidation({ status: null, message: "", isChecking: false });
     }
@@ -1433,7 +1450,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "담당자가 성공적으로 추가되었습니다.",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 3000);
@@ -1447,7 +1464,7 @@ export default function CustomerDetailPage() {
         description: "담당자 추가 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 5000);
@@ -1467,7 +1484,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "담당자 정보가 성공적으로 업데이트되었습니다.",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 3000);
@@ -1481,7 +1498,7 @@ export default function CustomerDetailPage() {
         description: "담당자 정보 업데이트 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 5000);
@@ -1489,7 +1506,7 @@ export default function CustomerDetailPage() {
   };
 
   const handleDeleteContact = async (contactId) => {
-    if (!confirm("이 담당자를 삭제하시겠습니까?")) return;
+    if (!confirm("이 담당자를 m��제하시겠습니까?")) return;
 
     try {
       await deleteContactPerson({
@@ -1500,7 +1517,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "담당자가 성공적으로 삭제되었습니다.",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 3000);
@@ -1513,7 +1530,7 @@ export default function CustomerDetailPage() {
         description: "담당자 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 5000);
@@ -1533,7 +1550,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "이미지가 성공적으로 추가되었습니다.",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 3000);
@@ -1546,7 +1563,7 @@ export default function CustomerDetailPage() {
         description: "이미지 추가 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 5000);
@@ -1565,7 +1582,7 @@ export default function CustomerDetailPage() {
         title: "성공",
         description: "이미지가 성공적으로 삭제되었습니다.",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 3000);
@@ -1578,7 +1595,7 @@ export default function CustomerDetailPage() {
         description: "이미지 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-      
+
       setTimeout(() => {
         dismiss(toastId);
       }, 5000);
@@ -1661,7 +1678,10 @@ export default function CustomerDetailPage() {
                   <Button
                     onClick={handleSave}
                     className="bg-green-500 hover:bg-green-600"
-                    disabled={nameValidation.status === 'error' && editData.name !== originalData.name}
+                    disabled={
+                      nameValidation.status === "error" &&
+                      editData.name !== originalData.name
+                    }
                   >
                     <Save className="w-4 h-4 mr-2" />
                     저장
@@ -1683,7 +1703,8 @@ export default function CustomerDetailPage() {
                   {t("customer.basicInfo") || "기본 회사 정보"}
                 </CardTitle>
                 <CardDescription className="text-blue-100">
-                  {t("customer.basicInfoDescription") || "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
+                  {t("customer.basicInfoDescription") ||
+                    "고객사의 기본적인 정보를 확인하고 수정할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1701,8 +1722,8 @@ export default function CustomerDetailPage() {
                               handleInputChange("name", e.target.value)
                             }
                             className={`h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl pr-10
-                              ${nameValidation.status === 'error' ? 'border-red-500' : ''}
-                              ${nameValidation.status === 'success' ? 'border-green-500' : ''}
+                              ${nameValidation.status === "error" ? "border-red-500" : ""}
+                              ${nameValidation.status === "success" ? "border-green-500" : ""}
                             `}
                           />
                           {nameValidation.isChecking && (
@@ -1710,15 +1731,17 @@ export default function CustomerDetailPage() {
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
                             </div>
                           )}
-                          {nameValidation.status === 'error' && (
+                          {nameValidation.status === "error" && (
                             <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-500" />
                           )}
-                          {nameValidation.status === 'success' && (
+                          {nameValidation.status === "success" && (
                             <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
                           )}
                         </div>
                         {nameValidation.message && (
-                          <p className={`text-xs ${nameValidation.status === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+                          <p
+                            className={`text-xs ${nameValidation.status === "error" ? "text-red-500" : "text-green-500"}`}
+                          >
                             {nameValidation.message}
                           </p>
                         )}
@@ -1741,12 +1764,17 @@ export default function CustomerDetailPage() {
                           onChange={(userId) =>
                             handleInputChange("assignedUserId", userId)
                           }
-                          placeholder={t("customer.selectAssignedUser") || "담당자를 선택하세요"}
+                          placeholder={
+                            t("customer.selectAssignedUser") ||
+                            "담당자를 선택하세요"
+                          }
                         />
                       </div>
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.assignedUser?.name || t("common.unassigned") || "미배정"}
+                        {displayData.assignedUser?.name ||
+                          t("common.unassigned") ||
+                          "미배정"}
                       </p>
                     )}
                   </div>
@@ -1765,7 +1793,9 @@ export default function CustomerDetailPage() {
                       />
                     ) : (
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
-                        {displayData.industry || t("common.noData") || "정보 없음"}
+                        {displayData.industry ||
+                          t("common.noData") ||
+                          "정보 없음"}
                       </p>
                     )}
                   </div>
@@ -1782,7 +1812,9 @@ export default function CustomerDetailPage() {
                         }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
-                        <option value="">{t("common.selectOption") || "선택하세요"}</option>
+                        <option value="">
+                          {t("common.selectOption") || "선택하세요"}
+                        </option>
                         {Object.entries(companyTypes).map(([value, label]) => (
                           <option key={value} value={value}>
                             {label}
@@ -1793,7 +1825,8 @@ export default function CustomerDetailPage() {
                       <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white">
                         {companyTypes[displayData.companyType] ||
                           displayData.companyType ||
-                          t("common.noData") || "정보 없음"}
+                          t("common.noData") ||
+                          "정보 없음"}
                       </p>
                     )}
                   </div>
@@ -1810,7 +1843,9 @@ export default function CustomerDetailPage() {
                         }
                         className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                       >
-                        <option value="">{t("common.selectOption") || "선택하세요"}</option>
+                        <option value="">
+                          {t("common.selectOption") || "선택하세요"}
+                        </option>
                         {Object.entries(gradeLabels).map(([value, label]) => (
                           <option key={value} value={value}>
                             {label}
@@ -1830,7 +1865,8 @@ export default function CustomerDetailPage() {
                         >
                           {gradeLabels[displayData.grade] ||
                             displayData.grade ||
-                            t("common.unclassified") || "미분류"}
+                            t("common.unclassified") ||
+                            "미분류"}
                         </span>
                       </div>
                     )}
@@ -1886,7 +1922,8 @@ export default function CustomerDetailPage() {
                   {t("customer.contactInfo") || "연락처 정보"}
                 </CardTitle>
                 <CardDescription className="text-green-100">
-                  {t("customer.contactInfoDescription") || "고객사의 연락처 정보를 관리합니다"}
+                  {t("customer.contactInfoDescription") ||
+                    "고객사의 연락처 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1940,7 +1977,8 @@ export default function CustomerDetailPage() {
                   {t("customer.imageGallery") || "이미지 갤러리"}
                 </CardTitle>
                 <CardDescription className="text-purple-100">
-                  {t("customer.imageGalleryDescription") || "고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다"}
+                  {t("customer.imageGalleryDescription") ||
+                    "고객사의 프로필 이미지와 시설 사진을 확인하고 관리할 수 있습니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -1993,7 +2031,8 @@ export default function CustomerDetailPage() {
                   </Button>
                 </CardTitle>
                 <CardDescription className="text-orange-100">
-                  {t("customer.contactPersonsDescription") || "고객사의 담당자들의 상세 정보를 관리합니다"}
+                  {t("customer.contactPersonsDescription") ||
+                    "고객사의 담당자들의 상세 정보를 관리합니다"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -2167,8 +2206,10 @@ export default function CustomerDetailPage() {
                         </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {displayData.createdAt 
-                          ? new Date(displayData.createdAt).toLocaleDateString("ko-KR")
+                        {displayData.createdAt
+                          ? new Date(displayData.createdAt).toLocaleDateString(
+                              "ko-KR",
+                            )
                           : t("common.noData") || "정보 없음"}
                       </span>
                     </div>
@@ -2181,8 +2222,10 @@ export default function CustomerDetailPage() {
                         </span>
                       </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {displayData.updatedAt 
-                          ? new Date(displayData.updatedAt).toLocaleDateString("ko-KR")
+                        {displayData.updatedAt
+                          ? new Date(displayData.updatedAt).toLocaleDateString(
+                              "ko-KR",
+                            )
                           : t("common.noData") || "정보 없음"}
                       </span>
                     </div>

@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { useToast } from "@/hooks/useToast.js";
 import { GET_CUSTOMERS } from "@/lib/graphql/queries.js";
 
@@ -22,7 +22,7 @@ export default function CustomersPage() {
   const [selectedGrade, setSelectedGrade] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const router = useRouter();
 
   const itemsPerPage = 6;
@@ -532,7 +532,9 @@ export default function CustomersPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/customers/${customer.id}`)
+                    }
                     className="transition-all duration-300 transform hover:shadow-md
                                group-hover:border-blue-300 group-hover:text-blue-600 
                                dark:group-hover:border-blue-500 dark:group-hover:text-blue-400"
@@ -542,7 +544,9 @@ export default function CustomersPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/customers/${customer.id}`)
+                    }
                     className="transition-all duration-300 transform hover:shadow-md
                                group-hover:border-green-300 group-hover:text-green-600 
                                dark:group-hover:border-green-500 dark:group-hover:text-green-400"

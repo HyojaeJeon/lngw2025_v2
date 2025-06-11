@@ -37,7 +37,7 @@ import {
   Eye,
   ImageIcon,
 } from "lucide-react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ const ImageLoadingModal = ({ isVisible }) => {
 };
 
 const AddressSelector = ({ value, onChange }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [address, setAddress] = useState({
     city: "",
     district: "",
@@ -275,7 +275,7 @@ const AddressSelector = ({ value, onChange }) => {
 };
 
 const SearchableUserSelect = ({ value, onChange, placeholder }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
@@ -455,7 +455,7 @@ const ImageUploadSection = ({
   isMultiple = false,
   setImageLoading,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -655,7 +655,7 @@ const ContactPersonForm = ({
   removeContact,
   setImageLoading,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [profileImagePreview, setProfileImagePreview] = useState(
     contact.profileImage || null,
   );
@@ -967,7 +967,7 @@ const ContactPersonForm = ({
 };
 
 export default function AddCustomerPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const router = useRouter();
   const [imageLoading, setImageLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
