@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguageContext } from "@/contexts/languageContext.js";
 import { useTheme } from "@/contexts/themeContext.js";
 import { getToken } from "@/lib/auth.js";
 import { Globe, Sun, Moon } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
-  const { t, language, changeLanguage } = useLanguage();
+  const { t, language, changeLanguage } = useLanguageContext();
   const { theme, toggleTheme } = useTheme();
   const [isRedirecting, setIsRedirecting] = useState(false);
 

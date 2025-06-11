@@ -1,13 +1,13 @@
+"use client";
 
-
-import "./globals.css";
-import { Inter } from "next/font/google";
-import { LanguageProvider } from "@/contexts/languageContext.js";
-import { ThemeProvider } from "@/contexts/themeContext.js";
-import { ApolloProviderWrapper } from "@/providers/apolloProvider.js";
-import { ReduxProvider } from "@/providers/reduxProvider.js";
-import { Toaster } from "@/components/ui/toaster.js";
-import AuthInitializer from "@/components/ui/AuthInitializer";
+import './globals.css'
+import { Inter } from 'next/font/google'
+import { ReduxProvider } from '@/providers/reduxProvider'
+import ApolloProviderWrapper from '@/providers/apolloProvider'
+import { ThemeProvider } from '@/contexts/themeContext'
+import { LanguageProvider } from '@/contexts/languageContext'
+import { Toaster } from '@/components/ui/toaster.js'
+import AuthInitializer from '@/components/ui/AuthInitializer';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,5 +34,5 @@ export default function RootLayout({ children }) {
         </ReduxProvider>
       </body>
     </html>
-  );
+  )
 }
