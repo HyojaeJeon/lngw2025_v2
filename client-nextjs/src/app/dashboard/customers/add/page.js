@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { Button } from "@/components/ui/button.js";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
+import { toast } from "react-hot-toast";
 import {
   GET_USERS,
   GET_ADDRESSES,
@@ -36,6 +37,10 @@ import {
   Camera,
   Eye,
   ImageIcon,
+  Building,
+  Globe,
+  Industry,
+  Save,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useLanguage.js";
 import Image from "next/image";
@@ -843,7 +848,7 @@ const ContactPersonForm = ({
                   ? new Date(contact.birthDate).getDate()
                   : 1;
                 if (year) {
-                  const newDate = new Date(year, month - 1, day)
+                  const newDate = newDate(year, month - 1, day)
                     .toISOString()
                     .split("T")[0];
                   updateContact(index, "birthDate", newDate);
@@ -1182,7 +1187,7 @@ export default function AddCustomerPage() {
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 mt-1">
                   {t("customer.add.description") ||
-                    "고객사 정보와 담당자  ��보를 입력해 주세요"}
+                    "고객사 정보와 담당자 정보를 입력해 주세요"}
                 </p>
               </div>
             </div>

@@ -77,7 +77,9 @@
     "info": "정보",
     "unassigned": "미배정",
     "unknown": "알 수 없음",
-    "noPosition": "직책 없음"
+    "noPosition": "직책 없음",
+    "uploading": "업로드 중...",
+    "saving": "저장 중..."
   },
   "navigation": {
     "dashboard": "대시보드",
@@ -253,13 +255,40 @@
   "customers": {
     "title": "고객 관리",
     "addCustomer": "고객 추가",
+    "addDescription": "새로운 고객 정보를 등록하세요",
     "customerList": "고객 목록",
     "customerDetails": "고객 상세정보",
     "companyName": "회사명",
+    "companyNamePlaceholder": "회사명을 입력하세요",
     "contactPerson": "담당자",
+    "contactPersonPlaceholder": "담당자명을 입력하세요",
     "phone": "전화번호",
+    "phonePlaceholder": "전화번호를 입력하세요",
+    "email": "이메일",
+    "emailPlaceholder": "이메일을 입력하세요",
     "address": "주소",
-    "status": "상태"
+    "addressPlaceholder": "주소를 입력하세요",
+    "industry": "업종",
+    "industryPlaceholder": "업종을 입력하세요",
+    "companyType": "회사 유형",
+    "selectCompanyType": "회사 유형을 선택하세요",
+    "customerGrade": "고객 등급",
+    "assignedUser": "담당자",
+    "selectAssignedUser": "담당자를 선택하세요",
+    "status": "상태",
+    "basicInfo": "기본 정보",
+    "socialMedia": "소셜 미디어",
+    "profileImage": "프로필 이미지",
+    "profileImagePreview": "프로필 이미지 미리보기",
+    "uploadImage": "이미지 업로드",
+    "imageUploadHint": "JPG, PNG 파일만 업로드 가능합니다 (최대 1MB)",
+    "validation": {
+      "requiredFields": "필수 항목을 입력해주세요"
+    },
+    "messages": {
+      "createSuccess": "고객이 성공적으로 등록되었습니다",
+      "createError": "고객 등록 중 오류가 발생했습니다"
+    }
   },
   "marketing": {
     "title": "마케팅",

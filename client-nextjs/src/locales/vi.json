@@ -3,8 +3,8 @@
     "loading": "Đang tải...",
     "save": "Lưu",
     "cancel": "Hủy",
-    "edit": "Chỉnh sửa",
     "delete": "Xóa",
+    "edit": "Chỉnh sửa",
     "add": "Thêm",
     "search": "Tìm kiếm",
     "filter": "Lọc",
@@ -18,7 +18,14 @@
     "success": "Thành công",
     "error": "Lỗi",
     "warning": "Cảnh báo",
-    "info": "Thông tin"
+    "info": "Thông tin",
+    "clear": "Xóa",
+    "total": "Tổng cộng",
+    "count": "mục",
+    "unknown": "Không xác định",
+    "noPosition": "Không có chức vụ",
+    "uploading": "Đang tải lên...",
+    "saving": "Đang lưu..."
   },
   "navigation": {
     "dashboard": "Bảng điều khiển",
@@ -292,7 +299,7 @@
     "settings": "Cài đặt Marketing"
   },
   "sidebar": {
-    "companyName": "LN Partners 그룹웨어",
+    "companyName": "LN Partners Groupware",
     "subTitle": "Phần mềm quản lý doanh nghiệp"
   },
   "profile": {

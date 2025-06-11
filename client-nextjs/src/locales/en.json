@@ -23,7 +23,9 @@
     "total": "Total",
     "count": "items",
     "unknown": "Unknown",
-    "noPosition": "No Position"
+    "noPosition": "No Position",
+    "uploading": "Uploading...",
+    "saving": "Saving..."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -67,16 +69,43 @@
   "customers": {
     "title": "Customer Management",
     "addCustomer": "Add Customer",
+    "addDescription": "Register new customer information",
     "customerList": "Customer List",
     "customerGrades": "Customer Grades",
     "customerHistory": "Customer History",
     "customerVoc": "Customer VOC",
     "customerDetails": "Customer Details",
     "companyName": "Company Name",
+    "companyNamePlaceholder": "Enter company name",
     "contactPerson": "Contact Person",
+    "contactPersonPlaceholder": "Enter contact person name",
     "phone": "Phone",
+    "phonePlaceholder": "Enter phone number",
+    "email": "Email",
+    "emailPlaceholder": "Enter email address",
     "address": "Address",
-    "status": "Status"
+    "addressPlaceholder": "Enter address",
+    "industry": "Industry",
+    "industryPlaceholder": "Enter industry",
+    "companyType": "Company Type",
+    "selectCompanyType": "Select company type",
+    "customerGrade": "Customer Grade",
+    "assignedUser": "Assigned User",
+    "selectAssignedUser": "Select assigned user",
+    "status": "Status",
+    "basicInfo": "Basic Information",
+    "socialMedia": "Social Media",
+    "profileImage": "Profile Image",
+    "profileImagePreview": "Profile image preview",
+    "uploadImage": "Upload Image",
+    "imageUploadHint": "Only JPG, PNG files allowed (max 1MB)",
+    "validation": {
+      "requiredFields": "Please fill in required fields"
+    },
+    "messages": {
+      "createSuccess": "Customer created successfully",
+      "createError": "Error occurred while creating customer"
+    }
   },
   "sales": {
     "overview": "Sales Overview",
@@ -141,7 +170,8 @@
     }
   },
   "sidebar": {
-    "companyName": "LN Partners Groupware"
+    "companyName": "LN Partners Groupware",
+    "subTitle": "Business Management Software"
   },
   "marketing": {
     "title": "Marketing",
