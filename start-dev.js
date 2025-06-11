@@ -8,12 +8,13 @@ console.log("🌍 Environment:", process.env.REPLIT ? "Replit" : "Local");
 
 // Start Next.js client
 const clientProcess = spawn(
-  "npx",
-  ["next", "dev", "-p", "3000", "--hostname", "0.0.0.0"],
+  "npm",
+  ["run", "dev"],
   {
     cwd: path.join(__dirname, "client-nextjs"),
     stdio: "inherit",
-    env: { ...process.env, NODE_ENV: "development" }
+    env: { ...process.env, NODE_ENV: "development" },
+    shell: true
   },
 );
 
@@ -21,7 +22,8 @@ const clientProcess = spawn(
 const serverProcess = spawn("node", ["index.js"], {
   cwd: path.join(__dirname, "server"),
   stdio: "inherit",
-  env: { ...process.env, NODE_ENV: "development", PORT: "5000" }
+  env: { ...process.env, NODE_ENV: "development", PORT: "5000" },
+  shell: true
 });
 
 // Handle process cleanup

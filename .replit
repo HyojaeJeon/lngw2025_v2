@@ -51,7 +51,7 @@ args = "sleep 3"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd server && npm run dev &"
+args = "export REPLIT=true && export DB_DIALECT=sqlite && cd server && npm run dev &"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -59,7 +59,7 @@ args = "sleep 8"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd client-nextjs && npm run dev -- --port 3000"
+args = "export REPLIT=true && cd client-nextjs && npm run dev -- --port 3000"
 
 [[ports]]
 localPort = 5000

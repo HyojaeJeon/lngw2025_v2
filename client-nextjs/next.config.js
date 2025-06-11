@@ -30,9 +30,16 @@ const nextConfig = {
     forceSwcTransforms: true,
   },
   
+  // Cross origin 허용 설정 (Replit 환경)
+  allowedDevOrigins: [
+    '*.replit.dev',
+    'localhost',
+    '127.0.0.1'
+  ],
+  
   // 이미지 최적화 설정
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', '*.replit.dev'],
     unoptimized: process.env.REPLIT ? true : false,
   },
   

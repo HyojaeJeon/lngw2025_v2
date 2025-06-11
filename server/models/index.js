@@ -4,6 +4,26 @@ const config = require("../config/config.js");
 const env = process.env.NODE_ENV || "development";
 const dbConfig = config[env];
 
+// Replit 환경 감지 - 더 확실한 감지
+const isReplit = !!(
+  process.env.REPLIT || 
+  process.env.REPLIT_DB_URL || 
+  process.env.REPL_ID ||
+  process.env.REPL_SLUG ||
+  process.cwd().includes('/home/runner') ||
+  process.env.DB_DIALECT === 'sqlite'
+);
+
+console.log("🔧 Models - Environment:", env);
+console.log("🔧 Models - Is Replit:", isReplit);
+console.log("🔧 Models - Database dialect:", dbConfig.dialect);
+console.log("🔧 Models - Database config:", {
+  dialect: dbConfig.dialect,
+  storage: dbConfig.storage,
+  host: dbConfig.host,
+  database: dbConfig.database
+});
+
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -12,7 +32,8 @@ const sequelize = new Sequelize(
     host: dbConfig.host,
     port: dbConfig.port,
     dialect: dbConfig.dialect,
-    timezone: dbConfig.timezone,
+    storage: dbConfig.storage, // SQLite용
+    timezone: dbConfig.dialect === 'sqlite' ? undefined : dbConfig.timezone, // SQLite에서는 timezone 제거
     logging: dbConfig.logging,
     pool: dbConfig.pool,
     retry: dbConfig.retry

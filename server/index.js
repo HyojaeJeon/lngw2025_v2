@@ -31,11 +31,23 @@ const getLanguageFromHeaders = (headers) => {
   return "en"; // 지원하지 않는 언어일 경우 영어로 대체
 };
 
-// Replit 환경 감지
-const isReplit = process.env.REPLIT || process.env.REPLIT_DB_URL;
+// Replit 환경 감지 - 더 확실한 감지
+const isReplit = !!(
+  process.env.REPLIT || 
+  process.env.REPLIT_DB_URL || 
+  process.env.REPL_ID ||
+  process.env.REPL_SLUG ||
+  process.cwd().includes('/home/runner') ||
+  process.env.DB_DIALECT === 'sqlite'
+);
+
+console.log("🌍 서버 환경:", isReplit ? "Replit (SQLite)" : "Local (MySQL)");
+console.log("🔧 현재 디렉토리:", process.cwd());
+console.log("🔧 환경 변수 REPLIT:", process.env.REPLIT);
+console.log("🔧 환경 변수 DB_DIALECT:", process.env.DB_DIALECT);
 
 // ──────────────────────────────────────────────────────────────────────────
-// 포트 정리 및 MySQL 시작 함수
+// 포트 정리 및 데이터베이스 초기화 함수
 // ──────────────────────────────────────────────────────────────────────────
 const { exec } = require('child_process');
 const util = require('util');
@@ -67,7 +79,8 @@ async function initializeDatabase() {
     
     // Replit 환경에서는 SQLite 사용
     if (isReplit) {
-      console.log('Replit 환경에서 SQLite를 사용합니다.');
+      console.log('✅ Replit 환경에서 SQLite를 사용합니다.');
+      console.log('📁 SQLite 파일 위치: ./database.sqlite');
       return;
     }
 
@@ -95,7 +108,7 @@ async function initializeDatabase() {
     }
 
     if (!serviceStarted) {
-      console.log('MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.');
+      console.log('⚠️  MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.');
       return;
     }
 
@@ -105,16 +118,16 @@ async function initializeDatabase() {
       await execPromise('mysql -u root -e "CREATE USER IF NOT EXISTS \'appuser\'@\'localhost\' IDENTIFIED BY \'gywo9988!@\';"');
       await execPromise('mysql -u root -e "GRANT ALL PRIVILEGES ON lngw2025_db.* TO \'appuser\'@\'localhost\';"');
       await execPromise('mysql -u root -e "FLUSH PRIVILEGES;"');
-      console.log('데이터베이스 설정이 완료되었습니다.');
+      console.log('✅ 데이터베이스 설정이 완료되었습니다.');
     } catch (dbError) {
-      console.log('데이터베이스 설정 중 오류 (이미 존재할 수 있음):', dbError.message);
+      console.log('⚠️  데이터베이스 설정 중 오류 (이미 존재할 수 있음):', dbError.message);
     }
 
     // MySQL 연결 대기
     await new Promise(resolve => setTimeout(resolve, 3000));
   } catch (error) {
-    console.error('데이터베이스 초기화 오류:', error.message);
-    console.log('SQLite를 사용하여 계속 진행합니다.');
+    console.error('❌ 데이터베이스 초기화 오류:', error.message);
+    console.log('🔄 SQLite를 사용하여 계속 진행합니다.');
   }
 }
 
@@ -286,8 +299,40 @@ async function startServer() {
     await initializeDatabase();
 
     console.log("Connecting to database...");
-    await models.sequelize.authenticate();
-    console.log("Database connection established successfully.");
+    
+    try {
+      await models.sequelize.authenticate();
+      console.log("✅ Database connection established successfully.");
+    } catch (dbError) {
+      console.error("❌ Database connection failed:", dbError.message);
+      
+      // MySQL 연결 실패 시 SQLite로 전환
+      if (dbError.message.includes('ECONNREFUSED') || dbError.message.includes('connect')) {
+        console.log("🔄 MySQL 연결 실패, SQLite로 전환합니다...");
+        
+        // 환경 변수 강제 설정
+        process.env.REPLIT = "true";
+        process.env.DB_DIALECT = "sqlite";
+        process.env.DB_STORAGE = "./database.sqlite";
+        
+        // 모델을 다시 로드
+        delete require.cache[require.resolve('./models')];
+        const modelsReloaded = require('./models');
+        
+        try {
+          await modelsReloaded.sequelize.authenticate();
+          console.log("✅ SQLite 데이터베이스 연결 성공!");
+          
+          // 전역 models를 업데이트
+          Object.assign(models, modelsReloaded);
+        } catch (sqliteError) {
+          console.error("❌ SQLite 연결도 실패:", sqliteError.message);
+          throw sqliteError;
+        }
+      } else {
+        throw dbError;
+      }
+    }
 
     if (process.env.NODE_ENV === "development" || isReplit) {
       console.log("Syncing database...");
