@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
 import { LOGIN_MUTATION } from "@/lib/graphql/mutations.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from "@/hooks/useLanguage.js";
 import { setCredentials } from "@/store/slices/authSlice.js";
 import { Globe, Sun, Moon, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "@/contexts/themeContext.js";

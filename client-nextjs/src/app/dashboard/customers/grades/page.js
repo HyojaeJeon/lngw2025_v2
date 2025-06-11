@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 export default function CustomerGradesPage() {
   const { t } = useLanguage();

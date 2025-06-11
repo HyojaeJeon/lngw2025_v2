@@ -12,15 +12,16 @@ import ImageUploader from '@/components/common/ImageUploader';
 
 // GraphQL 쿼리 및 뮤테이션
 const GET_CATEGORIES = gql`
-  query GetCategories($filter: CategoryFilterInput, $limit: Int) {
-    categories(filter: $filter, limit: $limit) {
-      success
-      categories {
-        id
-        code
-        names
-        isActive
+  query GetCategories($isActive: Boolean) {
+    categories(isActive: $isActive) {
+      id
+      code
+      names {
+        ko
+        en
+        vi
       }
+      isActive
     }
   }
 `;
@@ -163,7 +164,7 @@ const ProductAddModal = ({ isOpen, onClose, onSuccess }) => {
 
   // GraphQL 훅
   const { data: categoriesData, loading: categoriesLoading } = useQuery(GET_CATEGORIES, {
-    variables: { filter: { isActive: true }, limit: 100 },
+    variables: { isActive: true },
     onError: (error) => handleError(error)
   });
 
@@ -191,7 +192,7 @@ const ProductAddModal = ({ isOpen, onClose, onSuccess }) => {
   const [createProductModel] = useMutation(CREATE_PRODUCT_MODEL);
 
   // 카테고리 옵션 준비
-  const categoryOptions = categoriesData?.categories?.categories || [];
+  const categoryOptions = categoriesData?.categories || [];
 
   // 폼 필드 변경 처리
   const handleFieldChange = (field, value) => {

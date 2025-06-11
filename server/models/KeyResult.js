@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const KeyResult = sequelize.define('KeyResult', {
     id: {
@@ -10,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'MarketingObjectives',
+        model: 'marketing_objectives',
         key: 'id',
       },
     },
@@ -60,6 +59,17 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'key_results',
     timestamps: true,
   });
+
+  KeyResult.associate = (models) => {
+    KeyResult.belongsTo(models.MarketingObjective, {
+      foreignKey: 'objectiveId',
+      as: 'objective'
+    });
+    KeyResult.hasMany(models.ChecklistItem, {
+      foreignKey: 'keyResultId',
+      as: 'checklistItems'
+    });
+  };
 
   return KeyResult;
 };

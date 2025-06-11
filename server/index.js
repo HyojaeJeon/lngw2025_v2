@@ -9,6 +9,9 @@ const resolvers = require("./resolvers");
 const models = require("./models");
 const seedData = require("./seeders");
 
+// JWT Secret 설정 - 프로덕션에서는 환경변수로 관리
+const JWT_SECRET = process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+
 // ====================
 // 언어 파싱 헬퍼 함수
 // ====================
@@ -52,57 +55,53 @@ const whitelist =
 
 async function startServer() {
   const app = express();
+  
+  // 기본 라우트 (리디렉션)
   app.get("/", (req, res) => {
-    // Replit 환경에서 Next.js로 리다이렉트
     if (process.env.REPLIT_DB_URL || process.env.REPLIT) {
       return res.redirect(
         "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002/",
       );
     }
 
-    // 로컬 개발 모드
     if (process.env.NODE_ENV !== "production") {
       return res.redirect("http://localhost:3000");
     }
 
     return res.redirect("https://gw.lnpartners.biz");
   });
+
   // ──────────────────────────────────────────────────────────────────────────
-  // 1) Express 레벨에서 CORS 설정
+  // CORS 설정 (더 간단하고 허용적으로)
   // ──────────────────────────────────────────────────────────────────────────
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Postman / curl 처럼 origin이 없을 때도 허용하고 싶으면 이 줄을 유지:
-        if (!origin) return callback(null, true);
-
-        if (whitelist.includes(origin)) {
-          // whitelist에 포함된 origin이면 허용
-          return callback(null, true);
-        } else {
-          // 그렇지 않으면 CORS 에러
-          return callback(
-            new Error(`CORS policy: This origin (${origin}) is not allowed.`),
-            false,
-          );
-        }
-      },
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3002",
+        "http://localhost:3003",
+        "http://127.0.0.1:3000",
+        "https://gw.lnpartners.biz"
+      ],
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language'],
     }),
   );
 
+  // Preflight 요청 처리
+  app.options('*', cors());
+
   // ──────────────────────────────────────────────────────────────────────────
-  // 2) Apollo Server 인스턴스 생성 및 미들웨어 연결
-  //    (Cors를 false로 놓으면, 위 Express 설정을 그대로 탄다)
+  // Apollo Server 설정
   // ──────────────────────────────────────────────────────────────────────────
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    introspection: process.env.APOLLO_INTROSPECTION === "true",
-    playground: process.env.APOLLO_PLAYGROUND === "true",
+    introspection: true,
+    playground: true,
     formatError: (formattedError, error) => {
-      // Apollo Server에서 기본으로 제공하는 에러 포맷팅을 그대로 사용하되,
-      // 커스텀 로깅 등을 추가할 수 있습니다.
       console.error("GraphQL Error:", {
         message: formattedError.message,
         code: formattedError.extensions?.code,
@@ -120,53 +119,43 @@ async function startServer() {
 
       try {
         const authHeader = req.headers.authorization;
-        console.log("authHeader", authHeader);
-        if (authHeader) {
+        if (authHeader && authHeader.startsWith('Bearer ')) {
           const token = authHeader.replace("Bearer ", "");
-          console.log("token", token);
-          if (token) {
-            const decoded = jwt.verify(
-              token,
-              process.env.JWT_SECRET || "your-secret-key",
-            );
-            // JWT에서 userId로 실제 사용자 정보 조회
-            user = await models.User.findByPk(decoded.userId);
-            if (user) {
-              // context에 전달할 사용자 정보 설정
-              user = {
-                id: user.id,
-                userId: user.id, // resolvers에서 context.user.userId로 접근할 수 있도록
-                email: user.email,
-                role: user.role,
-              };
+          if (token && token !== 'null' && token !== 'undefined') {
+            try {
+              const decoded = jwt.verify(token, JWT_SECRET);
+              
+              const foundUser = await models.User.findByPk(decoded.userId);
+              if (foundUser) {
+                user = {
+                  id: foundUser.id,
+                  userId: foundUser.id,
+                  email: foundUser.email,
+                  role: foundUser.role,
+                };
+                console.log("User authenticated successfully:", user.email);
+              } else {
+                console.log("User not found in database for userId:", decoded.userId);
+              }
+            } catch (jwtError) {
+              console.log("JWT verification failed:", jwtError.message);
             }
           }
         }
       } catch (error) {
-        console.log("JWT verification failed:", error.message);
-        // 토큰이 유효하지 않아도 에러를 던지지 않고 user를 null로 설정
-        user = null;
+        console.log("Authorization processing error:", error.message);
       }
 
       return { user, lang };
     },
   });
+
   await server.start();
+  
   server.applyMiddleware({
     app,
     path: "/graphql",
-    cors: {
-      origin: (origin, callback) => {
-        if (!origin || whitelist.includes(origin)) {
-          return callback(null, true);
-        }
-        return callback(
-          new Error(`CORS policy: This origin (${origin}) is not allowed.`),
-          false,
-        );
-      },
-      credentials: true,
-    },
+    cors: false, // CORS는 Express에서 처리
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -182,20 +171,14 @@ async function startServer() {
   // 4) DB 연결 & Express 서버 시작
   // ──────────────────────────────────────────────────────────────────────────
   try {
-    console.log("Connecting to SQLite database...");
+    console.log("Connecting to database...");
     await models.sequelize.authenticate();
     console.log("Database connection established successfully.");
 
     if (process.env.NODE_ENV === "development") {
-      // 데이터베이스 동기화 (SQLite용)
       console.log("Syncing database...");
-      await models.sequelize.sync({ force: false, alter: true }); // SQLite에서는 force로 테이블 재생성
+      await models.syncDatabase();
       console.log("Database synced successfully.");
-      const userCount = await models.User.count();
-      if (userCount === 0) {
-        console.log("No seed data found. Creating initial data...");
-        await seedData();
-      }
     }
 
     // 서버 시작 전 포트 확인 및 정리

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { useSelector, useDispatch } from "react-redux";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { UPDATE_USER_PROFILE, VERIFY_CURRENT_PASSWORD, CHANGE_PASSWORD } from "@/lib/graphql/mutations.js";
 import { GET_ME } from "@/lib/graphql/queries.js";
 import { setUser } from "@/store/slices/authSlice.js";

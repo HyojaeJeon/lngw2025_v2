@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { useTheme } from "@/contexts/themeContext.js";
 import {
   Settings,

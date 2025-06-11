@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { ArrowLeft, Target, Plus, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 
 // Custom hooks
@@ -72,6 +72,30 @@ export default function PlanningProcessDetailPage() {
     removeChecklistItem,
   } = objectiveManagement;
 
+    // 체크리스트 항목 토글
+    const toggleChecklistItem = useCallback((krId, itemIndex)=>{
+      console.log('체크리스트 토글:', {
+          krId,
+          itemIndex
+      });
+
+      setEditingObjectiveData(prev => {
+          const keyResults = prev.keyResults.map(kr => {
+              if (kr.id === krId) {
+                  const checklist = [...kr.checklist];
+                  checklist[itemIndex] = {
+                      ...checklist[itemIndex],
+                      completed: !checklist[itemIndex].completed
+                  };
+                  return { ...kr, checklist };
+              }
+              return kr;
+          });
+          return { ...prev, keyResults };
+      });
+  }, [setEditingObjectiveData]);
+
+
   // 핵심 결과(Key Results) 추가 핸들러 (한 번에 1개만, 타입 교체)
   const onAddKeyResult = (type) => {
     setEditingObjectiveData((prev) => {
@@ -138,28 +162,6 @@ export default function PlanningProcessDetailPage() {
     );
   }
 
-  // 체크리스트 항목 토글
-  const toggleChecklistItem = useCallback((krId, itemIndex)=>{
-      console.log('체크리스트 토글:', {
-          krId,
-          itemIndex
-      });
-
-      setEditingObjectiveData(prev => {
-          const keyResults = prev.keyResults.map(kr => {
-              if (kr.id === krId) {
-                  const checklist = [...kr.checklist];
-                  checklist[itemIndex] = {
-                      ...checklist[itemIndex],
-                      completed: !checklist[itemIndex].completed
-                  };
-                  return { ...kr, checklist };
-              }
-              return kr;
-          });
-          return { ...prev, keyResults };
-      });
-  }, [setEditingObjectiveData]);
 
 
   return (

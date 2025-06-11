@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { GET_SALES_OPPORTUNITIES, GET_CUSTOMERS } from "@/lib/graphql/queries.js";
 import { CREATE_SALES_OPPORTUNITY, UPDATE_SALES_OPPORTUNITY, DELETE_SALES_OPPORTUNITY } from "@/lib/graphql/mutations.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 export default function SalesOpportunitiesPage() {
   const { t } = useLanguage();

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import {
   Shield,
   Settings,

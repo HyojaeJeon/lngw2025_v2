@@ -2,6 +2,19 @@ const { gql } = require("apollo-server-express");
 
 const abtestSchemaExtensions = gql`
   # ====================
+  # ABTEST TYPES
+  # ====================
+  type ABTestStats {
+    totalTests: Int!
+    activeTests: Int!
+    completedTests: Int!
+    avgImprovement: Float!
+    topPerformingVariant: ABTestVariant
+    active: Int!
+    completed: Int!
+  }
+
+  # ====================
   # ABTEST INPUT TYPES
   # ====================
   input ABTestGroupInput {

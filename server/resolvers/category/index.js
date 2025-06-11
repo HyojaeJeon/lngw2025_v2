@@ -35,7 +35,8 @@ const validateCategoryNames = (names) => {
 const categoryResolvers = {
   Query: {
     categories: async (parent, { parentId, level, isActive }, { user, lang }) => {
-      requireAuth(user, lang);
+      // 카테고리 목록은 공개적으로 접근 가능
+      // requireAuth(user, lang);
 
       try {
         const where = {};

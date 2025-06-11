@@ -8,6 +8,9 @@ const {
   handleDatabaseError 
 } = require("../../lib/errors");
 
+// JWT Secret 설정 - index.js와 동일하게 설정
+const JWT_SECRET = process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+
 // ====================
 // 유효성 검사 헬퍼 함수
 // ====================
@@ -221,7 +224,7 @@ const authResolvers = {
         const expiresIn = input.rememberMe ? '30d' : '7d';
         const token = jwt.sign(
           { userId: user.id, email: user.email, rememberMe: input.rememberMe },
-          process.env.JWT_SECRET || 'your-secret-key',
+          JWT_SECRET,
           { expiresIn }
         );
 
@@ -271,7 +274,7 @@ const authResolvers = {
         const expiresIn = rememberMe ? "30d" : "7d";
         const token = jwt.sign(
           { userId: user.id, email: user.email },
-          process.env.JWT_SECRET || "your-secret-key",
+          JWT_SECRET,
           { expiresIn },
         );
 

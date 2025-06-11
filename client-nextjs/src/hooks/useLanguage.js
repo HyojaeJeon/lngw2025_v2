@@ -84,9 +84,20 @@ export const useLanguage = () => {
     [currentLanguage],
   );
 
-  // 번역 함수
+  // 번역 함수 - 안전한 문자열 반환 보장
   const t = useCallback(
-    (key) => key.split(".").reduce((obj, k) => obj?.[k], translations) || key,
+    (key) => {
+      if (!key || typeof key !== 'string') return key || '';
+      
+      const result = key.split(".").reduce((obj, k) => obj?.[k], translations);
+      
+      // 결과가 문자열이 아닌 경우 키를 반환
+      if (typeof result !== 'string') {
+        return key;
+      }
+      
+      return result || key;
+    },
     [translations],
   );
 
@@ -125,8 +136,111 @@ export const useTranslation = () => {
   const translations = ALL_MESSAGES[currentLanguage] || {};
 
   const t = useCallback((key) => {
-    return key.split(".").reduce((obj, k) => obj?.[k], translations) || key;
+    if (!key || typeof key !== 'string') return key || '';
+    
+    const result = key.split(".").reduce((obj, k) => obj?.[k], translations);
+    
+    // 결과가 문자열이 아닌 경우 키를 반환
+    if (typeof result !== 'string') {
+      return key;
+    }
+    
+    return result || key;
   }, [translations]);
 
   return { t, currentLanguage };
+};
+
+// ====================
+// 로케일 포맷 전용 훅
+// ====================
+export const useLocaleFormat = () => {
+  const currentLanguage = useSelector(selectCurrentLanguage);
+
+  // 통화 포맷 함수
+  const formatCurrency = useCallback((amount, currency = 'KRW') => {
+    if (!amount && amount !== 0) return '';
+    
+    const locale = currentLanguage === 'ko' ? 'ko-KR' 
+                 : currentLanguage === 'vi' ? 'vi-VN' 
+                 : 'en-US';
+    
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (error) {
+      // fallback to basic formatting
+      return `${currency} ${Number(amount).toLocaleString()}`;
+    }
+  }, [currentLanguage]);
+
+  // 숫자 포맷 함수
+  const formatNumber = useCallback((number) => {
+    if (!number && number !== 0) return '';
+    
+    const locale = currentLanguage === 'ko' ? 'ko-KR' 
+                 : currentLanguage === 'vi' ? 'vi-VN' 
+                 : 'en-US';
+    
+    try {
+      return new Intl.NumberFormat(locale).format(number);
+    } catch (error) {
+      // fallback to basic formatting
+      return Number(number).toLocaleString();
+    }
+  }, [currentLanguage]);
+
+  // 퍼센트 포맷 함수
+  const formatPercent = useCallback((number, decimals = 1) => {
+    if (!number && number !== 0) return '';
+    
+    const locale = currentLanguage === 'ko' ? 'ko-KR' 
+                 : currentLanguage === 'vi' ? 'vi-VN' 
+                 : 'en-US';
+    
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'percent',
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(number / 100);
+    } catch (error) {
+      // fallback to basic formatting
+      return `${number}%`;
+    }
+  }, [currentLanguage]);
+
+  // 날짜 포맷 함수
+  const formatDate = useCallback((date, options = {}) => {
+    if (!date) return '';
+    
+    const locale = currentLanguage === 'ko' ? 'ko-KR' 
+                 : currentLanguage === 'vi' ? 'vi-VN' 
+                 : 'en-US';
+    
+    const defaultOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      ...options
+    };
+    
+    try {
+      return new Intl.DateTimeFormat(locale, defaultOptions).format(new Date(date));
+    } catch (error) {
+      // fallback to basic formatting
+      return new Date(date).toLocaleDateString();
+    }
+  }, [currentLanguage]);
+
+  return {
+    formatCurrency,
+    formatNumber,
+    formatPercent,
+    formatDate,
+  };
 };

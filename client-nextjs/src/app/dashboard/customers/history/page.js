@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 export default function CustomerHistoryPage() {
   const { t } = useLanguage();

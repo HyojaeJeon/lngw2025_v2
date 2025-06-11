@@ -37,7 +37,7 @@ import {
   Eye,
   ImageIcon,
 } from "lucide-react";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";

@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "db:start": "mysqld --user=$(whoami) --datadir=$(pwd)/../mysql-data --socket=/tmp/mysql.sock --port=3306 &",
-    "dev": "npm run db:start && nodemon index.js",
+    "db:start": "echo MySQL should be running as a service on Windows",
+    "dev": "nodemon index.js",
+    
+
+    "dev:with-db": "npm run db:start && nodemon index.js",
     "seed": "node seeders/index.js"
   },
   "dependencies": {

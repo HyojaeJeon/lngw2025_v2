@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import { Button } from "@/components/ui/button.js";
+import { Input } from "@/components/ui/input.js";
+import { Badge } from "@/components/ui/badge.js";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.js";
-import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input.js";
+import { useLanguage } from "@/hooks/useLanguage.js";
 import { useToast } from "@/hooks/useToast.js";
-import { useLanguage } from "@/contexts/languageContext.js";
 import { GET_CUSTOMERS } from "@/lib/graphql/queries.js";
-import { useRouter } from "next/navigation";
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");

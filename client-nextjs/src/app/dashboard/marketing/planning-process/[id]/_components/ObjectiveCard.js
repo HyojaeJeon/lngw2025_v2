@@ -27,7 +27,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { calculateObjectiveProgress } from "../_utils/calculations";
-import { useLanguage } from "@/contexts/languageContext";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 const ObjectiveCard = ({
   objective,

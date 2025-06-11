@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "../../hooks/useLanguage.js";
@@ -334,8 +334,19 @@ export function ResizableSidebar({ children }) {
   const [isResizing, setIsResizing] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const activeMenuRef = useRef(null);
+
+  // 안전한 번역 함수
+  const safeTranslate = useCallback((key) => {
+    try {
+      const result = t(key);
+      return typeof result === 'string' ? result : key;
+    } catch (error) {
+      console.warn('Translation error for key:', key, error);
+      return key;
+    }
+  }, [t]);
 
   const toggleSubmenu = (itemName) => {
     setExpandedMenus((prev) => ({
@@ -369,6 +380,29 @@ export function ResizableSidebar({ children }) {
     document.addEventListener("mouseup", stopDrag);
   };
 
+  // 번역이 로드되지 않은 경우 로딩 상태 표시
+  if (!currentLanguage) {
+    return (
+      <div className="flex min-h-screen w-full">
+        <aside
+          className="bg-white dark:bg-gray-800 shadow-lg relative h-screen flex flex-col"
+          style={{ width: `${sidebarWidth}px` }}
+        >
+          <div className="p-6 flex-1 overflow-y-auto">
+            <div className="mb-8">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                Loading...
+              </h1>
+            </div>
+          </div>
+        </aside>
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen w-full">
       {/* 사이드바 */}
@@ -380,10 +414,10 @@ export function ResizableSidebar({ children }) {
           {/* 회사 로고 */}
           <div className="mb-8">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              {t("sidebar.companyName")}
+              {safeTranslate("sidebar.companyName")}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t("sidebar.subTitle")}
+              {safeTranslate("sidebar.subTitle")}
             </p>
           </div>
 
@@ -422,7 +456,7 @@ export function ResizableSidebar({ children }) {
                         {item.icon}
                       </span>
                       <span className="transition-all duration-300 group-hover:translate-x-1">
-                        {t(item.name)}
+                        {safeTranslate(item.name)}
                       </span>
                       {(itemIsActive || submenuIsActive) && (
                         <div className="ml-auto w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
@@ -476,7 +510,7 @@ export function ResizableSidebar({ children }) {
                                 }
                               `}
                             >
-                              {t(subItem.name)}
+                              {safeTranslate(subItem.name)}
                             </Link>
                           );
                         })}
@@ -500,8 +534,10 @@ export function ResizableSidebar({ children }) {
         ></div>
       </aside>
 
-      {/* 메인 컨텐츠 */}
-      <main className="flex-1 overflow-hidden">{children}</main>
+      {/* 메인 콘텐츠 */}
+      <main className="flex-1">
+        {children}
+      </main>
     </div>
   );
 }
@@ -510,7 +546,18 @@ export function ResizableSidebar({ children }) {
 export function Sidebar({ isOpen, onToggle }) {
   const [expandedMenus, setExpandedMenus] = useState({});
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+
+  // 안전한 번역 함수
+  const safeTranslate = useCallback((key) => {
+    try {
+      const result = t(key);
+      return typeof result === 'string' ? result : key;
+    } catch (error) {
+      console.warn('Translation error for key:', key, error);
+      return key;
+    }
+  }, [t]);
 
   const toggleSubmenu = (itemName) => {
     setExpandedMenus((prev) => ({
@@ -546,10 +593,10 @@ export function Sidebar({ isOpen, onToggle }) {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t("sidebar.companyName")}
+                {safeTranslate("sidebar.companyName")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t("sidebar.subTitle")}
+                {safeTranslate("sidebar.subTitle")}
               </p>
             </div>
             <button
@@ -592,7 +639,7 @@ export function Sidebar({ isOpen, onToggle }) {
                       >
                         {item.icon}
                       </span>
-                      <span>{t(item.name)}</span>
+                      <span>{safeTranslate(item.name)}</span>
                       {(itemIsActive || submenuIsActive) && (
                         <div className="ml-auto w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
                       )}
@@ -645,7 +692,7 @@ export function Sidebar({ isOpen, onToggle }) {
                                 }
                               `}
                             >
-                              {t(subItem.name)}
+                              {safeTranslate(subItem.name)}
                             </Link>
                           );
                         })}

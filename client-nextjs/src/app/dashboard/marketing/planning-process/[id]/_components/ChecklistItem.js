@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { CheckCircle, Circle, Trash2 } from "lucide-react";
-import { useLanguage } from "@/contexts/languageContext";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 const ChecklistItem = ({
   item,

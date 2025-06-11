@@ -11,14 +11,16 @@ import { onError } from "@apollo/client/link/error";
 import { store } from "../store";
 import { selectCurrentLanguage } from "../store/slices/languageSlice";
 
-const CURSOR_URL = "http://localhost:50001/graphql";
+// 서버 URL 설정 - 로컬 개발용
+const LOCAL_URL = "http://localhost:5002/graphql";
 const REPLIT_URL = "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
 
 const httpLink = createHttpLink({
-  uri:
-    process.env.NODE_ENV === "production"
-      ? process.env.NEXT_PUBLIC_API_URL
-      : CURSOR_URL,
+  uri: LOCAL_URL,
+  credentials: 'include', // CORS 쿠키 허용
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -32,13 +34,19 @@ const authLink = setContext((_, { headers }) => {
   }
 
   // Redux 스토어에서 현재 언어 설정 가져오기
-  const currentLanguage = selectCurrentLanguage(store.getState());
+  let currentLanguage = "ko";
+  try {
+    currentLanguage = selectCurrentLanguage(store.getState()) || "ko";
+  } catch (error) {
+    console.warn("Failed to get language from store:", error);
+  }
 
   return {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : "",
-      "Accept-Language": currentLanguage || "ko", // 기본값은 한국어
+      "Accept-Language": currentLanguage,
+      "Content-Type": "application/json",
     },
   };
 });
@@ -54,12 +62,17 @@ const errorLink = onError(
     }
 
     if (networkError) {
-      console.error(`Network error: ${networkError}`);
+      console.error(`Network error:`, networkError);
 
       // AbortError 처리 - 무시하고 계속 진행
       if (networkError.name === "AbortError") {
         console.log("Request was aborted, ignoring...");
         return;
+      }
+
+      // CORS 오류 처리
+      if (networkError.message && networkError.message.includes('CORS')) {
+        console.error('CORS error detected. Please check server configuration.');
       }
 
       if (networkError.statusCode === 401) {
@@ -97,6 +110,9 @@ export const apolloClient = new ApolloClient({
       errorPolicy: "all",
     },
     query: {
+      errorPolicy: "all",
+    },
+    mutate: {
       errorPolicy: "all",
     },
   },

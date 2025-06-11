@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const ChecklistItem = sequelize.define('ChecklistItem', {
     id: {
@@ -10,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'KeyResults',
+        model: 'key_results',
         key: 'id',
       },
     },
@@ -44,6 +43,13 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'checklist_items',
     timestamps: true,
   });
+
+  ChecklistItem.associate = (models) => {
+    ChecklistItem.belongsTo(models.KeyResult, {
+      foreignKey: 'keyResultId',
+      as: 'keyResult'
+    });
+  };
 
   return ChecklistItem;
 };

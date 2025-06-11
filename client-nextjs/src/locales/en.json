@@ -32,6 +32,72 @@
     "success": "Success",
     "failed": "Failed"
   },
+  "login": {
+    "title": "Login",
+    "description": "Sign in to your account to access the service",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "submit": "Sign In",
+    "loading": "Signing in...",
+    "success": "Login successful",
+    "success.description": "Redirecting to dashboard",
+    "error": "Login failed",
+    "error.description": "Please check your email or password",
+    "register": {
+      "link": "Don't have an account? Sign up"
+    }
+  },
+  "register": {
+    "title": "Sign Up",
+    "description": "Create a new account to get started",
+    "name": "Name",
+    "name.placeholder": "Enter your name",
+    "email": "Email",
+    "email.invalid": "Invalid email format",
+    "password": "Password",
+    "password.confirm": "Confirm Password",
+    "password.strength": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong"
+    },
+    "department": "Department",
+    "position": "Position",
+    "employeeId": "Employee ID",
+    "joinDate": "Join Date",
+    "birthDate": "Birth Date",
+    "phone": {
+      "country": "Country Code",
+      "number": "Phone Number",
+      "invalid": "Invalid phone number format"
+    },
+    "nationality": "Nationality",
+    "address": "Address",
+    "address.placeholder": "Enter your address",
+    "visaStatus": "Visa Status",
+    "emergencyContact": "Emergency Contact",
+    "addEmergencyContact": "Add Emergency Contact",
+    "submit": "Sign Up",
+    "loading": "Creating account...",
+    "department": {
+      "sales": "Sales",
+      "inventory": "Inventory",
+      "marketing": "Marketing",
+      "accounting": "Accounting",
+      "support": "Support",
+      "other": "Other"
+    },
+    "nationality": {
+      "vietnam": "Vietnam",
+      "korea": "Korea",
+      "usa": "USA",
+      "japan": "Japan",
+      "china": "China",
+      "thailand": "Thailand",
+      "other": "Other"
+    }
+  },
   "header": {
     "notifications": "Notifications",
     "profile": "Profile",
@@ -62,7 +128,6 @@
     "subTitle": "Groupware",
     "menuTitle": "Menu"
   },
-
   "dashboard": "Dashboard",
   "profile": "Profile",
   "customers": "Customers",
@@ -73,27 +138,23 @@
   "accounting": "Accounting",
   "employees": "Employees",
   "settings": "Settings",
-
   "customers.list": "Customer List",
   "customers.add": "Add Customer",
   "customers.voc": "Voice of Customer",
   "customers.history": "Customer History",
   "customers.grades": "Customer Grades",
-
   "products.list": "Product List",
   "products.add": "Add Product",
   "products.categories": "Categories",
   "products.models": "Models",
   "products.competitors": "Competitors",
   "products.inventory": "Inventory",
-
   "sales.dashboard": "Sales Dashboard",
   "sales.opportunities": "Opportunities",
   "sales.pipeline": "Pipeline",
   "sales.quotes": "Quotes",
   "sales.activities": "Activities",
   "sales.kpi": "KPI",
-
   "revenue.dashboard": "Revenue Dashboard",
   "revenue.record": "Records",
   "revenue.quotes": "Quotes",
@@ -101,7 +162,6 @@
   "revenue.payment": "Payment",
   "revenue.statistics": "Statistics",
   "revenue.goals": "Goals",
-
   "marketing.dashboard": "Marketing Dashboard",
   "marketing.brandStrategy": "Brand Strategy",
   "marketing.marketAnalysis": "Market Analysis",
@@ -117,7 +177,6 @@
   "marketing.engagement": "Engagement",
   "marketing.insights": "Insights",
   "marketing.settings": "Marketing Settings",
-
   "accounting.dashboard": "Accounting Dashboard",
   "accounting.voucher": "Voucher",
   "accounting.ledger": "Ledger",
@@ -126,7 +185,6 @@
   "accounting.tax": "Tax",
   "accounting.budget": "Budget",
   "accounting.reports": "Reports",
-
   "employees.dashboard": "Employee Dashboard",
   "employees.leave": "Leave",
   "employees.salary": "Salary",
@@ -134,7 +192,6 @@
   "employees.attendance": "Attendance",
   "employees.evaluation": "Evaluation",
   "employees.communication": "Communication",
-
   "settings.dashboard": "Settings Dashboard",
   "settings.accessControl": "Access Control",
   "settings.general": "General Settings",
@@ -145,7 +202,6 @@
   "settings.dataManagement": "Data Management",
   "settings.auditLogs": "Audit Logs",
   "settings.billing": "Billing",
-
   "products": {
     "title": "Product Management",
     "subtitle": "Manage your company products and services",
@@ -180,7 +236,6 @@
     "soldQuantity": "Sold Quantity",
     "models": "Model Count",
     "discontinued": "Discontinued",
-
     "categories": {
       "title": "Category Management",
       "subtitle": "Register and manage product categories",

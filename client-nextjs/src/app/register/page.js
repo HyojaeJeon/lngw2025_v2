@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
-import LoadingModal from "@/components/ui/LoadingModal.js";
+import { LoadingModal } from "@/components/ui/LoadingModal.js";
 import { REGISTER_MUTATION } from "@/lib/graphql/mutations.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from "@/hooks/useLanguage.js";
 import { setCredentials } from "@/store/slices/authSlice.js";
 import { Globe, Sun, Moon, Trash2, Plus, Eye, EyeOff, Phone, Calendar } from "lucide-react";
 import { useTheme } from "@/contexts/themeContext.js";
@@ -842,7 +842,8 @@ export default function RegisterPage() {
                             phoneNumber: "",
                           })
                         }
-                      >Update register page touse correct mutation.<Plus className="w-4 h-4 mr-2" />
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
                         {t("register.addEmergencyContact")}
                       </Button>
                     </div>

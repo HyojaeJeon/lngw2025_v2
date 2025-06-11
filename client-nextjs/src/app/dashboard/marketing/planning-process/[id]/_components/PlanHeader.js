@@ -14,7 +14,7 @@ import {
   Save,
   X
 } from "lucide-react";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { calculateOverallProgress } from "../_utils/calculations";
 import { UPDATE_MARKETING_PLAN, GET_USERS_FOR_ASSIGNMENT } from "@/lib/graphql/marketingMutations.js";
 

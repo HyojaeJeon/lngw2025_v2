@@ -21,9 +21,6 @@ const categorySchema = require("./category");
 // Product schema
 const productSchema = require("./product");
 
-// Sales schema
-const salesSchema = require("./sales");
-
 // Marketing schemas
 const contentSchema = require("./marketing/content");
 const dashboardSchema = require("./marketing/dashboard");
@@ -43,7 +40,6 @@ const typeDefs = mergeTypeDefs([
   customerSchema,
   categorySchema,
   productSchema,
-  salesSchema,
   contentSchema,
   dashboardSchema,
   insightsSchema,

@@ -1,10 +1,9 @@
-
 const dotenv = require("dotenv");
 dotenv.config();
 
 const commonConfig = {
   dialect: "mysql",
-  timezone: process.env.DB_TIMEZONE || "+00:00",
+  timezone: process.env.DB_TIMEZONE || "+09:00",
   logging: process.env.NODE_ENV === "development" ? console.log : false,
   pool: { 
     max: 5, 
@@ -28,8 +27,8 @@ const commonConfig = {
 
 module.exports = {
   development: {
-    username: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
+    username: process.env.DB_USER || "appuser",
+    password: process.env.DB_PASSWORD || "gywo9988!@",
     database: process.env.DB_NAME || "lngw2025_db",
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || 3306,

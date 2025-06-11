@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import {
   ArrowLeft,
   Target,

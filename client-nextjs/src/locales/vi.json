@@ -32,6 +32,72 @@
     "success": "Thành công",
     "failed": "Thất bại"
   },
+  "login": {
+    "title": "Đăng nhập",
+    "description": "Đăng nhập vào tài khoản của bạn để sử dụng dịch vụ",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "rememberMe": "Ghi nhớ đăng nhập",
+    "submit": "Đăng nhập",
+    "loading": "Đang đăng nhập...",
+    "success": "Đăng nhập thành công",
+    "success.description": "Đang chuyển đến bảng điều khiển",
+    "error": "Đăng nhập thất bại",
+    "error.description": "Vui lòng kiểm tra email hoặc mật khẩu",
+    "register": {
+      "link": "Chưa có tài khoản? Đăng ký"
+    }
+  },
+  "register": {
+    "title": "Đăng ký",
+    "description": "Tạo tài khoản mới để bắt đầu sử dụng dịch vụ",
+    "name": "Họ tên",
+    "name.placeholder": "Nhập họ tên của bạn",
+    "email": "Email",
+    "email.invalid": "Định dạng email không hợp lệ",
+    "password": "Mật khẩu",
+    "password.confirm": "Xác nhận mật khẩu",
+    "password.strength": {
+      "weak": "Yếu",
+      "medium": "Trung bình",
+      "strong": "Mạnh"
+    },
+    "department": "Phòng ban",
+    "position": "Chức vụ",
+    "employeeId": "Mã nhân viên",
+    "joinDate": "Ngày vào làm",
+    "birthDate": "Ngày sinh",
+    "phone": {
+      "country": "Mã quốc gia",
+      "number": "Số điện thoại",
+      "invalid": "Định dạng số điện thoại không hợp lệ"
+    },
+    "nationality": "Quốc tịch",
+    "address": "Địa chỉ",
+    "address.placeholder": "Nhập địa chỉ của bạn",
+    "visaStatus": "Tình trạng visa",
+    "emergencyContact": "Liên hệ khẩn cấp",
+    "addEmergencyContact": "Thêm liên hệ khẩn cấp",
+    "submit": "Đăng ký",
+    "loading": "Đang tạo tài khoản...",
+    "department": {
+      "sales": "Bán hàng",
+      "inventory": "Kho hàng",
+      "marketing": "Marketing",
+      "accounting": "Kế toán",
+      "support": "Hỗ trợ",
+      "other": "Khác"
+    },
+    "nationality": {
+      "vietnam": "Việt Nam",
+      "korea": "Hàn Quốc",
+      "usa": "Mỹ",
+      "japan": "Nhật Bản",
+      "china": "Trung Quốc",
+      "thailand": "Thái Lan",
+      "other": "Khác"
+    }
+  },
   "header": {
     "notifications": "Thông báo",
     "profile": "Hồ sơ",
@@ -62,7 +128,6 @@
     "subTitle": "Groupware",
     "menuTitle": "Menu"
   },
-
   "dashboard": "Bảng điều khiển",
   "profile": "Hồ sơ",
   "customers": "Khách hàng",
@@ -73,27 +138,23 @@
   "accounting": "Kế toán",
   "employees": "Nhân viên",
   "settings": "Cài đặt",
-
   "customers.list": "Danh sách khách hàng",
   "customers.add": "Thêm khách hàng",
   "customers.voc": "Tiếng nói khách hàng",
   "customers.history": "Lịch sử khách hàng",
   "customers.grades": "Cấp độ khách hàng",
-
   "products.list": "Danh sách sản phẩm",
   "products.add": "Thêm sản phẩm",
   "products.categories": "Danh mục",
   "products.models": "Mô hình",
   "products.competitors": "Đối thủ",
   "products.inventory": "Kho hàng",
-
   "sales.dashboard": "Bảng điều khiển bán hàng",
   "sales.opportunities": "Cơ hội bán hàng",
   "sales.pipeline": "Quy trình bán hàng",
   "sales.quotes": "Báo giá",
   "sales.activities": "Hoạt động bán hàng",
   "sales.kpi": "KPI bán hàng",
-
   "revenue.dashboard": "Bảng điều khiển doanh thu",
   "revenue.record": "Bản ghi",
   "revenue.quotes": "Báo giá",
@@ -101,7 +162,6 @@
   "revenue.payment": "Thanh toán",
   "revenue.statistics": "Thống kê",
   "revenue.goals": "Mục tiêu",
-
   "marketing.dashboard": "Bảng điều khiển marketing",
   "marketing.brandStrategy": "Chiến lược thương hiệu",
   "marketing.marketAnalysis": "Phân tích thị trường",
@@ -117,7 +177,6 @@
   "marketing.engagement": "Tương tác",
   "marketing.insights": "Thông tin chi tiết",
   "marketing.settings": "Cài đặt marketing",
-
   "accounting.dashboard": "Bảng điều khiển kế toán",
   "accounting.voucher": "Chứng từ",
   "accounting.ledger": "Sổ cái",
@@ -126,7 +185,6 @@
   "accounting.tax": "Thuế",
   "accounting.budget": "Ngân sách",
   "accounting.reports": "Báo cáo",
-
   "employees.dashboard": "Bảng điều khiển nhân viên",
   "employees.leave": "Nghỉ phép",
   "employees.salary": "Lương",
@@ -134,7 +192,6 @@
   "employees.attendance": "Chấm công",
   "employees.evaluation": "Đánh giá",
   "employees.communication": "Giao tiếp",
-
   "settings.dashboard": "Bảng điều khiển cài đặt",
   "settings.accessControl": "Kiểm soát truy cập",
   "settings.general": "Cài đặt chung",
@@ -145,7 +202,6 @@
   "settings.dataManagement": "Quản lý dữ liệu",
   "settings.auditLogs": "Nhật ký kiểm toán",
   "settings.billing": "Thanh toán",
-
   "products": {
     "title": "Quản lý sản phẩm",
     "subtitle": "Quản lý sản phẩm và dịch vụ của công ty",
@@ -180,7 +236,6 @@
     "soldQuantity": "Số lượng đã bán",
     "models": "Số lượng mô hình",
     "discontinued": "Ngừng sản xuất",
-
     "categories": {
       "title": "Quản lý danh mục",
       "subtitle": "Đăng ký và quản lý danh mục sản phẩm",

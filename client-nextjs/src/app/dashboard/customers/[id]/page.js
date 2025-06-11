@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { GET_CUSTOMER, GET_USERS, CHECK_COMPANY_NAME } from "@/lib/graphql/queries.js";
 import {
   UPDATE_CUSTOMER,

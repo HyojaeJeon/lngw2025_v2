@@ -4,12 +4,20 @@ const config = require("../config/config.js");
 const env = process.env.NODE_ENV || "development";
 const dbConfig = config[env];
 
-const sequelize = new Sequelize({
-  dialect: dbConfig.dialect,
-  storage: dbConfig.storage,
-  logging: dbConfig.logging,
-  pool: dbConfig.pool,
-});
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    timezone: dbConfig.timezone,
+    logging: dbConfig.logging,
+    pool: dbConfig.pool,
+    retry: dbConfig.retry
+  }
+);
 
 // Import models
 const User = require("./User")(sequelize, Sequelize.DataTypes);
@@ -116,5 +124,65 @@ Object.keys(models).forEach(modelName => {
     models[modelName].associate(models);
   }
 });
+
+// 테이블 생성 순서 정의
+const syncOrder = [
+  'User',
+  'Category',
+  'Product',
+  'ProductModel',
+  'ProductTag',
+  'Warehouse',
+  'Customer',
+  'ContactPerson',
+  'CustomerImage',
+  'Address',
+  'Service',
+  'SalesOpportunity',
+  'SalesItem',
+  'Payment',
+  'InventoryRecord',
+  'StockMovement',
+  'MarketingPlan',
+  'MarketingObjective',
+  'KeyResult',
+  'ChecklistItem',
+  'Content',
+  'ScheduledPost',
+  'PostingLog',
+  'PlatformStat',
+  'TrendAnalysis',
+  'TrendingKeyword',
+  'ABTestGroup',
+  'ABTestVariant',
+  'ContentRecommendation',
+  'Skill',
+  'EmergencyContact',
+  'Experience'
+];
+
+// 데이터베이스 동기화 함수
+const syncDatabase = async () => {
+  try {
+    // force: false로 설정하여 기존 테이블 유지
+    await sequelize.sync({ force: false });
+    
+    // 순서대로 테이블 동기화
+    for (const modelName of syncOrder) {
+      if (models[modelName]) {
+        await models[modelName].sync({ force: false });
+        console.log(`Synced table: ${modelName}`);
+      }
+    }
+    
+    console.log('Database sync completed successfully');
+  } catch (error) {
+    console.error('Error syncing database:', error);
+    throw error;
+  }
+};
+
+// syncDatabase 함수를 모듈에 추가
+models.syncDatabase = syncDatabase;
 
 module.exports = models;

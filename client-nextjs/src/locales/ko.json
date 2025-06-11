@@ -32,6 +32,72 @@
     "success": "성공",
     "failed": "실패"
   },
+  "login": {
+    "title": "로그인",
+    "description": "계정에 로그인하여 서비스를 이용하세요",
+    "email": "이메일",
+    "password": "비밀번호",
+    "rememberMe": "로그인 상태 유지",
+    "submit": "로그인",
+    "loading": "로그인 중...",
+    "success": "로그인 성공",
+    "success.description": "대시보드로 이동합니다",
+    "error": "로그인 실패",
+    "error.description": "이메일 또는 비밀번호를 확인해주세요",
+    "register": {
+      "link": "계정이 없으신가요? 회원가입"
+    }
+  },
+  "register": {
+    "title": "회원가입",
+    "description": "새 계정을 만들어 서비스를 시작하세요",
+    "name": "이름",
+    "name.placeholder": "이름을 입력하세요",
+    "email": "이메일",
+    "email.invalid": "올바른 이메일 형식이 아닙니다",
+    "password": "비밀번호",
+    "password.confirm": "비밀번호 확인",
+    "password.strength": {
+      "weak": "약함",
+      "medium": "보통",
+      "strong": "강함"
+    },
+    "department": "부서",
+    "position": "직책",
+    "employeeId": "사번",
+    "joinDate": "입사일",
+    "birthDate": "생년월일",
+    "phone": {
+      "country": "국가 코드",
+      "number": "전화번호",
+      "invalid": "올바른 전화번호 형식이 아닙니다"
+    },
+    "nationality": "국적",
+    "address": "주소",
+    "address.placeholder": "주소를 입력하세요",
+    "visaStatus": "비자 상태",
+    "emergencyContact": "비상 연락처",
+    "addEmergencyContact": "비상 연락처 추가",
+    "submit": "회원가입",
+    "loading": "회원가입 처리 중...",
+    "department": {
+      "sales": "영업",
+      "inventory": "재고",
+      "marketing": "마케팅",
+      "accounting": "회계",
+      "support": "지원",
+      "other": "기타"
+    },
+    "nationality": {
+      "vietnam": "베트남",
+      "korea": "한국",
+      "usa": "미국",
+      "japan": "일본",
+      "china": "중국",
+      "thailand": "태국",
+      "other": "기타"
+    }
+  },
   "header": {
     "notifications": "알림",
     "profile": "프로필",
@@ -62,7 +128,6 @@
     "subTitle": "그룹웨어",
     "menuTitle": "메뉴"
   },
-
   "dashboard": "대시보드",
   "profile": "프로필",
   "customers": "고객",
@@ -73,27 +138,23 @@
   "accounting": "회계",
   "employees": "직원",
   "settings": "설정",
-
   "customers.list": "고객 목록",
   "customers.add": "고객 추가",
   "customers.voc": "고객의 소리",
   "customers.history": "고객 이력",
   "customers.grades": "고객 등급",
-
   "products.list": "상품 목록",
   "products.add": "상품 추가",
   "products.categories": "카테고리",
   "products.models": "모델",
   "products.competitors": "경쟁사",
   "products.inventory": "재고",
-
   "sales.dashboard": "영업 대시보드",
   "sales.opportunities": "영업 기회",
   "sales.pipeline": "영업 파이프라인",
   "sales.quotes": "견적",
   "sales.activities": "영업 활동",
   "sales.kpi": "영업 KPI",
-
   "revenue.dashboard": "수익 대시보드",
   "revenue.record": "수익 기록",
   "revenue.quotes": "견적서",
@@ -101,7 +162,6 @@
   "revenue.payment": "결제",
   "revenue.statistics": "통계",
   "revenue.goals": "목표",
-
   "marketing.dashboard": "마케팅 대시보드",
   "marketing.brandStrategy": "브랜드 전략",
   "marketing.marketAnalysis": "시장 분석",
@@ -117,7 +177,6 @@
   "marketing.engagement": "참여도",
   "marketing.insights": "인사이트",
   "marketing.settings": "마케팅 설정",
-
   "accounting.dashboard": "회계 대시보드",
   "accounting.voucher": "전표",
   "accounting.ledger": "원장",
@@ -126,7 +185,6 @@
   "accounting.tax": "세무",
   "accounting.budget": "예산",
   "accounting.reports": "보고서",
-
   "employees.dashboard": "직원 대시보드",
   "employees.leave": "휴가",
   "employees.salary": "급여",
@@ -134,7 +192,6 @@
   "employees.attendance": "근태",
   "employees.evaluation": "평가",
   "employees.communication": "소통",
-
   "settings.dashboard": "설정 대시보드",
   "settings.accessControl": "접근 제어",
   "settings.general": "일반 설정",
@@ -145,7 +202,6 @@
   "settings.dataManagement": "데이터 관리",
   "settings.auditLogs": "감사 로그",
   "settings.billing": "결제",
-
   "products": {
     "title": "상품 관리",
     "subtitle": "회사의 상품과 서비스를 관리합니다",
@@ -180,7 +236,6 @@
     "soldQuantity": "판매량",
     "models": "모델 수",
     "discontinued": "단종",
-
     "categories": {
       "title": "카테고리 관리",
       "subtitle": "제품 카테고리를 등록하고 관리합니다",

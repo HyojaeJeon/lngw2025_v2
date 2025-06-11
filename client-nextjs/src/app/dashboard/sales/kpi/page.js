@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.js";
 import { GET_SALES_OPPORTUNITIES, GET_CUSTOMERS } from "@/lib/graphql/queries.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 
 export default function SalesKpiPage() {
   const { t } = useLanguage();

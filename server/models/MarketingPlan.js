@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const MarketingPlan = sequelize.define('MarketingPlan', {
     id: {
@@ -42,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Users',
+        model: 'users',
         key: 'id',
       },
     },
@@ -60,6 +59,17 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'marketing_plans',
     timestamps: true,
   });
+
+  MarketingPlan.associate = (models) => {
+    MarketingPlan.hasMany(models.MarketingObjective, {
+      foreignKey: 'planId',
+      as: 'objectives'
+    });
+    MarketingPlan.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+  };
 
   return MarketingPlan;
 };
