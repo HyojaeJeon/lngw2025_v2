@@ -103,6 +103,28 @@ export const useLanguage = () => {
     getCurrentLanguageName,
     getCurrentLanguageNativeName,
     getCurrentLanguageFlag,
+  };
+};
+
+// ====================
+// 번역 전용 훅
+// ====================
+export const useTranslation = () => {
+  const dispatch = useDispatch();
+  const currentLanguage = useSelector(selectCurrentLanguage);
+  
+  // Redux 스토어의 translations 가져오기
+  const translations = useSelector((state) => state.language?.translations || {});
+  
+  const t = useCallback((key) => {
+    return translations[currentLanguage]?.[key] || key;
+  }, [translations, currentLanguage]);
+
+  return { t, currentLanguage };
+};guage,
+    getCurrentLanguageName,
+    getCurrentLanguageNativeName,
+    getCurrentLanguageFlag,
 
     // 헬퍼 함수들
     getLanguageName: useCallback((code) => getLanguageName(code), []),

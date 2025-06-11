@@ -3,10 +3,10 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button.js';
-import { useLanguageContext } from '@/contexts/languageContext.js';
+import { useTranslation } from '@/hooks/useLanguage.js';
 
 export default function GlobalError({ error, reset }) {
-  const { t } = useLanguageContext();
+  const { t } = useTranslation();
 
   useEffect(() => {
     console.error('Global Error:', error);
