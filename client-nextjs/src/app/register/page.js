@@ -17,9 +17,19 @@ import { Label } from "@/components/ui/label.js";
 import { useToast } from "@/hooks/useToast.js";
 import { LoadingModal } from "@/components/ui/LoadingModal.js";
 import { REGISTER_MUTATION } from "@/lib/graphql/mutations.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { setCredentials } from "@/store/slices/authSlice.js";
-import { Globe, Sun, Moon, Trash2, Plus, Eye, EyeOff, Phone, Calendar } from "lucide-react";
+import {
+  Globe,
+  Sun,
+  Moon,
+  Trash2,
+  Plus,
+  Eye,
+  EyeOff,
+  Phone,
+  Calendar,
+} from "lucide-react";
 import { useTheme } from "@/contexts/themeContext.js";
 
 export default function RegisterPage() {
@@ -59,7 +69,7 @@ export default function RegisterPage() {
     hasUppercase: false,
     hasSpecialChar: false,
     hasMinLength: false,
-    isMatching: false
+    isMatching: false,
   });
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -67,7 +77,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { t, language, changeLanguage } = useLanguage();
+  const { t, language, changeLanguage } = useTranslation();
   const { theme, toggleTheme } = useTheme();
 
   const [registerMutation] = useMutation(REGISTER_MUTATION);
@@ -120,13 +130,18 @@ export default function RegisterPage() {
     };
 
     const regex = phoneRegexMap[countryCode];
-    return regex ? regex.test(phone.replace(/\D/g, '')) : false;
+    return regex ? regex.test(phone.replace(/\D/g, "")) : false;
   };
 
   // 비밀번호 강도 검증 함수
-  const validatePassword = (password, confirmPassword = formData.confirmPassword) => {
+  const validatePassword = (
+    password,
+    confirmPassword = formData.confirmPassword,
+  ) => {
     const hasUppercase = /[A-Z]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
+      password,
+    );
     const hasMinLength = password.length >= 8;
     const isMatching = password === confirmPassword && password !== "";
 
@@ -152,7 +167,7 @@ export default function RegisterPage() {
       hasUppercase,
       hasSpecialChar,
       hasMinLength,
-      isMatching
+      isMatching,
     };
   };
 
@@ -163,8 +178,8 @@ export default function RegisterPage() {
 
     const localeMap = {
       ko: "ko-KR",
-      vi: "vi-VN", 
-      en: "en-US"
+      vi: "vi-VN",
+      en: "en-US",
     };
 
     return date.toLocaleDateString(localeMap[language] || "ko-KR");
@@ -189,7 +204,9 @@ export default function RegisterPage() {
 
     // 전화번호 유효성 검사
     if (name === "phoneNumber" && formData.phoneCountry) {
-      const selectedCountry = phoneCountries.find(c => c.value === formData.phoneCountry);
+      const selectedCountry = phoneCountries.find(
+        (c) => c.value === formData.phoneCountry,
+      );
       if (value && !validatePhoneNumber(value, selectedCountry?.code)) {
         setPhoneError(t("register.phone.invalid"));
       } else {
@@ -210,7 +227,7 @@ export default function RegisterPage() {
     setFormData({
       ...formData,
       phoneCountry: countryValue,
-      phoneNumber: "" // 국가 변경 시 전화번호 초기화
+      phoneNumber: "", // 국가 변경 시 전화번호 초기화
     });
     setPhoneError(""); // 에러 메시지 초기화
   };
@@ -260,7 +277,7 @@ export default function RegisterPage() {
       );
 
       if (missingFields.length > 0) {
-        throw new Error("필수 입력 사항을 모두 입력해주세요.");
+        throw new Error("필수 입력 사항 �� 모두 입력해주세요.");
       }
 
       // 이메일 유효성 검증
@@ -269,7 +286,9 @@ export default function RegisterPage() {
       }
 
       // 전화번호 유효성 검증
-      const selectedCountry = phoneCountries.find(c => c.value === formData.phoneCountry);
+      const selectedCountry = phoneCountries.find(
+        (c) => c.value === formData.phoneCountry,
+      );
       if (!validatePhoneNumber(formData.phoneNumber, selectedCountry?.code)) {
         throw new Error(t("register.phone.invalid"));
       }
@@ -305,7 +324,7 @@ export default function RegisterPage() {
         ),
         skills: formData.skills
           .filter((skill) => skill.trim() !== "")
-          .map(skill => ({ name: skill, level: "intermediate" })),
+          .map((skill) => ({ name: skill, level: "intermediate" })),
         experiences: formData?.experiences
           ?.filter((exp) => exp.company && exp.position)
           ?.map((exp) => ({
@@ -534,28 +553,33 @@ export default function RegisterPage() {
                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {t("register.password.strength")}:
                             </span>
-                            <span className={`text-sm font-bold ${
-                              passwordStrength.label === t("register.password.strength.strong")
-                                ? "text-green-600" 
-                                : passwordStrength.label === t("register.password.strength.medium") 
-                                ? "text-yellow-600" 
-                                : passwordStrength.label === t("register.password.strength.weak")
-                                ? "text-red-600"
-                                : "text-gray-400"
-                            }`}>
+                            <span
+                              className={`text-sm font-bold ${
+                                passwordStrength.label ===
+                                t("register.password.strength.strong")
+                                  ? "text-green-600"
+                                  : passwordStrength.label ===
+                                      t("register.password.strength.medium")
+                                    ? "text-yellow-600"
+                                    : passwordStrength.label ===
+                                        t("register.password.strength.weak")
+                                      ? "text-red-600"
+                                      : "text-gray-400"
+                              }`}
+                            >
                               {passwordStrength.label}
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div 
+                            <div
                               className={`h-2 rounded-full transition-all duration-300 ${
-                                passwordStrength.score === 3 
-                                  ? "bg-green-500 w-full" 
-                                  : passwordStrength.score === 2 
-                                  ? "bg-yellow-500 w-2/3" 
-                                  : passwordStrength.score === 1
-                                  ? "bg-red-500 w-1/3"
-                                  : "bg-gray-300 w-0"
+                                passwordStrength.score === 3
+                                  ? "bg-green-500 w-full"
+                                  : passwordStrength.score === 2
+                                    ? "bg-yellow-500 w-2/3"
+                                    : passwordStrength.score === 1
+                                      ? "bg-red-500 w-1/3"
+                                      : "bg-gray-300 w-0"
                               }`}
                             />
                           </div>
@@ -564,34 +588,50 @@ export default function RegisterPage() {
 
                       {/* 비밀번호 조건 체크리스트 */}
                       <div className="space-y-1">
-                        <div className={`flex items-center text-xs ${
-                          passwordStrength.hasMinLength ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                        }`}>
+                        <div
+                          className={`flex items-center text-xs ${
+                            passwordStrength.hasMinLength
+                              ? "text-green-600"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
                           <span className="mr-2">
                             {passwordStrength.hasMinLength ? "✓" : "○"}
                           </span>
                           {t("register.password.requirement.minLength")}
                         </div>
-                        <div className={`flex items-center text-xs ${
-                          passwordStrength.hasUppercase ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                        }`}>
+                        <div
+                          className={`flex items-center text-xs ${
+                            passwordStrength.hasUppercase
+                              ? "text-green-600"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
                           <span className="mr-2">
                             {passwordStrength.hasUppercase ? "✓" : "○"}
                           </span>
                           {t("register.password.requirement.uppercase")}
                         </div>
-                        <div className={`flex items-center text-xs ${
-                          passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                        }`}>
+                        <div
+                          className={`flex items-center text-xs ${
+                            passwordStrength.hasSpecialChar
+                              ? "text-green-600"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
                           <span className="mr-2">
                             {passwordStrength.hasSpecialChar ? "✓" : "○"}
                           </span>
                           {t("register.password.requirement.specialChar")}
                         </div>
                         {formData.confirmPassword && (
-                          <div className={`flex items-center text-xs ${
-                            passwordStrength.isMatching ? "text-green-600" : "text-red-500"
-                          }`}>
+                          <div
+                            className={`flex items-center text-xs ${
+                              passwordStrength.isMatching
+                                ? "text-green-600"
+                                : "text-red-500"
+                            }`}
+                          >
                             <span className="mr-2">
                               {passwordStrength.isMatching ? "✓" : "✗"}
                             </span>
@@ -678,7 +718,9 @@ export default function RegisterPage() {
                           required
                           className="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="">{t("register.phone.selectCountry")}</option>
+                          <option value="">
+                            {t("register.phone.selectCountry")}
+                          </option>
                           {phoneCountries.map((country) => (
                             <option key={country.value} value={country.value}>
                               {country.flag} {country.label}
@@ -697,7 +739,11 @@ export default function RegisterPage() {
                       <div className="flex">
                         {formData.phoneCountry && (
                           <div className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-md text-sm text-gray-600 dark:text-gray-300">
-                            {phoneCountries.find(c => c.value === formData.phoneCountry)?.code}
+                            {
+                              phoneCountries.find(
+                                (c) => c.value === formData.phoneCountry,
+                              )?.code
+                            }
                           </div>
                         )}
                         <Input
@@ -707,8 +753,12 @@ export default function RegisterPage() {
                           value={formData.phoneNumber}
                           onChange={handleChange}
                           disabled={!formData.phoneCountry}
-                          placeholder={!formData.phoneCountry ? t("register.phone.selectCountry") : ""}
-                          className={`${formData.phoneCountry ? 'rounded-l-none' : ''} ${phoneError ? 'border-red-500' : ''}`}
+                          placeholder={
+                            !formData.phoneCountry
+                              ? t("register.phone.selectCountry")
+                              : ""
+                          }
+                          className={`${formData.phoneCountry ? "rounded-l-none" : ""} ${phoneError ? "border-red-500" : ""}`}
                           required
                         />
                       </div>
