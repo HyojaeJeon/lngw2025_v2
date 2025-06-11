@@ -1,0 +1,273 @@
+Import trace for requested module:
+./src/locales/ko.json
+./src/hooks/useLanguage.js
+./src/app/global-error.js
+ GET /dashboard 500 in 14972ms
+ ⚠ ./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+ ⚠ ./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/app/dashboard/page.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/dashboard/page.js
+
+./src/app/error.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/error.js
+
+./src/app/global-error.js
+Attempted import error: 'useTranslation' is not exported from '@/hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/app/global-error.js
+
+./src/app/not-found.js
+Attempted import error: 'useLanguage' is not exported from '@/contexts/languageContext.js' (imported as 'useLanguage').
+
+Import trace for requested module:
+./src/app/not-found.js
+
+./src/components/layout/header.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/header.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
+
+./src/components/layout/sidebar.js
+Attempted import error: 'useTranslation' is not exported from '../../hooks/useLanguage.js' (imported as 'useTranslation').
+
+Import trace for requested module:
+./src/components/layout/sidebar.js
+./src/components/layout/dashboardLayout.js
