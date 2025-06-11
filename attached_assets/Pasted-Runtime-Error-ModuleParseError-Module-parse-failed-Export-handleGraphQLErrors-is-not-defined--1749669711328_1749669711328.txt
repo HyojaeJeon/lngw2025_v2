@@ -1,0 +1,49 @@
+Runtime Error
+
+
+ModuleParseError: Module parse failed: Export 'handleGraphQLErrors' is not defined (60:9)
+File was processed with these loaders:
+ * ./node_modules/next/dist/compiled/@next/react-refresh-utils/dist/loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+|     });
+| };
+> export { handleGraphQLErrors };
+| 
+| 
+
+Show More
+Call Stack
+25
+
+<unknown>
+File was processed with these loaders:
+<unknown>
+File was processed with these loaders:
+handleParseError
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:410403)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:412019)
+processResult
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:407884)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408906)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:8727)
+iterateNormalLoaders
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5565)
+iterateNormalLoaders
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5650)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5879)
+r.callback
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:4039)
+Object.ReactRefreshLoader
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/@next/react-refresh-utils/dist/loader.js (14:10)
+LOADER_EXECUTION
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:4134)
+runSyncOrAsync
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:4145)
+iterateNormalLoaders
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5782)
