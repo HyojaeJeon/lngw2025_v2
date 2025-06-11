@@ -1,0 +1,56 @@
+ GET / 200 in 1729ms
+ ✓ Compiled / in 2.1s (996 modules)
+ ✓ Compiled in 478ms (942 modules)
+ ○ Compiling / ...
+ ⨯ ./src/app/layout.js
+Error:   × You are attempting to export "metadata" from a component marked with "use client", which is disallowed. Either remove the export, or the "use client" directive. Read more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+    ╭─[/home/runner/workspace/client-nextjs/src/app/layout.js:14:1]
+ 11 │ 
+ 12 │ const inter = Inter({ subsets: ["latin"] });
+ 13 │ 
+ 14 │ export const metadata = {
+    ·              ────────
+ 15 │   title: "CRM System",
+ 16 │   description: "Customer Relationship Management System",
+ 17 │ };
+    ╰────
+
+Import trace for requested module:
+./src/app/layout.js
+ ⨯ ./src/app/layout.js
+Error:   × You are attempting to export "metadata" from a component marked with "use client", which is disallowed. Either remove the export, or the "use client" directive. Read more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+    ╭─[/home/runner/workspace/client-nextjs/src/app/layout.js:14:1]
+ 11 │ 
+ 12 │ const inter = Inter({ subsets: ["latin"] });
+ 13 │ 
+ 14 │ export const metadata = {
+    ·              ────────
+ 15 │   title: "CRM System",
+ 16 │   description: "Customer Relationship Management System",
+ 17 │ };
+    ╰────
+
+Import trace for requested module:
+./src/app/layout.js
+ ⨯ ./src/app/layout.js
+Error:   × You are attempting to export "metadata" from a component marked with "use client", which is disallowed. Either remove the export, or the "use client" directive. Read more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+    ╭─[/home/runner/workspace/client-nextjs/src/app/layout.js:14:1]
+ 11 │ 
+ 12 │ const inter = Inter({ subsets: ["latin"] });
+ 13 │ 
+ 14 │ export const metadata = {
+    ·              ────────
+ 15 │   title: "CRM System",
+ 16 │   description: "Customer Relationship Management System",
+ 17 │ };
+    ╰────
+
+Import trace for requested module:
+./src/app/layout.js
+ GET / 500 in 1714ms
