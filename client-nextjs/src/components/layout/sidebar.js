@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "../../hooks/useLanguage.js";
 import { ChevronDown, ChevronRight, Menu, X, GripVertical } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import UserProfile from './UserProfile'
 
 const sidebarItems = [
   {
@@ -521,18 +522,13 @@ export function ResizableSidebar({ children }) {
               );
             })}
           </nav>
-        </div>
 
-        {/* 리사이즈 핸들 */}
-        <div
-          className={`
-            absolute top-0 right-0 w-1 h-full cursor-col-resize
-            bg-gray-300 hover:bg-blue-500 transition-colors duration-200
-            ${isResizing ? "bg-blue-500" : ""}
-          `}
-          onMouseDown={startResizing}
-        ></div>
-      </aside>
+        {/* 사용자 프로필 영역 */}
+        <div className="mt-auto border-t border-gray-200 dark:border-gray-700 pt-4">
+          <UserProfile />
+        </div>
+      </div>
+    </aside>
 
       {/* 메인 콘텐츠 */}
       <main className="flex-1">

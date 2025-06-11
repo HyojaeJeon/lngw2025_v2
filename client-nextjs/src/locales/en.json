@@ -21,7 +21,9 @@
     "info": "Info",
     "clear": "Clear",
     "total": "Total",
-    "count": "items"
+    "count": "items",
+    "unknown": "Unknown",
+    "noPosition": "No Position"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -118,5 +120,11 @@
       "descriptionsOptional": "Descriptions (Optional)",
       "descriptionKo": "Korean Description"
     }
+  },
+  "profile": {
+    "settings": "Profile Settings",
+    "myProfile": "My Profile",
+    "account": "Account",
+    "personalInfo": "Personal Information"
   }
 }

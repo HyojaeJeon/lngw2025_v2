@@ -68,7 +68,9 @@ const categoryResolvers = {
 
     category: async (parent, args, context) => {
       const { user, lang } = context;
-      const {id} = args      requireAuth(user, lang);
+      const { id } = args;
+    console.log("User : "
+      requireAuth(user, lang);
 
       try {
         const category = await models.Category.findByPk(id, {});
