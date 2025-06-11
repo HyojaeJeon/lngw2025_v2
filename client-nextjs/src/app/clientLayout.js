@@ -1,4 +1,3 @@
-
 "use client";
 
 import { ReduxProvider } from "@/providers/reduxProvider";
