@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const LanguageContext = createContext();
 
@@ -484,42 +484,43 @@ const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState("ko");
+  const [currentLanguage, setCurrentLanguage] = useState("ko");
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem("language") || "ko";
-    setLanguage(savedLanguage);
+    const savedLanguage = localStorage.getItem("language");
+    if (savedLanguage && ["ko", "en", "vi"].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
   }, []);
 
-  const changeLanguage = (newLanguage) => {
-    setLanguage(newLanguage);
-    localStorage.setItem("language", newLanguage);
+  const changeLanguage = (language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem("language", language);
   };
 
-  const cycleLanguage = () => {
+  const getNextLanguage = () => {
     const languages = ["ko", "en", "vi"];
-    const currentIndex = languages.indexOf(language);
-    const nextIndex = (currentIndex + 1) % languages.length;
-    changeLanguage(languages[nextIndex]);
+    const currentIndex = languages.indexOf(currentLanguage);
+    return languages[(currentIndex + 1) % languages.length];
   };
 
   const t = (key) => {
-    return translations[language]?.[key] || key;
+    return translations[currentLanguage]?.[key] || key;
   };
+
 
   return (
     <LanguageContext.Provider
-      value={{ language, changeLanguage, cycleLanguage, t }}
+      value={{
+        currentLanguage,
+        changeLanguage,
+        getNextLanguage,
+        t
+      }}
     >
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguageContext = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguageContext must be used within a LanguageProvider');
-  }
-  return context;
-};
+export { LanguageContext };

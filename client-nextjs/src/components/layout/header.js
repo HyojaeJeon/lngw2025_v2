@@ -6,7 +6,7 @@ import { Globe, Moon, Sun, Menu, User, LogOut, Settings } from "lucide-react";
 import { useIsMobile } from "../../hooks/useIsMobile.js";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import LanguageSelector from "../ui/LanguageSelector.js";
 import { useLanguage, useTranslation } from "../../hooks/useLanguage.js";
