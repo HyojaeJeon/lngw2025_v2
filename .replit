@@ -1,18 +1,23 @@
 modules = ["nodejs-20", "web", "bash"]
-run = "npm run dev"
+run = "node run-dev.js"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
-[nix]
-channel = "stable-24_05"
-packages = ["lsof", "nix-output-monitor"]
+# 워크플로, nix, deployment 섹션이 필요 없으면 전부 지워도 됩니다.
+# ports 매핑만 아래처럼 정확하게 남기세요:
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
-[deployment]
-deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+[[ports]]
+localPort = 3306
+externalPort = 3306
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
 
 [workflows]
-runButton = "Start Development Environment"
+runButton = "Fixed Development Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -309,9 +314,21 @@ task = "shell.exec"
 args = "cd client-nextjs && npm run dev -- --port 3000"
 
 [[workflows.workflow]]
-name = "Start Development Environment"
+name = "Fixed Development Start"
 author = 43113446
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"next\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 3"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -332,15 +349,3 @@ args = "sleep 8"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd client-nextjs && npm run dev -- --port 3000"
-
-[[ports]]
-localPort = 3000
-externalPort = 3002
-
-[[ports]]
-localPort = 3306
-externalPort = 3000
-
-[[ports]]
-localPort = 5000
-externalPort = 80
