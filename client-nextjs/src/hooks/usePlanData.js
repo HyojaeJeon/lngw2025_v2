@@ -1,61 +1,86 @@
-import { useState, useEffect } from "react";
-import { samplePlan, sampleObjectives } from "../utils/sampleData";
+
+import { useState, useEffect } from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_MARKETING_PLAN } from '@/lib/graphql/marketingQueries.js';
 
 export const usePlanData = (planId) => {
-  const [plan, setPlan] = useState(null);
-  const [currentPlan, setCurrentPlan] = useState(null);
-  const [editingPlan, setEditingPlan] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [objectives, setObjectives] = useState([]);
   const [keyResults, setKeyResults] = useState([]);
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    const loadPlanData = async () => {
-      try {
-        console.log("Loading plan data for ID:", planId);
-        setLoading(true);
-
-        // 실제 API 호출 대신 샘플 데이터 사용
-        setTimeout(() => {
-          setPlan(samplePlan);
-          setCurrentPlan(samplePlan);
-          setEditingPlan(samplePlan);
-          setObjectives(sampleObjectives);
-
-          // 모든 핵심 결과를 평면화하여 keyResults 배열에 저장
-          const allKeyResults = sampleObjectives.flatMap(
-            (obj) => obj.keyResults,
-          );
-          setKeyResults(allKeyResults);
-
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Network error:", error);
-        setLoading(false);
-      }
-    };
-
-    if (planId) {
-      loadPlanData();
+  // GraphQL query with error handling
+  const { data, loading, error, refetch } = useQuery(GET_MARKETING_PLAN, {
+    variables: { id: planId },
+    skip: !planId,
+    errorPolicy: 'all',
+    notifyOnNetworkStatusChange: true,
+    onError: (error) => {
+      console.error('마케팅 계획 로드 중 오류:', error);
     }
-  }, [planId]);
+  });
+
+  console.log('Loading plan data for ID:', planId);
+  console.log('Query result:', { data, loading, error });
+
+  useEffect(() => {
+    if (data?.marketingPlan) {
+      try {
+        const plan = data.marketingPlan;
+        console.log('Plan data received:', plan);
+        
+        // 안전한 objectives 설정
+        const safeObjectives = Array.isArray(plan.objectives) ? plan.objectives : [];
+        setObjectives(safeObjectives);
+        
+        // 모든 keyResults를 평면 배열로 수집
+        const allKeyResults = [];
+        safeObjectives.forEach(objective => {
+          if (objective && Array.isArray(objective.keyResults)) {
+            allKeyResults.push(...objective.keyResults);
+          }
+        });
+        
+        setKeyResults(allKeyResults);
+        console.log('Objectives set:', safeObjectives);
+        console.log('Key Results set:', allKeyResults);
+      } catch (err) {
+        console.error('계획 데이터 처리 중 오류:', err);
+        setObjectives([]);
+        setKeyResults([]);
+      }
+    } else if (error) {
+      console.error('GraphQL 오류:', error);
+      setObjectives([]);
+      setKeyResults([]);
+    }
+  }, [data, error]);
+
+  // 오류 발생 시 빈 배열들을 반환
+  if (error && !data) {
+    return {
+      plan: null,
+      loading: false,
+      error,
+      objectives: [],
+      setObjectives: () => {},
+      keyResults: [],
+      setKeyResults: () => {},
+      isEditMode: false,
+      setIsEditMode: () => {},
+      refetch
+    };
+  }
 
   return {
-    plan,
-    setPlan,
-    currentPlan,
-    setCurrentPlan,
-    editingPlan,
-    setEditingPlan,
-    isEditMode,
-    setIsEditMode,
+    plan: data?.marketingPlan || null,
     loading,
+    error,
     objectives,
     setObjectives,
     keyResults,
     setKeyResults,
+    isEditMode,
+    setIsEditMode,
+    refetch
   };
 };

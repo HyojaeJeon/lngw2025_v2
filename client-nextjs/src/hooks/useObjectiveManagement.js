@@ -1,276 +1,281 @@
-import { useState } from "react";
 
-export const useObjectiveManagement = (objectives, setObjectives, keyResults, setKeyResults) => {
-  // 목표 관리 기능을 위한 상태들
+import { useState, useCallback } from 'react';
+
+export const useObjectiveManagement = (objectives = [], setObjectives, keyResults = [], setKeyResults) => {
   const [collapsedObjectives, setCollapsedObjectives] = useState(new Set());
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [objectiveToDelete, setObjectiveToDelete] = useState(null);
   const [editingObjectiveId, setEditingObjectiveId] = useState(null);
-  const [editingObjectiveData, setEditingObjectiveData] = useState({});
+  const [editingObjectiveData, setEditingObjectiveData] = useState(null);
   const [showNewObjectiveModal, setShowNewObjectiveModal] = useState(false);
-  const [selectedObjective, setSelectedObjective] = useState(null);
-  const [showObjectiveModal, setShowObjectiveModal] = useState(false);
-  const [showKRModal, setShowKRModal] = useState(false);
-  const [showEditKRModal, setShowEditKRModal] = useState(false);
-  const [selectedKR, setSelectedKR] = useState(null);
-  const [editingObjIndex, setEditingObjIndex] = useState(null);
-  const [editingKRIndex, setEditingKRIndex] = useState(null);
-  const [newObjectiveTitle, setNewObjectiveTitle] = useState("");
-  const [showEditObjectiveModal, setShowEditObjectiveModal] = useState(false);
 
-  const [newObjective, setNewObjective] = useState({
-    title: "",
-    description: "",
-    keyResults: [
-      {
-        title: "",
-        description: "",
-        type: "number",
-        target: "",
-        current: "",
-        unit: "",
-        checklist: [],
-      },
-    ],
-  });
-  const [editKR, setEditKR] = useState({
-    title: "",
-    description: "",
-    type: "number",
-    target: "",
-    current: "",
-    unit: "",
-    checklist: [],
-  });
+  // 안전한 배열 확보 함수
+  const getSafeArray = (arr) => Array.isArray(arr) ? arr : [];
 
-  // 목표 확장/축소 토글 함수
-  const toggleObjectiveCollapse = (objectiveId) => {
-    const newCollapsed = new Set(collapsedObjectives);
-    if (newCollapsed.has(objectiveId)) {
-      newCollapsed.delete(objectiveId);
-    } else {
-      newCollapsed.add(objectiveId);
-    }
-    setCollapsedObjectives(newCollapsed);
-  };
-
-  // 목표 편집 시작 함수
-  const startEditObjective = (objective) => {
-    setEditingObjectiveId(objective.id);
-    setEditingObjectiveData({
-      title: objective.title,
-      description: objective.description || "",
-      keyResults: objective.keyResults.map((kr) => ({
-        ...kr,
-        checklist: kr.checklist || [],
-      })),
+  const toggleObjectiveCollapse = useCallback((objectiveId) => {
+    if (!objectiveId) return;
+    
+    setCollapsedObjectives(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(objectiveId)) {
+        newSet.delete(objectiveId);
+      } else {
+        newSet.add(objectiveId);
+      }
+      return newSet;
     });
-  };
+  }, []);
 
-  // 목표 편집 취소 함수
-  const cancelEditObjective = () => {
+  const startEditObjective = useCallback((objective) => {
+    if (!objective) return;
+    
+    setEditingObjectiveId(objective.id);
+    setEditingObjectiveData({ ...objective });
+  }, []);
+
+  const cancelEditObjective = useCallback(() => {
     setEditingObjectiveId(null);
-    setEditingObjectiveData({});
-  };
+    setEditingObjectiveData(null);
+  }, []);
 
-  // 목표 삭제(비활성화) 확인 함수
-  const confirmDeleteObjective = (objective) => {
+  const confirmDeleteObjective = useCallback((objective) => {
+    if (!objective) return;
+    
     setObjectiveToDelete(objective);
     setShowDeleteConfirmModal(true);
-  };
+  }, []);
 
-  // 목표 비활성화 실행 함수
-  const handleDeleteObjective = async () => {
-    if (!objectiveToDelete) return;
+  const handleDeleteObjective = useCallback(() => {
+    if (!objectiveToDelete || !setObjectives) return;
 
     try {
-      // 여기서 실제 API 호출을 수행합니다
-      // await api.deactivateObjective(objectiveToDelete.id);
-
-      // 목표를 비활성화하고 리스트 최하단으로 이동
-      const updatedObjectives = objectives.map((obj) => (obj.id === objectiveToDelete.id ? { ...obj, isActive: false } : obj));
-
-      // 활성 목표와 비활성 목표를 분리하여 정렬
-      const activeObjectives = updatedObjectives.filter((obj) => obj.isActive);
-      const inactiveObjectives = updatedObjectives.filter((obj) => !obj.isActive);
-
-      setObjectives([...activeObjectives, ...inactiveObjectives]);
+      const safeObjectives = getSafeArray(objectives);
+      const updatedObjectives = safeObjectives.filter(obj => obj?.id !== objectiveToDelete.id);
+      setObjectives(updatedObjectives);
+      
       setObjectiveToDelete(null);
       setShowDeleteConfirmModal(false);
     } catch (error) {
-      console.error("목표 비활성화 중 오류 발생:", error);
+      console.error('목표 삭제 중 오류 발생:', error);
     }
-  };
+  }, [objectiveToDelete, objectives, setObjectives]);
 
-  // 목표 편집 저장 함수
-  const handleSaveEditObjective = async () => {
-    if (!editingObjectiveId || !editingObjectiveData) return;
+  const handleSaveEditObjective = useCallback(() => {
+    if (!editingObjectiveData || !setObjectives) return;
 
     try {
-      const updatedObjectives = objectives.map((obj) => (obj.id === editingObjectiveId ? { ...obj, ...editingObjectiveData } : obj));
-
+      const safeObjectives = getSafeArray(objectives);
+      const updatedObjectives = safeObjectives.map(obj => 
+        obj?.id === editingObjectiveData.id ? { ...obj, ...editingObjectiveData } : obj
+      );
+      
       setObjectives(updatedObjectives);
       setEditingObjectiveId(null);
-      setEditingObjectiveData({});
+      setEditingObjectiveData(null);
     } catch (error) {
-      console.error("목표 편집 중 오류 발생:", error);
+      console.error('목표 수정 중 오류 발생:', error);
     }
-  };
+  }, [editingObjectiveData, objectives, setObjectives]);
 
-  // Key Result 편집 헬퍼 함수들
-  const updateKeyResultTitle = (krIndex, title) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.map((kr, index) => (index === krIndex ? { ...kr, description: title } : kr)),
-    }));
-  };
+  const updateKeyResultTitle = useCallback((krId, title) => {
+    if (!krId || !setKeyResults) return;
 
-  const updateKeyResultValue = (krIndex, field, value) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.map((kr, index) => (index === krIndex ? { ...kr, [field]: value } : kr)),
-    }));
-  };
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      const updatedKeyResults = safeKeyResults.map(kr => 
+        kr?.id === krId ? { ...kr, title } : kr
+      );
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('핵심 결과 제목 업데이트 중 오류 발생:', error);
+    }
+  }, [keyResults, setKeyResults]);
 
-  const updateChecklistItemInEdit = (krIndex, itemIndex, text) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.map((kr, index) =>
-        index === krIndex
-          ? {
-              ...kr,
-              checklist: kr.checklist.map((item, idx) => (idx === itemIndex ? { ...item, text } : item)),
-            }
-          : kr
-      ),
-    }));
-  };
+  const updateKeyResultValue = useCallback((krId, currentValue) => {
+    if (!krId || !setKeyResults) return;
 
-  const addChecklistItemInEdit = (krIndex) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.map((kr, index) =>
-        index === krIndex
-          ? {
-              ...kr,
-              checklist: [...(kr.checklist || []), { text: "", completed: false }],
-            }
-          : kr
-      ),
-    }));
-  };
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      const updatedKeyResults = safeKeyResults.map(kr => 
+        kr?.id === krId ? { ...kr, currentValue } : kr
+      );
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('핵심 결과 값 업데이트 중 오류 발생:', error);
+    }
+  }, [keyResults, setKeyResults]);
 
-  const removeChecklistItemInEdit = (krIndex, itemIndex) => {
-    setEditingObjectiveData((prev) => ({
-      ...prev,
-      keyResults: prev.keyResults.map((kr, index) =>
-        index === krIndex
-          ? {
-              ...kr,
-              checklist: kr.checklist.filter((_, idx) => idx !== itemIndex),
-            }
-          : kr
-      ),
-    }));
-  };
+  const updateChecklistItemInEdit = useCallback((krId, itemIndex, text) => {
+    if (!editingObjectiveData || !setEditingObjectiveData) return;
 
-  // 체크리스트 항목 추가
-  const addChecklistItem = (krId) => {
-    const updatedKeyResults = keyResults.map((kr) =>
-      kr.id === krId
-        ? {
-            ...kr,
-            checklist: [...(kr.checklist || []), { text: "", completed: false }],
+    try {
+      const updatedData = { ...editingObjectiveData };
+      if (!updatedData.keyResults) updatedData.keyResults = [];
+      
+      const keyResultIndex = updatedData.keyResults.findIndex(kr => kr?.id === krId);
+      if (keyResultIndex === -1) return;
+
+      if (!updatedData.keyResults[keyResultIndex].checklist) {
+        updatedData.keyResults[keyResultIndex].checklist = [];
+      }
+
+      if (itemIndex >= 0 && itemIndex < updatedData.keyResults[keyResultIndex].checklist.length) {
+        updatedData.keyResults[keyResultIndex].checklist[itemIndex] = {
+          ...updatedData.keyResults[keyResultIndex].checklist[itemIndex],
+          text
+        };
+        setEditingObjectiveData(updatedData);
+      }
+    } catch (error) {
+      console.error('편집 중 체크리스트 항목 업데이트 중 오류 발생:', error);
+    }
+  }, [editingObjectiveData, setEditingObjectiveData]);
+
+  const addChecklistItemInEdit = useCallback((krId) => {
+    if (!editingObjectiveData || !setEditingObjectiveData) return;
+
+    try {
+      const updatedData = { ...editingObjectiveData };
+      if (!updatedData.keyResults) updatedData.keyResults = [];
+      
+      const keyResultIndex = updatedData.keyResults.findIndex(kr => kr?.id === krId);
+      if (keyResultIndex === -1) return;
+
+      if (!updatedData.keyResults[keyResultIndex].checklist) {
+        updatedData.keyResults[keyResultIndex].checklist = [];
+      }
+
+      const newItem = {
+        id: Date.now(),
+        text: '새 체크리스트 항목',
+        completed: false,
+        sortOrder: updatedData.keyResults[keyResultIndex].checklist.length
+      };
+
+      updatedData.keyResults[keyResultIndex].checklist.push(newItem);
+      setEditingObjectiveData(updatedData);
+    } catch (error) {
+      console.error('편집 중 체크리스트 항목 추가 중 오류 발생:', error);
+    }
+  }, [editingObjectiveData, setEditingObjectiveData]);
+
+  const removeChecklistItemInEdit = useCallback((krId, itemIndex) => {
+    if (!editingObjectiveData || !setEditingObjectiveData) return;
+
+    try {
+      const updatedData = { ...editingObjectiveData };
+      if (!updatedData.keyResults) return;
+      
+      const keyResultIndex = updatedData.keyResults.findIndex(kr => kr?.id === krId);
+      if (keyResultIndex === -1 || !updatedData.keyResults[keyResultIndex].checklist) return;
+
+      updatedData.keyResults[keyResultIndex].checklist.splice(itemIndex, 1);
+      setEditingObjectiveData(updatedData);
+    } catch (error) {
+      console.error('편집 중 체크리스트 항목 제거 중 오류 발생:', error);
+    }
+  }, [editingObjectiveData, setEditingObjectiveData]);
+
+  const addChecklistItem = useCallback((krId, text) => {
+    if (!krId || !text || !setKeyResults) return;
+
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      const updatedKeyResults = safeKeyResults.map(kr => {
+        if (kr?.id === krId) {
+          const checklist = getSafeArray(kr.checklist);
+          const newItem = {
+            id: Date.now(),
+            text,
+            completed: false,
+            sortOrder: checklist.length
+          };
+          return { ...kr, checklist: [...checklist, newItem] };
+        }
+        return kr;
+      });
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('체크리스트 항목 추가 중 오류 발생:', error);
+    }
+  }, [keyResults, setKeyResults]);
+
+  const updateChecklistItem = useCallback((krId, itemId, text) => {
+    if (!krId || !itemId || !setKeyResults) return;
+
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      const updatedKeyResults = safeKeyResults.map(kr => {
+        if (kr?.id === krId && kr.checklist) {
+          const updatedChecklist = kr.checklist.map(item =>
+            item?.id === itemId ? { ...item, text } : item
+          );
+          return { ...kr, checklist: updatedChecklist };
+        }
+        return kr;
+      });
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('체크리스트 항목 업데이트 중 오류 발생:', error);
+    }
+  }, [keyResults, setKeyResults]);
+
+  const toggleChecklistItem = useCallback(({ krId, itemIndex }) => {
+    console.log('체크리스트 토글:', { krId, itemIndex });
+    
+    if (!krId || itemIndex == null || !setKeyResults) {
+      console.warn('toggleChecklistItem: 필수 파라미터가 누락되었습니다:', { krId, itemIndex, setKeyResults: !!setKeyResults });
+      return;
+    }
+
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      console.log('현재 키 결과들:', safeKeyResults);
+      
+      const updatedKeyResults = safeKeyResults.map(kr => {
+        if (kr?.id === krId) {
+          const checklist = getSafeArray(kr.checklist);
+          console.log('체크리스트:', checklist);
+          
+          if (itemIndex >= 0 && itemIndex < checklist.length) {
+            const updatedChecklist = checklist.map((item, index) => {
+              if (index === itemIndex) {
+                return { ...item, completed: !item.completed };
+              }
+              return item;
+            });
+            return { ...kr, checklist: updatedChecklist };
           }
-        : kr
-    );
-    setKeyResults(updatedKeyResults);
-
-    // 선택된 목표 수정 시에도 업데이트
-    if (selectedObjective) {
-      setSelectedObjective((prev) => ({
-        ...prev,
-        keyResults: updatedKeyResults,
-      }));
+        }
+        return kr;
+      });
+      
+      console.log('업데이트된 키 결과들:', updatedKeyResults);
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('체크리스트 항목 토글 중 오류 발생:', error);
     }
-  };
+  }, [keyResults, setKeyResults]);
 
-  // 체크리스트 항목 업데이트
-  const updateChecklistItem = (krId, itemIndex, text) => {
-    const updatedKeyResults = keyResults.map((kr) =>
-      kr.id === krId
-        ? {
-            ...kr,
-            checklist: (kr.checklist || []).map((item, index) => (index === itemIndex ? { ...item, text } : item)),
-          }
-        : kr
-    );
-    setKeyResults(updatedKeyResults);
+  const removeChecklistItem = useCallback((krId, itemId) => {
+    if (!krId || !itemId || !setKeyResults) return;
 
-    // 선택된 목표 수정 시에도 업데이트
-    if (selectedObjective) {
-      setSelectedObjective((prev) => ({
-        ...prev,
-        keyResults: updatedKeyResults,
-      }));
+    try {
+      const safeKeyResults = getSafeArray(keyResults);
+      const updatedKeyResults = safeKeyResults.map(kr => {
+        if (kr?.id === krId && kr.checklist) {
+          const updatedChecklist = kr.checklist.filter(item => item?.id !== itemId);
+          return { ...kr, checklist: updatedChecklist };
+        }
+        return kr;
+      });
+      setKeyResults(updatedKeyResults);
+    } catch (error) {
+      console.error('체크리스트 항목 제거 중 오류 발생:', error);
     }
-  };
-
-  // 체크리스트 항목 토글
-  const toggleChecklistItem = (krId, itemIndex) => {
-    setKeyResults(
-      keyResults.map((kr) =>
-        kr.id === krId
-          ? {
-              ...kr,
-              checklist: kr.checklist.map((item, index) => (index === itemIndex ? { ...item, completed: !item.completed } : item)),
-            }
-          : kr
-      )
-    );
-  };
-
-  // 체크리스트 항목 삭제
-  const removeChecklistItem = (krId, itemIndex) => {
-    setKeyResults(
-      keyResults.map((kr) =>
-        kr.id === krId
-          ? {
-              ...kr,
-              checklist: kr.checklist.filter((_, index) => index !== itemIndex),
-            }
-          : kr
-      )
-    );
-  };
-
-  // 새 목표 추가
-  const addNewObjective = () => {
-    if (!newObjective.title.trim()) return;
-
-    const newId = objectives.length + 1;
-    const newObj = {
-      id: newId,
-      title: newObjective.title,
-      isActive: true,
-      keyResults: newObjective.keyResults.map((kr, index) => ({
-        id: keyResults.length + index + 1,
-        type: kr.type,
-        description: kr.description,
-        target: kr.target,
-        currentValue: kr.currentValue || 0,
-        unit: kr.unit || "",
-        checklist: kr.checklist || [],
-      })),
-    };
-
-    setObjectives([...objectives, newObj]);
-    setKeyResults([...keyResults, ...newObj.keyResults]);
-    setShowNewObjectiveModal(false);
-  };
+  }, [keyResults, setKeyResults]);
 
   return {
-    // States
     collapsedObjectives,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
@@ -281,30 +286,6 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
     setEditingObjectiveData,
     showNewObjectiveModal,
     setShowNewObjectiveModal,
-    selectedObjective,
-    setSelectedObjective,
-    showObjectiveModal,
-    setShowObjectiveModal,
-    showKRModal,
-    setShowKRModal,
-    showEditKRModal,
-    setShowEditKRModal,
-    selectedKR,
-    setSelectedKR,
-    editingObjIndex,
-    setEditingObjIndex,
-    editingKRIndex,
-    setEditingKRIndex,
-    newObjectiveTitle,
-    setNewObjectiveTitle,
-    showEditObjectiveModal,
-    setShowEditObjectiveModal,
-    newObjective,
-    setNewObjective,
-    editKR,
-    setEditKR,
-
-    // Functions
     toggleObjectiveCollapse,
     startEditObjective,
     cancelEditObjective,
@@ -320,6 +301,5 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
     updateChecklistItem,
     toggleChecklistItem,
     removeChecklistItem,
-    addNewObjective,
   };
 };
