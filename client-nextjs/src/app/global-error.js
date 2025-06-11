@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button.js';
-import { useTranslation } from '@/hooks/useLanguage.js';
+import { useTranslation } from '../hooks/useLanguage.js';
 
 export default function GlobalError({ error, reset }) {
   const { t } = useTranslation();

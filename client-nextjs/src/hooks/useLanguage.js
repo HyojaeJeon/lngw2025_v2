@@ -18,8 +18,9 @@ import {
 
 import koMessages from "../locales/ko.json";
 import enMessages from "../locales/en.json";
+import viMessages from "../locales/vi.json";
 
-const ALL_MESSAGES = { ko: koMessages, en: enMessages };
+const ALL_MESSAGES = { ko: koMessages, en: enMessages, vi: viMessages };
 
 export const useLanguage = () => {
   const dispatch = useDispatch();
@@ -111,6 +112,23 @@ export const useLanguage = () => {
 
     t,
   };
+};
+
+// ====================
+// 번역 전용 훅
+// ====================
+export const useTranslation = () => {
+  const dispatch = useDispatch();
+  const currentLanguage = useSelector(selectCurrentLanguage);
+
+  // 번역 메시지
+  const translations = ALL_MESSAGES[currentLanguage] || {};
+
+  const t = useCallback((key) => {
+    return key.split(".").reduce((obj, k) => obj?.[k], translations) || key;
+  }, [translations]);
+
+  return { t, currentLanguage };
 };
 
 export const useLocaleFormat = () => {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useTheme } from "../../contexts/themeContext.js";
@@ -20,7 +19,7 @@ export default function Header({ onMenuToggle }) {
     const nextLang = getNextLanguage();
     changeLanguage(nextLang);
   };
-  
+
   const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobile();
   const dispatch = useDispatch();

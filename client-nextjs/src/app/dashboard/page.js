@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.js";
-import { useLanguage } from "@/contexts/languageContext.js";
+import { useLanguage } from '../../hooks/useLanguage.js';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -66,7 +66,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    
+
       <div className="space-y-8 animate-fadeIn">
         {/* 헤더 섹션 */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 
