@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -11,14 +12,24 @@ import { onError } from "@apollo/client/link/error";
 import { store } from "../store";
 import { selectCurrentLanguage } from "../store/slices/languageSlice";
 
-// 서버 URL 설정 - 로컬 개발용
-const LOCAL_URL = "http://localhost:5002/graphql";
-const REPLIT_URL =
-  "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
+// 서버 URL 설정 - Replit 환경에 맞게 수정
+const getServerUrl = () => {
+  if (typeof window !== "undefined") {
+    // 클라이언트에서 실행될 때
+    const origin = window.location.origin;
+    if (origin.includes("replit.dev")) {
+      // Replit 환경에서는 같은 도메인의 다른 포트 사용
+      return origin.replace(":3002", "") + "/graphql";
+    }
+    return "http://localhost:5000/graphql";
+  }
+  // 서버에서 실행될 때
+  return "http://localhost:5000/graphql";
+};
 
 const httpLink = createHttpLink({
-  uri: REPLIT_URL,
-  credentials: "include", // CORS 쿠키 허용
+  uri: getServerUrl(),
+  credentials: "same-origin", // same-origin으로 변경
   headers: {
     "Content-Type": "application/json",
   },

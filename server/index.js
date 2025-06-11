@@ -147,22 +147,48 @@ async function startServer() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CORS 설정 (더 간단하고 허용적으로)
+  // CORS 설정 (Replit 환경을 위한 더 유연한 설정)
   // ──────────────────────────────────────────────────────────────────────────
   app.use(
     cors({
-      origin: [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:3003",
-        "http://127.0.0.1:3000",
-        "https://gw.lnpartners.biz",
-        "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
-      ],
+      origin: function (origin, callback) {
+        // 개발 환경에서는 모든 origin 허용
+        if (process.env.NODE_ENV === "development") {
+          return callback(null, true);
+        }
+
+        // Replit 도메인 패턴 허용
+        if (!origin || origin.includes("replit.dev") || origin.includes("localhost")) {
+          return callback(null, true);
+        }
+
+        // 프로덕션 도메인 허용
+        const allowedOrigins = [
+          "https://gw.lnpartners.biz",
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "http://localhost:3002",
+          "http://localhost:3003",
+          "http://127.0.0.1:3000",
+        ];
+
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        callback(new Error("Not allowed by CORS"));
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "Accept-Language"],
+      allowedHeaders: [
+        "Content-Type", 
+        "Authorization", 
+        "Accept-Language", 
+        "X-Requested-With",
+        "Origin",
+        "Accept"
+      ],
+      optionsSuccessStatus: 200
     }),
   );
 

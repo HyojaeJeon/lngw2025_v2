@@ -1,27 +1,74 @@
+
 {
   "common": {
     "loading": "Đang tải...",
     "save": "Lưu",
     "cancel": "Hủy",
-    "edit": "Chỉnh sửa",
     "delete": "Xóa",
+    "edit": "Chỉnh sửa",
     "add": "Thêm",
     "search": "Tìm kiếm",
     "filter": "Lọc",
     "export": "Xuất",
     "import": "Nhập",
     "refresh": "Làm mới",
-    "back": "Quay lại",
-    "next": "Tiếp theo",
-    "previous": "Trước",
-    "submit": "Gửi",
+    "close": "Đóng",
     "confirm": "Xác nhận",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "success": "Thành công",
+    "error": "Lỗi",
+    "warning": "Cảnh báo",
+    "info": "Thông tin"
   },
-  "error": {
-    "title": "Đã xảy ra lỗi",
-    "description": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
-    "retry": "Thử lại"
+  "navigation": {
+    "dashboard": "Bảng điều khiển",
+    "customers": "Quản lý khách hàng",
+    "sales": "Quản lý bán hàng",
+    "marketing": "Marketing",
+    "products": "Quản lý sản phẩm",
+    "employees": "Quản lý nhân viên",
+    "accounting": "Kế toán",
+    "revenue": "Quản lý doanh thu",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "register": "Đăng ký",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "rememberMe": "Ghi nhớ đăng nhập"
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "overview": "Tổng quan",
+    "recentActivities": "Hoạt động gần đây",
+    "quickStats": "Thống kê nhanh",
+    "notifications": "Thông báo"
+  },
+  "customers": {
+    "title": "Quản lý khách hàng",
+    "addCustomer": "Thêm khách hàng",
+    "customerList": "Danh sách khách hàng",
+    "customerDetails": "Chi tiết khách hàng",
+    "companyName": "Tên công ty",
+    "contactPerson": "Người liên hệ",
+    "phone": "Điện thoại",
+    "address": "Địa chỉ",
+    "status": "Trạng thái"
+  },
+  "marketing": {
+    "title": "Marketing",
+    "campaigns": "Chiến dịch",
+    "analytics": "Phân tích",
+    "content": "Nội dung",
+    "planning": "Lập kế hoạch",
+    "budget": "Ngân sách",
+    "trends": "Xu hướng",
+    "insights": "Thông tin chi tiết"
   }
 }
