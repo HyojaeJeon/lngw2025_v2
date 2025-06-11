@@ -13,13 +13,14 @@ import { selectCurrentLanguage } from "../store/slices/languageSlice";
 
 // 서버 URL 설정 - 로컬 개발용
 const LOCAL_URL = "http://localhost:5002/graphql";
-const REPLIT_URL = "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
+const REPLIT_URL =
+  "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev/graphql";
 
 const httpLink = createHttpLink({
-  uri: LOCAL_URL,
-  credentials: 'include', // CORS 쿠키 허용
+  uri: REPLIT_URL,
+  credentials: "include", // CORS 쿠키 허용
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -71,8 +72,10 @@ const errorLink = onError(
       }
 
       // CORS 오류 처리
-      if (networkError.message && networkError.message.includes('CORS')) {
-        console.error('CORS error detected. Please check server configuration.');
+      if (networkError.message && networkError.message.includes("CORS")) {
+        console.error(
+          "CORS error detected. Please check server configuration.",
+        );
       }
 
       if (networkError.statusCode === 401) {

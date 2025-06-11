@@ -46,18 +46,18 @@ const categoryResolvers = {
 
         const categories = await models.Category.findAll({
           where,
-          include: [
-            {
-              model: models.Category,
-              as: 'parent',
-              attributes: ['id', 'code', 'names']
-            },
-            {
-              model: models.Category,
-              as: 'children',
-              attributes: ['id', 'code', 'names', 'level']
-            }
-          ],
+          // include: [
+          //   {
+          //     model: models.Category,
+          //     as: 'parent',
+          //     attributes: ['id', 'code', 'names']
+          //   },
+          //   {
+          //     model: models.Category,
+          //     as: 'children',
+          //     attributes: ['id', 'code', 'names', 'level']
+          //   }
+          // ],
           order: [['sortOrder', 'ASC'], ['createdAt', 'ASC']]
         });
 
@@ -73,18 +73,18 @@ const categoryResolvers = {
 
       try {
         const category = await models.Category.findByPk(id, {
-          include: [
-            {
-              model: models.Category,
-              as: 'parent',
-              attributes: ['id', 'code', 'names']
-            },
-            {
-              model: models.Category,
-              as: 'children',
-              attributes: ['id', 'code', 'names', 'level']
-            }
-          ]
+          // include: [
+          //   {
+          //     model: models.Category,
+          //     as: 'parent',
+          //     attributes: ['id', 'code', 'names']
+          //   },
+          //   {
+          //     model: models.Category,
+          //     as: 'children',
+          //     attributes: ['id', 'code', 'names', 'level']
+          //   }
+          // ]
         });
 
         if (!category) {
@@ -107,18 +107,18 @@ const categoryResolvers = {
       try {
         const category = await models.Category.findOne({
           where: { code },
-          include: [
-            {
-              model: models.Category,
-              as: 'parent',
-              attributes: ['id', 'code', 'names']
-            },
-            {
-              model: models.Category,
-              as: 'children',
-              attributes: ['id', 'code', 'names', 'level']
-            }
-          ]
+          // include: [
+          //   {
+          //     model: models.Category,
+          //     as: 'parent',
+          //     attributes: ['id', 'code', 'names']
+          //   },
+          //   {
+          //     model: models.Category,
+          //     as: 'children',
+          //     attributes: ['id', 'code', 'names', 'level']
+          //   }
+          // ]
         });
 
         return category;
@@ -281,18 +281,18 @@ const categoryResolvers = {
         await category.update(input);
 
         return await models.Category.findByPk(id, {
-          include: [
-            {
-              model: models.Category,
-              as: 'parent',
-              attributes: ['id', 'code', 'names']
-            },
-            {
-              model: models.Category,
-              as: 'children',
-              attributes: ['id', 'code', 'names', 'level']
-            }
-          ]
+          // include: [
+          //   {
+          //     model: models.Category,
+          //     as: 'parent',
+          //     attributes: ['id', 'code', 'names']
+          //   },
+          //   {
+          //     model: models.Category,
+          //     as: 'children',
+          //     attributes: ['id', 'code', 'names', 'level']
+          //   }
+          // ]
         });
       } catch (error) {
         if (error.extensions?.errorKey) {

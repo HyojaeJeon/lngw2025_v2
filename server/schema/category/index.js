@@ -1,13 +1,13 @@
-const { gql } = require('apollo-server-express');
+const { gql } = require("apollo-server-express");
 
 const categorySchemaExtensions = gql`
   # ====================
   # CATEGORY SPECIFIC TYPES
   # ====================
   type CategoryNames {
-    ko: String!
-    vi: String!
-    en: String!
+    ko: String
+    vi: String
+    en: String
   }
 
   type CategoryDescriptions {
@@ -25,9 +25,9 @@ const categorySchemaExtensions = gql`
   # CATEGORY INPUT TYPES
   # ====================
   input CategoryNamesInput {
-    ko: String!
-    vi: String!
-    en: String!
+    ko: String
+    vi: String
+    en: String
   }
 
   input CategoryDescriptionsInput {
@@ -38,7 +38,7 @@ const categorySchemaExtensions = gql`
 
   input CategoryInput {
     code: String!
-    names: CategoryNamesInput!
+    names: CategoryNamesInput
     descriptions: CategoryDescriptionsInput
     parentId: ID
     level: Int
@@ -60,15 +60,15 @@ const categorySchemaExtensions = gql`
   # CATEGORY QUERIES & MUTATIONS
   # ====================
   extend type Query {
-    categories(parentId: ID, level: Int, isActive: Boolean): [Category!]!
+    categories(parentId: ID, level: Int, isActive: Boolean): [Category]
     category(id: ID!): Category
     categoryByCode(code: String!): Category
     checkCategoryCode(code: String!): CategoryCodeCheckResult!
   }
 
   extend type Mutation {
-    createCategory(input: CategoryInput!): Category!
-    updateCategory(id: ID!, input: CategoryInput!): Category!
+    createCategory(input: CategoryInput!): Category
+    updateCategory(id: ID!, input: CategoryInput): Category
     deleteCategory(id: ID!): Boolean!
   }
 `;

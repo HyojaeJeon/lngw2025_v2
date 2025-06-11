@@ -10,7 +10,8 @@ const models = require("./models");
 const seedData = require("./seeders");
 
 // JWT Secret 설정 - 프로덕션에서는 환경변수로 관리
-const JWT_SECRET = process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
 
 // ====================
 // 언어 파싱 헬퍼 함수
@@ -45,17 +46,12 @@ const whitelist =
         "http://localhost:3003",
         "http://localhost:3001",
         "http://localhost:3201",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3000",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3001",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002",
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3003",
         "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
       ];
 
 async function startServer() {
   const app = express();
-  
+
   // 기본 라우트 (리디렉션)
   app.get("/", (req, res) => {
     if (process.env.REPLIT_DB_URL || process.env.REPLIT) {
@@ -78,20 +74,21 @@ async function startServer() {
     cors({
       origin: [
         "http://localhost:3000",
-        "http://localhost:3001", 
+        "http://localhost:3001",
         "http://localhost:3002",
         "http://localhost:3003",
         "http://127.0.0.1:3000",
-        "https://gw.lnpartners.biz"
+        "https://gw.lnpartners.biz",
+        "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
       ],
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language'],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Accept-Language"],
     }),
   );
 
   // Preflight 요청 처리
-  app.options('*', cors());
+  app.options("*", cors());
 
   // ──────────────────────────────────────────────────────────────────────────
   // Apollo Server 설정
@@ -119,12 +116,12 @@ async function startServer() {
 
       try {
         const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
+        if (authHeader && authHeader.startsWith("Bearer ")) {
           const token = authHeader.replace("Bearer ", "");
-          if (token && token !== 'null' && token !== 'undefined') {
+          if (token && token !== "null" && token !== "undefined") {
             try {
               const decoded = jwt.verify(token, JWT_SECRET);
-              
+
               const foundUser = await models.User.findByPk(decoded.userId);
               if (foundUser) {
                 user = {
@@ -135,7 +132,10 @@ async function startServer() {
                 };
                 console.log("User authenticated successfully:", user.email);
               } else {
-                console.log("User not found in database for userId:", decoded.userId);
+                console.log(
+                  "User not found in database for userId:",
+                  decoded.userId,
+                );
               }
             } catch (jwtError) {
               console.log("JWT verification failed:", jwtError.message);
@@ -151,7 +151,7 @@ async function startServer() {
   });
 
   await server.start();
-  
+
   server.applyMiddleware({
     app,
     path: "/graphql",

@@ -614,12 +614,10 @@ const types = gql`
   # ====================
   type Category {
     id: ID!
-    code: String!
-    names: CategoryNames!
+    code: String
+    names: CategoryNames
     descriptions: CategoryDescriptions
     parentId: ID
-    parent: Category
-    children: [Category!]
     level: Int!
     sortOrder: Int!
     isActive: Boolean!
@@ -628,8 +626,8 @@ const types = gql`
   }
 
   type CategoryNames {
-    ko: String!
-    vi: String!
+    ko: String
+    vi: String
     en: String
   }
 
@@ -868,4 +866,4 @@ const types = gql`
   }
 `;
 
-module.exports = types; 
+module.exports = types;
