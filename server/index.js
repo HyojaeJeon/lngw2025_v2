@@ -137,20 +137,49 @@ async function initializeDatabase() {
 async function startServer() {
   const app = express();
 
-  // 기본 라우트 (리디렉션)
-  app.get("/", (req, res) => {
-    if (isReplit) {
-      // Replit 환경에서는 현재 호스트의 3000 포트로 리디렉션
-      const host = req.get('host');
-      const redirectUrl = `https://${host.replace(':80', '')}:3000/`;
-      return res.redirect(redirectUrl);
+  // Static file serving for Next.js build
+  const express_static = require('express').static;
+  const path = require('path');
+  
+  // Serve Next.js static files
+  app.use(express_static(path.join(__dirname, '../client-nextjs/.next/static'), {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js') || path.endsWith('.css')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
     }
+  }));
+  
+  // Serve public assets
+  app.use(express_static(path.join(__dirname, '../client-nextjs/public')));
 
-    if (process.env.NODE_ENV !== "production") {
-      return res.redirect("http://localhost:3000");
+  // Proxy requests to Next.js for all non-API routes
+  app.get('*', async (req, res) => {
+    // Skip GraphQL and health endpoints
+    if (req.path.startsWith('/graphql') || req.path === '/health') {
+      return;
     }
-
-    return res.redirect("https://gw.lnpartners.biz");
+    
+    try {
+      // Proxy to Next.js dev server
+      const fetch = require('node-fetch');
+      const response = await fetch(`http://localhost:3000${req.url}`, {
+        method: req.method,
+        headers: req.headers,
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined
+      });
+      
+      // Copy headers
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+      
+      res.status(response.status);
+      response.body.pipe(res);
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(503).send('Service temporarily unavailable');
+    }
   });
 
   // ──────────────────────────────────────────────────────────────────────────
