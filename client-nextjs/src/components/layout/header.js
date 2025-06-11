@@ -9,16 +9,10 @@ import { logout } from "../../store/slices/authSlice.js";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import LanguageSelector from "../ui/LanguageSelector.js";
-import { useTranslation, } from "../../hooks/useLanguage.js";
+import { useTranslation } from "../../hooks/useLanguage.js";
 
 export default function Header({ onMenuToggle }) {
-  const { currentLanguage, getNextLanguage, changeLanguage } = useLanguage();
   const { t } = useTranslation();
-
-  const cycleLanguage = () => {
-    const nextLang = getNextLanguage();
-    changeLanguage(nextLang);
-  };
 
   const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobile();

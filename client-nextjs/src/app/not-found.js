@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button.js';
-import { useLanguage } from '../hooks/useLanguage.js';
+import { useTranslation } from '../hooks/useLanguage.js';
 import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const router = useRouter();
 
   return (
@@ -31,4 +31,4 @@ export default function NotFound() {
       </div>
     </div>
   );
-} 
+}

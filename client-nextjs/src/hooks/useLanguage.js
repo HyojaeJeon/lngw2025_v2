@@ -90,6 +90,30 @@ export const useTranslation = () => {
   return { t, currentLanguage };
 };
 
+// 4. useLanguage 훅 (언어 변경 기능 포함)
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+
+  const { currentLanguage, changeLanguage } = context;
+
+  const getNextLanguage = useCallback(() => {
+    const currentIndex = SUPPORTED_LANGUAGES.indexOf(currentLanguage);
+    const nextIndex = (currentIndex + 1) % SUPPORTED_LANGUAGES.length;
+    return SUPPORTED_LANGUAGES[nextIndex];
+  }, [currentLanguage]);
+
+  return { 
+    currentLanguage, 
+    changeLanguage, 
+    getNextLanguage,
+    supportedLanguages: SUPPORTED_LANGUAGES,
+    languageInfo: LANGUAGE_INFO
+  };
+};
+
 // 5. useLocaleFormat 훅
 export const useLocaleFormat = () => {
   const context = useContext(LanguageContext);

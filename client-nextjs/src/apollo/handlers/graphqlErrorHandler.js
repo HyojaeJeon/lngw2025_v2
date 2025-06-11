@@ -64,3 +64,4 @@ export const handleGraphQLError = (graphQLErrors, lang = 'ko') => {
     }
   });
 };
+export { handleGraphQLErrors };

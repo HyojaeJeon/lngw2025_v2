@@ -1,11 +1,10 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { ArrowLeft, Target, Plus, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 
 // Custom hooks
@@ -21,7 +20,7 @@ import DeleteConfirmModal from "./_components/_modals/DeleteConfirmModal";
 import { calculateObjectiveProgress } from "./_utils/calculations";
 
 export default function PlanningProcessDetailPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const planId = params?.id;
@@ -179,7 +178,7 @@ export default function PlanningProcessDetailPage() {
             .filter((obj) => obj?.isActive)
             .map((objective) => {
               if (!objective || !objective.id) return null;
-              
+
               const isCollapsed = collapsedObjectives?.has(objective.id);
               const isEditing = editingObjectiveId === objective.id;
 
@@ -219,7 +218,7 @@ export default function PlanningProcessDetailPage() {
             .filter((obj) => obj && !obj.isActive)
             .map((objective) => {
               if (!objective || !objective.id) return null;
-              
+
               return (
                 <Card
                   key={objective.id}
