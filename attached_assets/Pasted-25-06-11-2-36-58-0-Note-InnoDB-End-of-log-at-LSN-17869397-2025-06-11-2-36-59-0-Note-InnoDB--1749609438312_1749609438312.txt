@@ -1,0 +1,28 @@
+25-06-11  2:36:58 0 [Note] InnoDB: End of log at LSN=17869397
+2025-06-11  2:36:59 0 [Note] InnoDB: 128 rollback segments are active.
+2025-06-11  2:36:59 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+2025-06-11  2:36:59 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+2025-06-11  2:36:59 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+2025-06-11  2:36:59 0 [Note] InnoDB: log sequence number 17869397; transaction id 23098
+2025-06-11  2:36:59 0 [Note] InnoDB: Loading buffer pool(s) from /home/runner/workspace/mysql-data/ib_buffer_pool
+2025-06-11  2:36:59 0 [Note] Plugin 'FEEDBACK' is disabled.
+2025-06-11  2:36:59 0 [Note] Server socket created on IP: '0.0.0.0'.
+2025-06-11  2:36:59 0 [Note] Server socket created on IP: '::'.
+2025-06-11  2:36:59 0 [Note] mysqld: ready for connections.
+Version: '10.11.6-MariaDB'  socket: '/tmp/mysql.sock'  port: 3306  MariaDB Server
+2025-06-11  2:37:00 0 [Note] InnoDB: Buffer pool(s) load completed at 250611  2:37:00
+/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/type.js:26
+            throw new Error(`Unable to merge GraphQL type "${node.name.value}": ${e.message}`);
+            ^
+
+Error: Unable to merge GraphQL type "MarketingStats": Field "abTestGroups" already defined with a different type. Declared as "ABTestStats", but you tried to override with "ABTestGroupStats"
+    at mergeType (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/type.js:26:19)
+    at mergeGraphQLNodes (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-nodes.js:38:73)
+    at mergeGraphQLTypes (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:72:64)
+    at mergeTypeDefs (/home/runner/workspace/server/node_modules/@graphql-tools/merge/cjs/typedefs-mergers/merge-typedefs.js:14:22)
+    at Object.<anonymous> (/home/runner/workspace/server/schema/index.js:40:18)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Module.require (node:internal/modules/cjs/loader:1311:19)
