@@ -290,5 +290,15 @@
     "influencerManagement": "Quản lý influencer",
     "monitoring": "Giám sát",
     "settings": "Cài đặt Marketing"
+  },
+  "sidebar": {
+    "companyName": "LN Partners 그룹웨어",
+    "subTitle": "Phần mềm quản lý doanh nghiệp"
+  },
+  "profile": {
+    "settings": "Cài đặt hồ sơ",
+    "myProfile": "Hồ sơ của tôi",
+    "account": "Tài khoản",
+    "personalInfo": "Thông tin cá nhân"
   }
 }
