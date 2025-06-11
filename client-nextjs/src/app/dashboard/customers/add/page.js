@@ -1243,33 +1243,35 @@ export default function AddCustomerPage() {
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    전화번호
+                    {t("customer.phone") || "전화번호"}
                   </Label>
                   <Input
+                    name="phone"
                     type="tel"
-                    placeholder={t("customer.phone") || "전화번호를 입력하세요"}
                     value={formData.phone}
                     onChange={handleInputChange}
+                    placeholder={t("customer.phonePlaceholder") || "전화번호를 입력하세요"}
                     className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                   />
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    이메일
+                    {t("customer.email") || "이메일"}
                   </Label>
                   <Input
+                    name="email"
                     type="email"
-                    placeholder={t("customer.email") || "이메일을 입력하세요"}
                     value={formData.email}
                     onChange={handleInputChange}
+                    placeholder={t("customer.emailPlaceholder") || "이메일을 입력하세요"}
                     className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                   />
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    업종
+                    {t("customer.industry") || "업종"}
                   </Label>
                   <Input
                     name="industry"
@@ -1277,7 +1279,7 @@ export default function AddCustomerPage() {
                     value={formData.industry}
                     onChange={handleInputChange}
                     placeholder={
-                      t("company.industryPlaceholder") || "업종을 입력하세요"
+                      t("customer.industryPlaceholder") || "업종을 입력하세요"
                     }
                     className="mt-1 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
                   />
@@ -1285,7 +1287,7 @@ export default function AddCustomerPage() {
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("company.type") || "회사 유형"}
+                    {t("customer.companyType") || "회사 유형"}
                   </Label>
                   <select
                     name="companyType"
@@ -1294,7 +1296,7 @@ export default function AddCustomerPage() {
                     className="mt-1 w-full h-12 px-3 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-blue-200 text-gray-900 dark:text-white"
                   >
                     <option value="">
-                      {t("company.typeSelect") || "회사 유형 선택"}
+                      {t("customer.selectCompanyType") || "회사 유형 선택"}
                     </option>
                     {companyTypes.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -1309,7 +1311,7 @@ export default function AddCustomerPage() {
                       value={formData.companyType}
                       onChange={handleInputChange}
                       placeholder={
-                        t("company.typeCustomPlaceholder") ||
+                        t("customer.companyTypeCustomPlaceholder") ||
                         "회사 유형을 입력하세요"
                       }
                       className="mt-2 h-12 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-200 rounded-xl"
@@ -1319,7 +1321,7 @@ export default function AddCustomerPage() {
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("customer.grade") || "고객 등급"}
+                    {t("customer.customerGrade") || "고객 등급"}
                   </Label>
                   <select
                     name="grade"
@@ -1353,7 +1355,7 @@ export default function AddCustomerPage() {
 
                 <div className="lg:col-span-3">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("address.title") || "주소"}
+                    {t("customer.address") || "주소"}
                   </Label>
                   <div className="mt-1">
                     <AddressSelector
@@ -1373,10 +1375,10 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <User className="w-5 h-5 mr-2" />
-                {t("sales.person.assigned") || "담당 영업사원"}
+                {t("customer.assignedUser") || "담당 영업사원"}
               </CardTitle>
               <CardDescription className="text-green-100">
-                {t("sales.person.description") ||
+                {t("customer.assignedUserDescription") ||
                   "이 고객사를 담당할 영업사원을 선택해 주세요"}
               </CardDescription>
             </CardHeader>
@@ -1399,10 +1401,10 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <ImageIcon className="w-5 h-5 mr-2" />
-                {t("image.registration") || "이미지 등록"}
+                {t("customers.imageUploadHint") || "이미지 등록"}
               </CardTitle>
               <CardDescription className="text-purple-100">
-                {t("image.description") ||
+                {t("customers.imageUploadDescription") ||
                   "고객사의 프로필 이미지와 시설 사진을 등록해 주세요"}
               </CardDescription>
             </CardHeader>
@@ -1411,7 +1413,7 @@ export default function AddCustomerPage() {
                 {/* 프로필 이미지 - 상단 */}
                 <div>
                   <ImageUploadSection
-                    title={t("image.profile") || "고객사 프로필 이미지"}
+                    title={t("customers.profileImage") || "고객사 프로필 이미지"}
                     images={formData.profileImage}
                     onImagesChange={(image) =>
                       setFormData((prev) => ({ ...prev, profileImage: image }))
@@ -1427,7 +1429,7 @@ export default function AddCustomerPage() {
                 {/* 시설 사진 - 하단 */}
                 <div>
                   <ImageUploadSection
-                    title={t("image.facility") || "시설 사진"}
+                    title={t("customers.facilityImages") || "시설 사진"}
                     images={formData.facilityImages}
                     onImagesChange={(images) =>
                       setFormData((prev) => ({
@@ -1448,10 +1450,10 @@ export default function AddCustomerPage() {
             <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
               <CardTitle className="text-xl font-semibold flex items-center">
                 <UserPlus className="w-5 h-5 mr-2" />
-                {t("contact.info") || "담당자 정보"}
+                {t("customers.contactPerson") || "담당자 정보"}
               </CardTitle>
               <CardDescription className="text-orange-100">
-                {t("contact.description") ||
+                {t("customers.contactPersonDescription") ||
                   "고객사의 담당자들을 추가해 주세요"}
               </CardDescription>
             </CardHeader>
@@ -1475,7 +1477,7 @@ export default function AddCustomerPage() {
                   className="w-full h-16 border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-600 hover:text-blue-600 rounded-xl transition-all duration-200"
                 >
                   <UserPlus className="w-5 h-5 mr-2" />
-                  {t("contact.add") || "담당자 추가"}
+                  {t("customers.addContactPerson") || "담당자 추가"}
                 </Button>
               </div>
             </CardContent>
@@ -1489,7 +1491,7 @@ export default function AddCustomerPage() {
               className="px-8 py-3 h-12 rounded-xl border-2"
               onClick={() => router.back()}
             >
-              {t("button.cancel") || "취소"}
+              {t("common.cancel") || "취소"}
             </Button>
             <Button
               type="submit"
@@ -1497,8 +1499,8 @@ export default function AddCustomerPage() {
               className="px-8 py-3 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg disabled:opacity-50"
             >
               {isSubmitting
-                ? t("button.submitting") || "등록 중..."
-                : t("button.register") || "고객사 등록"}
+                ? t("common.saving") || "등록 중..."
+                : t("customers.addCustomer") || "고객사 등록"}
             </Button>
           </div>
         </form>
