@@ -81,7 +81,6 @@ export const useLanguage = () => {
     getLanguageNativeName: useCallback((code) => getLanguageNativeName(code), []),
     getLanguageFlag: useCallback((code) => getLanguageFlag(code), []),
   };
-};
 
 // useTranslation 훅
 export const useTranslation = () => {

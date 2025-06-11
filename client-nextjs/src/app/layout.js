@@ -18,12 +18,12 @@ export default function RootLayout({ children }) {
     <html lang="ko">
       <body className={inter.className}>
         <ClientLayout>
-            <AuthInitializer>
-              {children}
-              <Toaster />
-            </AuthInitializer>
+          <AuthInitializer>
+            {children}
+            <Toaster />
+          </AuthInitializer>
         </ClientLayout>
       </body>
     </html>
-  )
+  );
 }
