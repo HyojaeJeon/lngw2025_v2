@@ -89,22 +89,9 @@ const categoryResolvers = {
       }
     },
 
-    categoryByCode: async ({ code }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const category = await models.Category.findOne({
-          where: { code },
-        });
-
-        return category;
-      } catch (error) {
-        console.error("Error fetching category by code:", error);
-        handleDatabaseError(error, lang, "CATEGORY_NOT_FOUND");
-      }
-    },
-
-    checkCategoryCode: async ({ code }, { user, lang }) => {
+    checkCategoryCode: async (parent, args, context) => {
+      const { user, lang } = context;
+      const { code } = args;
       requireAuth(user, lang);
 
       try {
@@ -135,6 +122,23 @@ const categoryResolvers = {
       } catch (error) {
         console.error("Error checking category code:", error);
         handleDatabaseError(error, lang, "DATABASE_ERROR");
+      }
+    },
+
+    categoryByCode: async (parent, args, context) => {
+      const { user, lang } = context;
+      const { code } = args;
+      requireAuth(user, lang);
+
+      try {
+        const category = await models.Category.findOne({
+          where: { code },
+        });
+
+        return category;
+      } catch (error) {
+        console.error("Error fetching category by code:", error);
+        handleDatabaseError(error, lang, "CATEGORY_NOT_FOUND");
       }
     },
   },

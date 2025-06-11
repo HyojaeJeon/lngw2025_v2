@@ -40,50 +40,35 @@ export default function UserProfile() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* 사용자 프로필 버튼 */}
+      {/* 사용자 프로필 버튼 - 헤더용으로 간소화 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center w-full p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group"
+        className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group"
       >
-        <div className="flex items-center flex-1 min-w-0">
-          {/* 아바타 */}
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 shadow-lg">
-            {user.avatar ? (
-              <img 
-                src={user.avatar} 
-                alt="Avatar" 
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              user.name?.charAt(0).toUpperCase() || "U"
-            )}
-          </div>
-
-          {/* 사용자 정보 */}
-          <div className="ml-3 flex-1 min-w-0 text-left">
-            <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {user.name || t('common.unknown') || '알 수 없음'}
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {user.department && user.position 
-                ? `${user.department} • ${user.position}`
-                : user.department || user.position || t('common.noPosition') || '직책 없음'
-              }
-            </div>
-          </div>
-
-          {/* 화살표 아이콘 */}
-          <ChevronDown 
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          />
+        {/* 아바타 */}
+        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 shadow-lg">
+          {user.avatar ? (
+            <img 
+              src={user.avatar} 
+              alt="Avatar" 
+              className="w-full h-full object-cover rounded-full"
+            />
+          ) : (
+            user.name?.charAt(0).toUpperCase() || "U"
+          )}
         </div>
+
+        {/* 화살표 아이콘 */}
+        <ChevronDown 
+          className={`w-4 h-4 ml-1 text-gray-400 transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {/* 드롭다운 메뉴 */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
           {/* 사용자 정보 헤더 */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600">
             <div className="flex items-center space-x-3">
@@ -100,7 +85,7 @@ export default function UserProfile() {
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-900 dark:text-white">
-                  {user.name}
+                  {user.name || t('common.unknown') || '알 수 없음'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
                   {user.email}
@@ -109,7 +94,7 @@ export default function UserProfile() {
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {user.department && user.position 
                       ? `${user.department} • ${user.position}`
-                      : user.department || user.position
+                      : user.department || user.position || t('common.noPosition') || '직책 없음'
                     }
                   </div>
                 )}
