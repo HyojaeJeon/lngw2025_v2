@@ -69,7 +69,7 @@ const categoryResolvers = {
     category: async (parent, args, context) => {
       const { user, lang } = context;
       const { id } = args;
-    console.log("User : "
+      console.log("User : ", user);
       requireAuth(user, lang);
 
       try {
@@ -140,7 +140,9 @@ const categoryResolvers = {
   },
 
   Mutation: {
-    createCategory: async ({ input }, { user, lang }) => {
+    createCategory: async (args, { user, lang }) => {
+      console.log("USER LANG : ", user, lang);
+      console.log("args : ", args);
       requireAuth(user, lang);
 
       try {
