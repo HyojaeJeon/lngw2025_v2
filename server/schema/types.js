@@ -249,7 +249,7 @@ const types = gql`
     variants: [ABTestVariant!]!
   }
 
-  type ABTestStats {
+  type ABTestGroupStats {
     totalTests: Int!
     activeTests: Int!
     completedTests: Int!
@@ -266,7 +266,7 @@ const types = gql`
     totalPosts: TotalPosts!
     pendingApproval: Int!
     errors: Int!
-    abTestGroups: ABTestStats!
+    abTestGroups: ABTestGroupStats!
     trendingKeywords: Int!
   }
 
