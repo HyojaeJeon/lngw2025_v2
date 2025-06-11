@@ -1,15 +1,12 @@
 {
   "common": {
     "loading": "Loading...",
-    "error": "An error occurred",
     "save": "Save",
     "cancel": "Cancel",
-    "delete": "Delete",
     "edit": "Edit",
-    "confirm": "Confirm",
-    "search": "Search",
+    "delete": "Delete",
     "add": "Add",
-    "view": "View",
+    "search": "Search",
     "filter": "Filter",
     "export": "Export",
     "import": "Import",
@@ -17,20 +14,15 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
-    "all": "All",
-    "none": "None",
-    "select": "Select",
-    "clear": "Clear",
-    "close": "Close",
-    "open": "Open",
     "submit": "Submit",
-    "reset": "Reset",
-    "total": "Total",
-    "count": "items",
-    "required": "Required",
-    "optional": "Optional",
-    "success": "Success",
-    "failed": "Failed"
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "error": {
+    "title": "An error occurred",
+    "description": "An unexpected error occurred. Please try again later.",
+    "retry": "Retry"
   },
   "login": {
     "title": "Login",

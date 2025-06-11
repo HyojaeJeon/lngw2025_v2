@@ -49,6 +49,61 @@ const whitelist =
         "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
       ];
 
+// ──────────────────────────────────────────────────────────────────────────
+// 포트 정리 및 MySQL 시작 함수
+// ──────────────────────────────────────────────────────────────────────────
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
+
+async function killPortProcesses(port) {
+  try {
+    const { stdout } = await execPromise(`lsof -ti:${port}`);
+    if (stdout.trim()) {
+      const pids = stdout.trim().split('\n');
+      for (const pid of pids) {
+        try {
+          await execPromise(`kill -9 ${pid}`);
+          console.log(`포트 ${port}에서 실행 중인 프로세스 ${pid}를 종료했습니다.`);
+        } catch (error) {
+          console.log(`프로세스 ${pid} 종료 실패:`, error.message);
+        }
+      }
+    }
+  } catch (error) {
+    // 포트에 실행 중인 프로세스가 없으면 정상
+    console.log(`포트 ${port}에 실행 중인 프로세스가 없습니다.`);
+  }
+}
+
+async function startMySQL() {
+  try {
+    console.log('MySQL/MariaDB 서비스를 시작합니다...');
+    await execPromise('sudo service mariadb start');
+    console.log('MySQL/MariaDB 서비스가 시작되었습니다.');
+
+    // 데이터베이스와 사용자 생성
+    try {
+      await execPromise('mysql -u root -e "CREATE DATABASE IF NOT EXISTS lngw2025_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"');
+      await execPromise('mysql -u root -e "CREATE USER IF NOT EXISTS \'appuser\'@\'localhost\' IDENTIFIED BY \'gywo9988!@\';"');
+      await execPromise('mysql -u root -e "GRANT ALL PRIVILEGES ON lngw2025_db.* TO \'appuser\'@\'localhost\';"');
+      await execPromise('mysql -u root -e "FLUSH PRIVILEGES;"');
+      console.log('데이터베이스 설정이 완료되었습니다.');
+    } catch (dbError) {
+      console.log('데이터베이스 설정 중 오류 (이미 존재할 수 있음):', dbError.message);
+    }
+
+    // MySQL 연결 대기
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  } catch (error) {
+    console.error('MySQL 시작 오류:', error.message);
+    throw error;
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 4) DB 연결 & Express 서버 시작
+// ──────────────────────────────────────────────────────────────────────────
 async function startServer() {
   const app = express();
 
@@ -171,6 +226,10 @@ async function startServer() {
   // 4) DB 연결 & Express 서버 시작
   // ──────────────────────────────────────────────────────────────────────────
   try {
+    // 서버 시작 전에 포트 정리 및 MySQL 시작
+    await killPortProcesses(PORT);
+    await startMySQL();
+
     console.log("Connecting to database...");
     await models.sequelize.authenticate();
     console.log("Database connection established successfully.");

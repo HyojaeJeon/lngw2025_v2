@@ -68,10 +68,38 @@ export const useLanguage = () => {
   const getCurrentLanguageNativeName = useCallback(() => getLanguageNativeName(currentLanguage), [currentLanguage]);
   const getCurrentLanguageFlag = useCallback(() => getLanguageFlag(currentLanguage), [currentLanguage]);
 
+  // useTranslation 훅
+  const useTranslation = () => {
+    const [currentLanguage, setCurrentLanguage] = useState(DEFAULT_LANGUAGE);
+    const [translations, setTranslations] = useState({});
+
+    // 언어 초기화
+    useEffect(() => {
+      const savedLanguage = localStorage.getItem("language") || DEFAULT_LANGUAGE;
+      if (SUPPORTED_LANGUAGES.includes(savedLanguage)) {
+        setCurrentLanguage(savedLanguage);
+      }
+    }, []);
+
+    // 번역 데이터 로드
+    useEffect(() => {
+      setTranslations(ALL_MESSAGES[currentLanguage] || {});
+    }, [currentLanguage]);
+
+    // 번역 함수
+    const t = useCallback((key, fallback = key) => {
+      if (!key) return fallback;
+
+      const value = getValueByPath(translations, key);
+      return value || fallback;
+    }, [translations, currentLanguage]);
+
+    return { t, currentLanguage };
+  };
+
   return {
+    // 현재 언어 정보
     currentLanguage,
-    changeLanguage,
-    getNextLanguage,
     getCurrentLanguageName,
     getCurrentLanguageNativeName,
     getCurrentLanguageFlag,
@@ -80,35 +108,14 @@ export const useLanguage = () => {
     getLanguageName: useCallback((code) => getLanguageName(code), []),
     getLanguageNativeName: useCallback((code) => getLanguageNativeName(code), []),
     getLanguageFlag: useCallback((code) => getLanguageFlag(code), []),
+
+    // 번역 함수
+    useTranslation,
+
+    // 언어 변경
+    changeLanguage,
+    getNextLanguage
   };
-
-// useTranslation 훅
-export const useTranslation = () => {
-  const [currentLanguage, setCurrentLanguage] = useState(DEFAULT_LANGUAGE);
-  const [translations, setTranslations] = useState({});
-
-  // 언어 초기화
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("language") || DEFAULT_LANGUAGE;
-    if (SUPPORTED_LANGUAGES.includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  // 번역 데이터 로드
-  useEffect(() => {
-    setTranslations(ALL_MESSAGES[currentLanguage] || {});
-  }, [currentLanguage]);
-
-  // 번역 함수
-  const t = useCallback((key, fallback = key) => {
-    if (!key) return fallback;
-
-    const value = getValueByPath(translations, key);
-    return value || fallback;
-  }, [translations, currentLanguage]);
-
-  return { t, currentLanguage };
 };
 
 // useLocaleFormat 훅 - 숫자와 통화 포맷팅

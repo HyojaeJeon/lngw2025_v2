@@ -1,15 +1,12 @@
 {
   "common": {
     "loading": "로딩 중...",
-    "error": "오류가 발생했습니다",
     "save": "저장",
     "cancel": "취소",
+    "edit": "수정",
     "delete": "삭제",
-    "edit": "편집",
-    "confirm": "확인",
-    "search": "검색",
     "add": "추가",
-    "view": "보기",
+    "search": "검색",
     "filter": "필터",
     "export": "내보내기",
     "import": "가져오기",
@@ -17,20 +14,15 @@
     "back": "뒤로",
     "next": "다음",
     "previous": "이전",
-    "all": "전체",
-    "none": "없음",
-    "select": "선택",
-    "clear": "지우기",
-    "close": "닫기",
-    "open": "열기",
     "submit": "제출",
-    "reset": "재설정",
-    "total": "총",
-    "count": "개",
-    "required": "필수 항목",
-    "optional": "선택사항",
-    "success": "성공",
-    "failed": "실패"
+    "confirm": "확인",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "error": {
+    "title": "오류가 발생했습니다",
+    "description": "예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    "retry": "다시 시도"
   },
   "login": {
     "title": "로그인",
