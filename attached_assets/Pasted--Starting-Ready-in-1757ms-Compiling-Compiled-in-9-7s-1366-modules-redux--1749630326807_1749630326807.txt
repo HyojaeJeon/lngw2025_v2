@@ -1,0 +1,51 @@
+ ✓ Starting...
+ ✓ Ready in 1757ms
+ ○ Compiling / ...
+ ✓ Compiled / in 9.7s (1366 modules)
+redux-persist failed to create sync storage. falling back to noop storage.
+ GET / 200 in 10242ms
+ ✓ Compiled in 1103ms (658 modules)
+ ○ Compiling /dashboard/products ...
+ ⚠ ./src/app/dashboard/products/page.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/app/dashboard/products/page.js
+
+./src/app/dashboard/products/page.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/app/dashboard/products/page.js
+
+./src/components/common/NumberInput.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/components/common/NumberInput.js
+./src/components/products/ProductAddModal.js
+./src/app/dashboard/products/page.js
+
+./src/components/common/NumberInput.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/components/common/NumberInput.js
+./src/components/products/ProductAddModal.js
+./src/app/dashboard/products/page.js
+
+./src/app/dashboard/products/page.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/app/dashboard/products/page.js
+
+./src/components/common/NumberInput.js
+Attempted import error: 'useLocaleFormat' is not exported from '@/hooks/useLanguage.js' (imported as 'useLocaleFormat').
+
+Import trace for requested module:
+./src/components/common/NumberInput.js
+./src/components/products/ProductAddModal.js
+./src/app/dashboard/products/page.js
+redux-persist failed to create sync storage. falling back to noop storage.
+ GET /dashboard/products 200 in 2150ms
