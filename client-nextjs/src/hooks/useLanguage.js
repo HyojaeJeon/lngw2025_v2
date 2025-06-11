@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -113,7 +114,7 @@ export const useTranslation = () => {
   return { t, currentLanguage };
 };
 
-// 5. useLocaleFormat 훅도 Context를 사용하도록 수정
+// 5. useLocaleFormat 훅
 export const useLocaleFormat = () => {
   const context = useContext(LanguageContext);
   if (!context) {
