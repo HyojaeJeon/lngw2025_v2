@@ -40,8 +40,6 @@ const categorySchemaExtensions = gql`
     code: String!
     names: CategoryNamesInput
     descriptions: CategoryDescriptionsInput
-    parentId: ID
-    level: Int
     sortOrder: Int
     isActive: Boolean
   }
@@ -50,8 +48,6 @@ const categorySchemaExtensions = gql`
     code: String
     names: CategoryNamesInput
     descriptions: CategoryDescriptionsInput
-    parentId: ID
-    level: Int
     sortOrder: Int
     isActive: Boolean
   }
@@ -60,7 +56,7 @@ const categorySchemaExtensions = gql`
   # CATEGORY QUERIES & MUTATIONS
   # ====================
   extend type Query {
-    categories(parentId: ID, level: Int, isActive: Boolean): [Category]
+    categories(isActive: Boolean): [Category]
     category(id: ID!): Category
     categoryByCode(code: String!): Category
     checkCategoryCode(code: String!): CategoryCodeCheckResult!

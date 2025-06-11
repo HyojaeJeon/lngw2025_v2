@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "개발 환경 시작"
+runButton = "정리된 개발 시작"
 
 [[workflows.workflow]]
 name = "Project"
@@ -35,7 +35,7 @@ waitForPort = 5000
 [[workflows.workflow]]
 name = "정리된 개발 시작"
 author = 43113446
-mode = "sequential"
+mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -61,51 +61,18 @@ args = "sleep 8"
 task = "shell.exec"
 args = "export REPLIT=true && cd client-nextjs && npm run dev -- --port 3000"
 
-[[workflows.workflow]]
-name = "개발 환경 시작"
-author = 43113446
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"next\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "service mysql start || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 3"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd server && npm run dev &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 5"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd client-nextjs && npm run dev -- --port 3002"
-
-[[ports]]
-localPort = 5000
-externalPort = 80
-
 [[ports]]
 localPort = 3000
 externalPort = 3000
 
 [[ports]]
+localPort = 3002
+externalPort = 3002
+
+[[ports]]
 localPort = 3306
 externalPort = 3306
+
+[[ports]]
+localPort = 5000
+externalPort = 80

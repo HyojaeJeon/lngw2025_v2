@@ -1,5 +1,4 @@
-
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_CATEGORY = gql`
   mutation CreateCategory($input: CategoryInput!) {
@@ -16,17 +15,6 @@ export const CREATE_CATEGORY = gql`
         vi
         en
       }
-      parentId
-      parent {
-        id
-        code
-        names {
-          ko
-          vi
-          en
-        }
-      }
-      level
       sortOrder
       isActive
       createdAt
@@ -50,27 +38,6 @@ export const UPDATE_CATEGORY = gql`
         vi
         en
       }
-      parentId
-      parent {
-        id
-        code
-        names {
-          ko
-          vi
-          en
-        }
-      }
-      children {
-        id
-        code
-        names {
-          ko
-          vi
-          en
-        }
-        level
-      }
-      level
       sortOrder
       isActive
       createdAt

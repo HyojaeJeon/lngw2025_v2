@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_CATEGORIES = gql`
-  query GetCategories($parentId: ID, $level: Int, $isActive: Boolean) {
-    categories(parentId: $parentId, level: $level, isActive: $isActive) {
+  query GetCategories( $isActive: Boolean) {
+    categories( isActive: $isActive) {
       id
       code
       names {
@@ -15,9 +15,6 @@ export const GET_CATEGORIES = gql`
         vi
         en
       }
-      parentId
-
-      level
       sortOrder
       isActive
       createdAt
@@ -41,8 +38,6 @@ export const GET_CATEGORY = gql`
         vi
         en
       }
-      parentId
-      level
       sortOrder
       isActive
       createdAt

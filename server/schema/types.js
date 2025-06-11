@@ -20,16 +20,16 @@ const types = gql`
   }
 
   type MutationResponse {
-    success: Boolean!
-    message: String!
+    success: Boolean
+    message: String
   }
 
   # ====================
   # USER & AUTH TYPES
   # ====================
   type User {
-    id: ID!
-    email: String!
+    id: ID
+    email: String
     name: String
     firstName: String
     lastName: String
@@ -53,227 +53,227 @@ const types = gql`
   }
 
   type AuthPayload {
-    token: String!
-    user: User!
+    token: String
+    user: User
   }
 
   type EmergencyContact {
-    id: ID!
-    name: String!
-    relationship: String!
-    phoneNumber: String!
-    userId: ID!
-    createdAt: Date!
-    updatedAt: Date!
+    id: ID
+    name: String
+    relationship: String
+    phoneNumber: String
+    userId: ID
+    createdAt: Date
+    updatedAt: Date
   }
 
   type Skill {
-    id: ID!
-    name: String!
-    level: String!
-    userId: ID!
-    createdAt: Date!
-    updatedAt: Date!
+    id: ID
+    name: String
+    level: String
+    userId: ID
+    createdAt: Date
+    updatedAt: Date
   }
 
   type Experience {
-    id: ID!
-    company: String!
-    position: String!
-    period: String!
+    id: ID
+    company: String
+    position: String
+    period: String
     description: String
-    userId: ID!
-    createdAt: Date!
-    updatedAt: Date!
+    userId: ID
+    createdAt: Date
+    updatedAt: Date
   }
 
   # ====================
   # CONTENT TYPES
   # ====================
   type Content {
-    id: ID!
-    title: String!
+    id: ID
+    title: String
     description: String
-    content: String!
-    mediaType: String!
-    mode: String!
+    content: String
+    mediaType: String
+    mode: String
     keywords: String
-    status: String!
-    platforms: [String!]!
-    aiGenerated: Boolean!
+    status: String
+    platforms: [String]
+    aiGenerated: Boolean
     confidence: Float
-    userId: ID!
+    userId: ID
     user: User
     engagement: ContentEngagement
     analytics: ContentAnalytics
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: Date
+    updatedAt: Date
     approvedAt: Date
     scheduledAt: Date
     publishedAt: Date
   }
 
   type ContentEngagement {
-    views: Int!
-    likes: Int!
-    shares: Int!
-    comments: Int!
-    ctr: Float!
-    engagementRate: Float!
+    views: Int
+    likes: Int
+    shares: Int
+    comments: Int
+    ctr: Float
+    engagementRate: Float
   }
 
   type ContentAnalytics {
-    reach: Int!
-    impressions: Int!
-    clicks: Int!
-    conversions: Int!
-    revenue: Float!
-    roi: Float!
+    reach: Int
+    impressions: Int
+    clicks: Int
+    conversions: Int
+    revenue: Float
+    roi: Float
   }
 
   type ContentResponse {
-    contents: [Content!]!
-    total: Int!
-    hasMore: Boolean!
+    contents: [Content]
+    total: Int
+    hasMore: Boolean
   }
 
   type ContentStats {
-    total: Int!
-    approved: Int!
-    pending: Int!
-    rejected: Int!
-    scheduled: Int!
-    published: Int!
+    total: Int
+    approved: Int
+    pending: Int
+    rejected: Int
+    scheduled: Int
+    published: Int
   }
 
   # ====================
   # PLATFORM & POSTING TYPES
   # ====================
   type PlatformStat {
-    id: ID!
-    platform: String!
-    status: String!
+    id: ID
+    platform: String
+    status: String
     lastPosted: Date
-    postsToday: Int!
-    errors: Int!
-    averageResponseTime: Float!
-    uptime: Float!
-    createdAt: Date!
-    updatedAt: Date!
+    postsToday: Int
+    errors: Int
+    averageResponseTime: Float
+    uptime: Float
+    createdAt: Date
+    updatedAt: Date
     name: String
-    todayPosts: Int!
-    successCount: Int!
-    failureCount: Int!
-    failureRate: Float!
+    todayPosts: Int
+    successCount: Int
+    failureCount: Int
+    failureRate: Float
     lastError: String
     realTimeMetrics: PlatformRealTimeMetrics
   }
 
   type PlatformRealTimeMetrics {
-    activeConnections: Int!
-    queuedPosts: Int!
-    postsPerMinute: Float!
-    averageResponseTime: Float!
-    errorRate: Float!
-    uptime: Float!
+    activeConnections: Int
+    queuedPosts: Int
+    postsPerMinute: Float
+    averageResponseTime: Float
+    errorRate: Float
+    uptime: Float
   }
 
   type PostingLog {
-    id: ID!
-    platform: String!
-    action: String!
-    level: String!
-    message: String!
+    id: ID
+    platform: String
+    action: String
+    level: String
+    message: String
     details: JSON
-    timestamp: Date!
+    timestamp: Date
     contentId: ID
     content: Content
   }
 
   type ScheduledPost {
-    id: ID!
-    contentId: ID!
+    id: ID
+    contentId: ID
     content: Content
-    platform: String!
-    scheduledTime: Date!
-    status: String!
-    mode: String!
-    retries: Int!
+    platform: String
+    scheduledTime: Date
+    status: String
+    mode: String
+    retries: Int
     lastError: String
     postedAt: Date
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: Date
+    updatedAt: Date
   }
 
   # ====================
   # AB TEST TYPES
   # ====================
   type ABTestGroup {
-    id: ID!
-    name: String!
+    id: ID
+    name: String
     description: String
-    status: String!
-    duration: Int!
+    status: String
+    duration: Int
     startDate: Date
     endDate: Date
     targetAudience: String
     hypothesis: String
     confidence: Float
     winningVariantId: ID
-    createdAt: Date!
-    updatedAt: Date!
-    variants: [ABTestVariant!]!
+    createdAt: Date
+    updatedAt: Date
+    variants: [ABTestVariant]
   }
 
   type ABTestVariant {
-    id: ID!
-    name: String!
-    content: String!
-    abTestGroupId: Int!
+    id: ID
+    name: String
+    content: String
+    abTestGroupId: Int
     abTestGroup: ABTestGroup
     platform: String
     mediaType: String
-    views: Int!
-    engagement: Int!
-    conversions: Int!
-    revenue: Float!
-    conversionRate: Float!
-    createdAt: Date!
-    updatedAt: Date!
+    views: Int
+    engagement: Int
+    conversions: Int
+    revenue: Float
+    conversionRate: Float
+    createdAt: Date
+    updatedAt: Date
   }
 
   type ABTestResults {
     winningVariant: ABTestVariant
-    improvement: Float!
-    significance: Float!
-    variants: [ABTestVariant!]!
+    improvement: Float
+    significance: Float
+    variants: [ABTestVariant]
   }
 
   type ABTestGroupStats {
-    totalTests: Int!
-    activeTests: Int!
-    completedTests: Int!
-    avgImprovement: Float!
+    totalTests: Int
+    activeTests: Int
+    completedTests: Int
+    avgImprovement: Float
     topPerformingVariant: ABTestVariant
-    active: Int!
-    completed: Int!
+    active: Int
+    completed: Int
   }
 
   # ====================
   # MARKETING TYPES
   # ====================
   type MarketingStats {
-    totalPosts: TotalPosts!
-    pendingApproval: Int!
-    errors: Int!
-    abTestGroups: ABTestGroupStats!
-    trendingKeywords: Int!
+    totalPosts: TotalPosts
+    pendingApproval: Int
+    errors: Int
+    abTestGroups: ABTestGroupStats
+    trendingKeywords: Int
   }
 
   type TotalPosts {
-    today: Int!
-    week: Int!
-    month: Int!
+    today: Int
+    week: Int
+    month: Int
   }
 
   type MarketingOverview {
@@ -292,8 +292,8 @@ const types = gql`
   }
 
   type MarketingPlan {
-    id: ID!
-    title: String!
+    id: ID
+    title: String
     description: String
     startDate: String
     endDate: String
@@ -301,46 +301,46 @@ const types = gql`
     targetPersona: String
     coreMessage: String
     status: String
-    userId: ID!
+    userId: ID
     user: User
-    objectives: [MarketingObjective!]
+    objectives: [MarketingObjective]
     createdAt: String
     updatedAt: String
   }
 
   type MarketingObjective {
-    id: ID!
-    planId: ID!
-    title: String!
+    id: ID
+    planId: ID
+    title: String
     description: String
     priority: String
     status: String
     progress: Int
-    keyResults: [KeyResult!]
+    keyResults: [KeyResult]
     createdAt: String
     updatedAt: String
   }
 
   type KeyResult {
-    id: ID!
-    objectiveId: ID!
-    title: String!
+    id: ID
+    objectiveId: ID
+    title: String
     description: String
     targetValue: Float
     currentValue: Float
     unit: String
     status: String
     progress: Int
-    checklist: [ChecklistItem!]
+    checklist: [ChecklistItem]
     createdAt: String
     updatedAt: String
   }
 
   type ChecklistItem {
-    id: ID!
-    keyResultId: ID!
-    text: String!
-    completed: Boolean!
+    id: ID
+    keyResultId: ID
+    text: String
+    completed: Boolean
     completedAt: String
     sortOrder: Int
     createdAt: String
@@ -351,53 +351,53 @@ const types = gql`
   # TREND & ANALYTICS TYPES
   # ====================
   type TrendAnalysis {
-    id: ID!
-    topic: String!
+    id: ID
+    topic: String
     description: String
-    growth: Float!
-    type: String!
+    growth: Float
+    type: String
     opportunity: String
     risk: String
     period: String
     confidence: Float
-    createdAt: Date!
-    updatedAt: Date!
-    keywords: [TrendingKeyword!]
+    createdAt: Date
+    updatedAt: Date
+    keywords: [TrendingKeyword]
   }
 
   type TrendingKeyword {
-    id: ID!
-    keyword: String!
-    mentions: Int!
-    growth: Float!
-    sentiment: String!
-    relatedKeywords: [String!]
-    period: String!
+    id: ID
+    keyword: String
+    mentions: Int
+    growth: Float
+    sentiment: String
+    relatedKeywords: [String]
+    period: String
     source: String
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: Date
+    updatedAt: Date
     trendId: ID
     trend: TrendAnalysis
   }
 
   type ContentRecommendation {
-    id: ID!
-    trend: String!
-    title: String!
-    description: String!
-    expectedEngagement: String!
-    difficulty: String!
-    priority: String!
+    id: ID
+    trend: String
+    title: String
+    description: String
+    expectedEngagement: String
+    difficulty: String
+    priority: String
     trendAnalysisId: ID
     trendAnalysis: TrendAnalysis
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: Date
+    updatedAt: Date
   }
 
   type TrendAnalysisItem {
-    topic: String!
+    topic: String
     description: String
-    growth: Float!
+    growth: Float
     opportunity: String
     risk: String
   }
@@ -412,24 +412,24 @@ const types = gql`
   # ENGAGEMENT TYPES
   # ====================
   type MarketingEngagement {
-    id: ID!
-    platform: String!
-    type: String!
-    message: String!
-    username: String!
-    timestamp: Date!
-    status: String!
+    id: ID
+    platform: String
+    type: String
+    message: String
+    username: String
+    timestamp: Date
+    status: String
     response: String
     sentiment: String
   }
 
   type AutomationRule {
-    id: ID!
-    name: String!
-    platform: String!
-    trigger: String!
-    action: String!
-    isActive: Boolean!
+    id: ID
+    name: String
+    platform: String
+    trigger: String
+    action: String
+    isActive: Boolean
     responses: [String]
   }
 
@@ -437,33 +437,33 @@ const types = gql`
   # INSIGHTS TYPES
   # ====================
   type MarketingInsights {
-    kpiData: KPIData!
+    kpiData: KPIData
     topPerformingContent: [ContentPerformance]
-    audienceInsights: AudienceInsights!
+    audienceInsights: AudienceInsights
     competitorAnalysis: [CompetitorData]
   }
 
   type KPIData {
-    totalReach: KPIMetric!
-    totalViews: KPIMetric!
-    totalEngagement: KPIMetric!
-    avgEngagementRate: KPIMetric!
+    totalReach: KPIMetric
+    totalViews: KPIMetric
+    totalEngagement: KPIMetric
+    avgEngagementRate: KPIMetric
   }
 
   type KPIMetric {
-    value: Int!
-    change: Float!
-    period: String!
+    value: Int
+    change: Float
+    period: String
   }
 
   type ContentPerformance {
-    id: ID!
-    title: String!
-    platform: String!
-    reach: Int!
-    engagement: Int!
-    ctr: Float!
-    postedAt: Date!
+    id: ID
+    title: String
+    platform: String
+    reach: Int
+    engagement: Int
+    ctr: Float
+    postedAt: Date
   }
 
   type AudienceInsights {
@@ -473,62 +473,62 @@ const types = gql`
   }
 
   type DemographicData {
-    ageGroup: String!
-    percentage: Float!
+    ageGroup: String
+    percentage: Float
   }
 
   type InterestData {
-    category: String!
-    affinity: Float!
+    category: String
+    affinity: Float
   }
 
   type PeakTimeData {
-    hour: Int!
-    engagement: Int!
+    hour: Int
+    engagement: Int
   }
 
   type CompetitorData {
-    competitor: String!
-    reach: Int!
-    engagement: Int!
+    competitor: String
+    reach: Int
+    engagement: Int
     contentTypes: [String]
     trends: [String]
   }
 
   type PerformanceMetrics {
-    platform: String!
-    period: String!
-    metrics: PlatformMetrics!
+    platform: String
+    period: String
+    metrics: PlatformMetrics
   }
 
   type PlatformMetrics {
-    followers: Int!
-    posts: Int!
-    engagement: Int!
-    reach: Int!
-    impressions: Int!
+    followers: Int
+    posts: Int
+    engagement: Int
+    reach: Int
+    impressions: Int
   }
 
   # ====================
   # MONITORING TYPES
   # ====================
   type SystemHealth {
-    overallStatus: String!
-    activePlatforms: Int!
-    totalErrors: Int!
-    averageResponseTime: Float!
-    systemUptime: Float!
-    memoryUsage: Float!
-    cpuUsage: Float!
+    overallStatus: String
+    activePlatforms: Int
+    totalErrors: Int
+    averageResponseTime: Float
+    systemUptime: Float
+    memoryUsage: Float
+    cpuUsage: Float
   }
 
   type AlertRule {
-    id: ID!
-    name: String!
+    id: ID
+    name: String
     platform: String
-    condition: String!
-    threshold: Float!
-    isActive: Boolean!
+    condition: String
+    threshold: Float
+    isActive: Boolean
     lastTriggered: Date
   }
 
@@ -536,8 +536,8 @@ const types = gql`
   # CUSTOMER TYPES
   # ====================
   type Customer {
-    id: ID!
-    name: String!
+    id: ID
+    name: String
     contactName: String
     email: String
     phone: String
@@ -547,24 +547,24 @@ const types = gql`
     address: String
     assignedUserId: ID
     assignedUser: User
-    status: String!
+    status: String
     profileImage: String
     facebook: String
     tiktok: String
     instagram: String
-    contacts: [ContactPerson!]
-    images: [CustomerImage!]
-    facilityImages: [CustomerImage!]
-    opportunities: [SalesOpportunity!]
-    createdAt: Date!
-    updatedAt: Date!
+    contacts: [ContactPerson]
+    images: [CustomerImage]
+    facilityImages: [CustomerImage]
+    opportunities: [SalesOpportunity]
+    createdAt: Date
+    updatedAt: Date
   }
 
   type ContactPerson {
-    id: ID!
-    customerId: ID!
+    id: ID
+    customerId: ID
     customer: Customer
-    name: String!
+    name: String
     department: String
     position: String
     phone: String
@@ -574,55 +574,53 @@ const types = gql`
     tiktok: String
     instagram: String
     profileImage: String
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: Date
+    updatedAt: Date
   }
 
   type CustomerImage {
-    id: ID!
-    customerId: ID!
+    id: ID
+    customerId: ID
     customer: Customer
-    imageUrl: String!
-    imageType: String!
+    imageUrl: String
+    imageType: String
     description: String
-    sortOrder: Int!
-    createdAt: Date!
-    updatedAt: Date!
+    sortOrder: Int
+    createdAt: Date
+    updatedAt: Date
   }
 
   type SalesOpportunity {
-    id: ID!
-    title: String!
+    id: ID
+    title: String
     description: String
     customerId: ID
     customer: Customer
     assignedUserId: ID
     assignedUser: User
     expectedAmount: Float
-    stage: String!
-    probability: Int!
+    stage: String
+    probability: Int
     expectedCloseDate: Date
     actualCloseDate: Date
     source: String
-    priority: String!
-    createdAt: Date!
-    updatedAt: Date!
+    priority: String
+    createdAt: Date
+    updatedAt: Date
   }
 
   # ====================
   # CATEGORY TYPES
   # ====================
   type Category {
-    id: ID!
+    id: ID
     code: String
     names: CategoryNames
     descriptions: CategoryDescriptions
-    parentId: ID
-    level: Int!
-    sortOrder: Int!
-    isActive: Boolean!
-    createdAt: String!
-    updatedAt: String!
+    sortOrder: Int
+    isActive: Boolean
+    createdAt: String
+    updatedAt: String
   }
 
   type CategoryNames {
@@ -639,23 +637,23 @@ const types = gql`
 
   # Product 관련 타입들
   type Product {
-    id: Int!
-    name: String!
-    code: String!
+    id: Int
+    name: String
+    code: String
     description: String
     specifications: String
-    categoryId: Int!
+    categoryId: Int
     category: Category
-    price: Float!
+    price: Float
     consumerPrice: Float
     cost: Float
-    currentStock: Int!
-    minStock: Int!
+    currentStock: Int
+    minStock: Int
     maxStock: Int
-    soldQuantity: Int!
-    sampleQuantity: Int!
-    defectiveQuantity: Int!
-    status: ProductStatus!
+    soldQuantity: Int
+    sampleQuantity: Int
+    defectiveQuantity: Int
+    status: ProductStatus
     weight: Float
     dimensions: Dimensions
     brand: String
@@ -666,36 +664,36 @@ const types = gql`
     images: [String]
     launchDate: String
     discontinueDate: String
-    sortOrder: Int!
-    isActive: Boolean!
-    isFeatured: Boolean!
+    sortOrder: Int
+    isActive: Boolean
+    isFeatured: Boolean
     seoTitle: String
     seoDescription: String
     seoKeywords: String
     inventoryRecords: [InventoryRecord]
     totalStock: Int
     totalValue: Float
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
     deletedAt: String
   }
 
   type ProductTag {
-    id: Int!
-    name: String!
+    id: Int
+    name: String
     description: String
     color: String
-    isActive: Boolean!
-    usageCount: Int!
+    isActive: Boolean
+    usageCount: Int
     products: [Product]
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
   }
 
   type Warehouse {
-    id: Int!
-    code: String!
-    name: String!
+    id: Int
+    code: String
+    name: String
     description: String
     address: String
     managerName: String
@@ -703,22 +701,22 @@ const types = gql`
     capacity: Int
     temperature: JSON
     humidity: JSON
-    isActive: Boolean!
-    isDefault: Boolean!
+    isActive: Boolean
+    isDefault: Boolean
     inventoryRecords: [InventoryRecord]
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
   }
 
   type InventoryRecord {
-    id: Int!
-    productId: Int!
+    id: Int
+    productId: Int
     product: Product
-    warehouseId: Int!
+    warehouseId: Int
     warehouse: Warehouse
-    quantity: Int!
-    reservedQuantity: Int!
-    availableQuantity: Int!
+    quantity: Int
+    reservedQuantity: Int
+    availableQuantity: Int
     location: String
     lotNumber: String
     expiryDate: String
@@ -726,17 +724,17 @@ const types = gql`
     lastCountDate: String
     lastMovementDate: String
     stockMovements: [StockMovement]
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
   }
 
   type StockMovement {
-    id: Int!
-    inventoryRecordId: Int!
+    id: Int
+    inventoryRecordId: Int
     inventoryRecord: InventoryRecord
-    type: StockMovementType!
-    reason: StockMovementReason!
-    quantity: Int!
+    type: StockMovementType
+    reason: StockMovementReason
+    quantity: Int
     unitCost: Float
     totalCost: Float
     fromWarehouseId: Int
@@ -749,13 +747,13 @@ const types = gql`
     notes: String
     processedBy: Int
     processor: User
-    processedAt: String!
-    isConfirmed: Boolean!
+    processedAt: String
+    isConfirmed: Boolean
     confirmedBy: Int
     confirmer: User
     confirmedAt: String
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
   }
 
   enum StockMovementType {
@@ -810,32 +808,32 @@ const types = gql`
 
   # ProductModel 관련 타입들
   type ProductModel {
-    id: ID!
-    productId: Int!
+    id: ID
+    productId: Int
     product: Product
-    modelName: String!
-    modelCode: String!
+    modelName: String
+    modelCode: String
     description: String
     specifications: String
-    price: Float!
+    price: Float
     consumerPrice: Float
     cost: Float
-    currentStock: Int!
-    minStock: Int!
+    currentStock: Int
+    minStock: Int
     maxStock: Int
-    soldQuantity: Int!
+    soldQuantity: Int
     weight: Float
     dimensions: JSON
     images: [String]
     color: String
     size: String
     material: String
-    status: ProductModelStatus!
-    sortOrder: Int!
-    isActive: Boolean!
+    status: ProductModelStatus
+    sortOrder: Int
+    isActive: Boolean
     inventoryRecords: [InventoryRecord]
-    createdAt: String!
-    updatedAt: String!
+    createdAt: String
+    updatedAt: String
   }
 
   enum ProductModelStatus {
@@ -847,17 +845,17 @@ const types = gql`
 
   # Common Types
   type FieldError {
-    field: String!
-    message: String!
+    field: String
+    message: String
   }
 
   type PaginationInfo {
-    page: Int!
-    limit: Int!
-    total: Int!
-    totalPages: Int!
-    hasNextPage: Boolean!
-    hasPrevPage: Boolean!
+    page: Int
+    limit: Int
+    total: Int
+    totalPages: Int
+    hasNextPage: Boolean
+    hasPrevPage: Boolean
   }
 
   enum SortDirection {
