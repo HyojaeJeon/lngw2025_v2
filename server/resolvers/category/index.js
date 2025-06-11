@@ -40,10 +40,13 @@ const validateCategoryNames = (names) => {
 
 const categoryResolvers = {
   Query: {
-    categories: async ({ user, lang }) => {
+    categories: async (parent, args, context) => {
+      console.log("context : ", context);
       // 카테고리 목록은 공개적으로 접근 가능
       // requireAuth(user, lang);
-
+      const { user, lang } = context;
+      console.log("user : ", user);
+      console.log("lang : ", lang);
       try {
         const where = {};
 
@@ -63,8 +66,9 @@ const categoryResolvers = {
       }
     },
 
-    category: async ({ id }, { user, lang }) => {
-      requireAuth(user, lang);
+    category: async (parent, args, context) => {
+      const { user, lang } = context;
+      const {id} = args      requireAuth(user, lang);
 
       try {
         const category = await models.Category.findByPk(id, {});

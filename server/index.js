@@ -33,12 +33,12 @@ const getLanguageFromHeaders = (headers) => {
 
 // Replit 환경 감지 - 더 확실한 감지
 const isReplit = !!(
-  process.env.REPLIT || 
-  process.env.REPLIT_DB_URL || 
+  process.env.REPLIT ||
+  process.env.REPLIT_DB_URL ||
   process.env.REPL_ID ||
   process.env.REPL_SLUG ||
-  process.cwd().includes('/home/runner') ||
-  process.env.DB_DIALECT === 'sqlite'
+  process.cwd().includes("/home/runner") ||
+  process.env.DB_DIALECT === "sqlite"
 );
 
 console.log("🌍 서버 환경:", isReplit ? "Replit (SQLite)" : "Local (MySQL)");
@@ -49,19 +49,21 @@ console.log("🔧 환경 변수 DB_DIALECT:", process.env.DB_DIALECT);
 // ──────────────────────────────────────────────────────────────────────────
 // 포트 정리 및 데이터베이스 초기화 함수
 // ──────────────────────────────────────────────────────────────────────────
-const { exec } = require('child_process');
-const util = require('util');
+const { exec } = require("child_process");
+const util = require("util");
 const execPromise = util.promisify(exec);
 
 async function killPortProcesses(port) {
   try {
     const { stdout } = await execPromise(`lsof -ti:${port}`);
     if (stdout.trim()) {
-      const pids = stdout.trim().split('\n');
+      const pids = stdout.trim().split("\n");
       for (const pid of pids) {
         try {
           await execPromise(`kill -9 ${pid}`);
-          console.log(`포트 ${port}에서 실행 중인 프로세스 ${pid}를 종료했습니다.`);
+          console.log(
+            `포트 ${port}에서 실행 중인 프로세스 ${pid}를 종료했습니다.`,
+          );
         } catch (error) {
           console.log(`프로세스 ${pid} 종료 실패:`, error.message);
         }
@@ -75,24 +77,24 @@ async function killPortProcesses(port) {
 
 async function initializeDatabase() {
   try {
-    console.log('데이터베이스 초기화 중...');
-    
+    console.log("데이터베이스 초기화 중...");
+
     // Replit 환경에서는 SQLite 사용
     if (isReplit) {
-      console.log('✅ Replit 환경에서 SQLite를 사용합니다.');
-      console.log('📁 SQLite 파일 위치: ./database.sqlite');
+      console.log("✅ Replit 환경에서 SQLite를 사용합니다.");
+      console.log("📁 SQLite 파일 위치: ./database.sqlite");
       return;
     }
 
     // 로컬 환경에서만 MySQL 서비스 시작 시도
-    console.log('MySQL/MariaDB 서비스를 시작합니다...');
-    
+    console.log("MySQL/MariaDB 서비스를 시작합니다...");
+
     const commands = [
-      'sudo service mysql start',
-      'sudo service mariadb start',
-      'sudo systemctl start mysql',
-      'sudo systemctl start mariadb',
-      'mysql.server start'
+      "sudo service mysql start",
+      "sudo service mariadb start",
+      "sudo systemctl start mysql",
+      "sudo systemctl start mariadb",
+      "mysql.server start",
     ];
 
     let serviceStarted = false;
@@ -108,26 +110,37 @@ async function initializeDatabase() {
     }
 
     if (!serviceStarted) {
-      console.log('⚠️  MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.');
+      console.log(
+        "⚠️  MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.",
+      );
       return;
     }
 
     // 데이터베이스와 사용자 생성
     try {
-      await execPromise('mysql -u root -e "CREATE DATABASE IF NOT EXISTS lngw2025_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"');
-      await execPromise('mysql -u root -e "CREATE USER IF NOT EXISTS \'appuser\'@\'localhost\' IDENTIFIED BY \'gywo9988!@\';"');
-      await execPromise('mysql -u root -e "GRANT ALL PRIVILEGES ON lngw2025_db.* TO \'appuser\'@\'localhost\';"');
+      await execPromise(
+        'mysql -u root -e "CREATE DATABASE IF NOT EXISTS lngw2025_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"',
+      );
+      await execPromise(
+        "mysql -u root -e \"CREATE USER IF NOT EXISTS 'appuser'@'localhost' IDENTIFIED BY 'gywo9988!@';\"",
+      );
+      await execPromise(
+        "mysql -u root -e \"GRANT ALL PRIVILEGES ON lngw2025_db.* TO 'appuser'@'localhost';\"",
+      );
       await execPromise('mysql -u root -e "FLUSH PRIVILEGES;"');
-      console.log('✅ 데이터베이스 설정이 완료되었습니다.');
+      console.log("✅ 데이터베이스 설정이 완료되었습니다.");
     } catch (dbError) {
-      console.log('⚠️  데이터베이스 설정 중 오류 (이미 존재할 수 있음):', dbError.message);
+      console.log(
+        "⚠️  데이터베이스 설정 중 오류 (이미 존재할 수 있음):",
+        dbError.message,
+      );
     }
 
     // MySQL 연결 대기
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
   } catch (error) {
-    console.error('❌ 데이터베이스 초기화 오류:', error.message);
-    console.log('🔄 SQLite를 사용하여 계속 진행합니다.');
+    console.error("❌ 데이터베이스 초기화 오류:", error.message);
+    console.log("🔄 SQLite를 사용하여 계속 진행합니다.");
   }
 }
 
@@ -138,47 +151,50 @@ async function startServer() {
   const app = express();
 
   // Static file serving for Next.js build
-  const express_static = require('express').static;
-  const path = require('path');
-  
+  const express_static = require("express").static;
+  const path = require("path");
+
   // Serve Next.js static files
-  app.use(express_static(path.join(__dirname, '../client-nextjs/.next/static'), {
-    setHeaders: (res, path) => {
-      if (path.endsWith('.js') || path.endsWith('.css')) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      }
-    }
-  }));
-  
+  app.use(
+    express_static(path.join(__dirname, "../client-nextjs/.next/static"), {
+      setHeaders: (res, path) => {
+        if (path.endsWith(".js") || path.endsWith(".css")) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    }),
+  );
+
   // Serve public assets
-  app.use(express_static(path.join(__dirname, '../client-nextjs/public')));
+  app.use(express_static(path.join(__dirname, "../client-nextjs/public")));
 
   // Proxy requests to Next.js for all non-API routes
-  app.get('*', async (req, res) => {
+  app.get("*", async (req, res) => {
     // Skip GraphQL and health endpoints
-    if (req.path.startsWith('/graphql') || req.path === '/health') {
+    if (req.path.startsWith("/graphql") || req.path === "/health") {
       return;
     }
-    
+
     try {
       // Proxy to Next.js dev server
-      const fetch = require('node-fetch');
+      const fetch = require("node-fetch");
       const response = await fetch(`http://localhost:3000${req.url}`, {
         method: req.method,
         headers: req.headers,
-        body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined
+        body:
+          req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
       });
-      
+
       // Copy headers
       response.headers.forEach((value, key) => {
         res.setHeader(key, value);
       });
-      
+
       res.status(response.status);
       response.body.pipe(res);
     } catch (error) {
-      console.error('Proxy error:', error);
-      res.status(503).send('Service temporarily unavailable');
+      console.error("Proxy error:", error);
+      res.status(503).send("Service temporarily unavailable");
     }
   });
 
@@ -223,14 +239,14 @@ async function startServer() {
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: [
-        "Content-Type", 
-        "Authorization", 
-        "Accept-Language", 
+        "Content-Type",
+        "Authorization",
+        "Accept-Language",
         "X-Requested-With",
         "Origin",
-        "Accept"
+        "Accept",
       ],
-      optionsSuccessStatus: 200
+      optionsSuccessStatus: 200,
     }),
   );
 
@@ -272,12 +288,12 @@ async function startServer() {
               const foundUser = await models.User.findByPk(decoded.userId);
               if (foundUser) {
                 user = {
-                  id: foundUser.id,
-                  userId: foundUser.id,
-                  email: foundUser.email,
-                  role: foundUser.role,
+                  id: foundUser?.id,
+                  userId: foundUser?.id,
+                  email: foundUser?.email,
+                  role: foundUser?.role,
                 };
-                console.log("User authenticated successfully:", user.email);
+                console.log("User authenticated successfully:", user?.email);
               } else {
                 console.log(
                   "User not found in database for userId:",
@@ -311,11 +327,11 @@ async function startServer() {
   const PORT = process.env.PORT || 5000;
 
   app.get("/health", (req, res) => {
-    res.json({ 
-      status: "OK", 
+    res.json({
+      status: "OK",
       timestamp: new Date().toISOString(),
       environment: isReplit ? "replit" : "local",
-      port: PORT
+      port: PORT,
     });
   });
 
@@ -328,30 +344,33 @@ async function startServer() {
     await initializeDatabase();
 
     console.log("Connecting to database...");
-    
+
     try {
       await models.sequelize.authenticate();
       console.log("✅ Database connection established successfully.");
     } catch (dbError) {
       console.error("❌ Database connection failed:", dbError.message);
-      
+
       // MySQL 연결 실패 시 SQLite로 전환
-      if (dbError.message.includes('ECONNREFUSED') || dbError.message.includes('connect')) {
+      if (
+        dbError.message.includes("ECONNREFUSED") ||
+        dbError.message.includes("connect")
+      ) {
         console.log("🔄 MySQL 연결 실패, SQLite로 전환합니다...");
-        
+
         // 환경 변수 강제 설정
         process.env.REPLIT = "true";
         process.env.DB_DIALECT = "sqlite";
         process.env.DB_STORAGE = "./database.sqlite";
-        
+
         // 모델을 다시 로드
-        delete require.cache[require.resolve('./models')];
-        const modelsReloaded = require('./models');
-        
+        delete require.cache[require.resolve("./models")];
+        const modelsReloaded = require("./models");
+
         try {
           await modelsReloaded.sequelize.authenticate();
           console.log("✅ SQLite 데이터베이스 연결 성공!");
-          
+
           // 전역 models를 업데이트
           Object.assign(models, modelsReloaded);
         } catch (sqliteError) {
@@ -372,24 +391,32 @@ async function startServer() {
     // 서버 시작
     const server_instance = app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
-      console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`);
+      console.log(
+        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+      );
       if (isReplit) {
         console.log(`🌍 Replit 환경에서 실행 중`);
       }
       if (process.env.APOLLO_PLAYGROUND === "true") {
-        console.log(`🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`);
+        console.log(
+          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
+        );
       }
     });
 
     // 오류 처리
     server_instance.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        console.log(`포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`);
+        console.log(
+          `포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`,
+        );
         const newPort = PORT + 1;
         console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
         app.listen(newPort, "0.0.0.0", () => {
           console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
-          console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`);
+          console.log(
+            `🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`,
+          );
         });
       } else {
         console.error("서버 시작 오류:", err);
