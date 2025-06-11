@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Clean Start Full Stack"
+runButton = "MySQL로 개발 환경 시작"
 
 [[workflows.workflow]]
 name = "Project"
@@ -295,31 +295,6 @@ args = "pkill -f \"mysql\" || true"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "sleep 3"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd server && npm run dev &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 8"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd client-nextjs && npm run dev -- --port 3000"
-
-[[workflows.workflow]]
-name = "Start Development Environment"
-author = 43113446
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sudo service mariadb start"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 5"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

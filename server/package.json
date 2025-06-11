@@ -7,25 +7,25 @@
     "start": "node index.js",
     "db:start": "echo MySQL should be running as a service on Windows",
     "dev": "nodemon index.js",
-    
+
 
     "dev:with-db": "npm run db:start && nodemon index.js",
     "seed": "node seeders/index.js"
   },
   "dependencies": {
-    "@graphql-tools/merge": "^9.0.24",
-    "apollo-server-express": "^3.12.0",
-    "bcrypt": "^6.0.0",
+    "apollo-server-express": "^3.12.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "graphql": "^16.6.0",
-    "graphql-scalars": "^1.24.2",
-    "jsonwebtoken": "^9.0.0",
-    "moment": "^2.29.4",
-    "mysql2": "^3.2.0",
-    "sequelize": "^6.29.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "graphql": "^16.8.1",
+    "graphql-tools": "^9.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.6.5",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

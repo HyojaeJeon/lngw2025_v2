@@ -3,6 +3,7 @@ dotenv.config();
 
 const commonConfig = {
   dialect: "mysql",
+  dialectModule: require('mysql2'),
   timezone: process.env.DB_TIMEZONE || "+09:00",
   logging: process.env.NODE_ENV === "development" ? console.log : false,
   pool: { 
