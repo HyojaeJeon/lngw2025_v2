@@ -95,17 +95,17 @@ export const useLanguage = () => {
     }, [translations, currentLanguage]);
 
     return { t, currentLanguage };
-  };
+    };
 
-  return {
-    // 현재 언어 정보
-    currentLanguage,
-    getCurrentLanguageName,
-    getCurrentLanguageNativeName,
-    getCurrentLanguageFlag,
+    return {
+      // 현재 언어 정보
+      currentLanguage,
+      getCurrentLanguageName,
+      getCurrentLanguageNativeName,
+      getCurrentLanguageFlag,
 
-    // 헬퍼 함수들
-    getLanguageName: useCallback((code) => getLanguageName(code), []),
+      // 헬퍼 함수들
+      getLanguageName: useCallback((code) => getLanguageName(code), []),
     getLanguageNativeName: useCallback((code) => getLanguageNativeName(code), []),
     getLanguageFlag: useCallback((code) => getLanguageFlag(code), []),
 

@@ -79,8 +79,31 @@ async function killPortProcesses(port) {
 async function startMySQL() {
   try {
     console.log('MySQL/MariaDB 서비스를 시작합니다...');
-    await execPromise('sudo service mariadb start');
-    console.log('MySQL/MariaDB 서비스가 시작되었습니다.');
+    
+    // 다양한 MySQL/MariaDB 서비스 명령어 시도
+    const commands = [
+      'sudo service mysql start',
+      'sudo service mariadb start',
+      'sudo systemctl start mysql',
+      'sudo systemctl start mariadb',
+      'mysql.server start'
+    ];
+
+    let serviceStarted = false;
+    for (const cmd of commands) {
+      try {
+        await execPromise(cmd);
+        console.log(`MySQL/MariaDB 서비스가 시작되었습니다: ${cmd}`);
+        serviceStarted = true;
+        break;
+      } catch (error) {
+        console.log(`${cmd} 실패, 다음 명령어 시도 중...`);
+      }
+    }
+
+    if (!serviceStarted) {
+      console.log('MySQL 서비스 시작 시도가 모두 실패했습니다. MySQL이 이미 실행 중이거나 설치되지 않았을 수 있습니다.');
+    }
 
     // 데이터베이스와 사용자 생성
     try {
@@ -97,7 +120,8 @@ async function startMySQL() {
     await new Promise(resolve => setTimeout(resolve, 3000));
   } catch (error) {
     console.error('MySQL 시작 오류:', error.message);
-    throw error;
+    // MySQL 시작 실패해도 계속 진행 (SQLite 등 다른 DB 사용 가능)
+    console.log('MySQL 없이 진행합니다. SQLite를 사용할 수 있습니다.');
   }
 }
 
