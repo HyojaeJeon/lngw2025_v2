@@ -66,30 +66,7 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-// 3. useLanguage 훅 (언어 정보 및 변경)
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
-  }
-
-  const { currentLanguage, changeLanguage } = context;
-
-  const getNextLanguage = useCallback(() => {
-    const currentIndex = SUPPORTED_LANGUAGES.indexOf(currentLanguage);
-    const nextIndex = (currentIndex + 1) % SUPPORTED_LANGUAGES.length;
-    return SUPPORTED_LANGUAGES[nextIndex];
-  }, [currentLanguage]);
-
-  return {
-    currentLanguage,
-    changeLanguage,
-    getNextLanguage,
-    getLanguageName: (code) => LANGUAGE_INFO[code]?.name || code,
-    getLanguageNativeName: (code) => LANGUAGE_INFO[code]?.nativeName || code,
-    getLanguageFlag: (code) => LANGUAGE_INFO[code]?.flag || "🌐",
-  };
-};
+// 3. useLanguage 훅 (언어 정보 및 변경) - 삭제됨 (더 이상 사용되지 않음)
 
 // 4. useTranslation 훅 (번역 기능 전용)
 export const useTranslation = () => {

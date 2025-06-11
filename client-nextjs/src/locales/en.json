@@ -68,6 +68,9 @@
     "title": "Customer Management",
     "addCustomer": "Add Customer",
     "customerList": "Customer List",
+    "customerGrades": "Customer Grades",
+    "customerHistory": "Customer History",
+    "customerVoc": "Customer VOC",
     "customerDetails": "Customer Details",
     "companyName": "Company Name",
     "contactPerson": "Contact Person",
@@ -75,15 +78,92 @@
     "address": "Address",
     "status": "Status"
   },
+  "sales": {
+    "overview": "Sales Overview",
+    "opportunities": "Opportunities",
+    "pipeline": "Sales Pipeline",
+    "quotes": "Quote Management",
+    "activities": "Sales Activities",
+    "kpi": "KPI Management"
+  },
+  "employees": {
+    "overview": "Employee Overview",
+    "profile": "Profile Management",
+    "attendance": "Attendance Management",
+    "leave": "Leave Management",
+    "evaluation": "Evaluation Management",
+    "salary": "Salary Management",
+    "communication": "Communication"
+  },
+  "accounting": {
+    "overview": "Accounting Overview",
+    "ledger": "Ledger Management",
+    "voucher": "Voucher Management",
+    "budget": "Budget Management",
+    "statements": "Financial Statements",
+    "reports": "Accounting Reports",
+    "tax": "Tax Management",
+    "assets": "Asset Management",
+    "setup": "Accounting Setup"
+  },
+  "revenue": {
+    "overview": "Revenue Overview",
+    "record": "Sales Record",
+    "payment": "Payment Management"
+  },
+  "settings": {
+    "general": {
+      "title": "General Settings"
+    },
+    "profileSettings": {
+      "title": "Profile Settings"
+    },
+    "accessControl": {
+      "title": "Access Control"
+    },
+    "notifications": {
+      "title": "Notification Settings"
+    },
+    "integrations": {
+      "title": "Integration Management"
+    },
+    "workflows": {
+      "title": "Workflows"
+    },
+    "dataManagement": {
+      "title": "Data Management"
+    },
+    "auditLogs": {
+      "title": "Audit Logs"
+    },
+    "billing": {
+      "title": "Billing"
+    }
+  },
+  "sidebar": {
+    "companyName": "LN Partners Groupware"
+  },
   "marketing": {
     "title": "Marketing",
+    "overview": "Marketing Overview",
     "campaigns": "Campaigns",
     "analytics": "Analytics",
-    "content": "Content",
+    "content": "Content Management",
+    "contentLibrary": "Content Library",
+    "planningProcess": "Planning Process",
+    "brandStrategy": "Brand Strategy",
+    "marketAnalysis": "Market Analysis",
+    "campaignCalendar": "Campaign Calendar",
+    "budgetExpense": "Budget Expense",
     "planning": "Planning",
     "budget": "Budget",
-    "trends": "Trends",
-    "insights": "Insights"
+    "trends": "Trend Analysis",
+    "insights": "Insights",
+    "abtest": "A/B Testing",
+    "engagement": "Engagement Analysis",
+    "influencerManagement": "Influencer Management",
+    "monitoring": "Monitoring",
+    "settings": "Marketing Settings"
   },
   "products": {
     "title": "Product Management",

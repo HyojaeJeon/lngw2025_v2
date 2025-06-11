@@ -62,13 +62,25 @@
   },
   "marketing": {
     "title": "Marketing",
+    "overview": "Tổng quan Marketing",
     "campaigns": "Chiến dịch",
     "analytics": "Phân tích",
-    "content": "Nội dung",
+    "content": "Quản lý nội dung",
+    "contentLibrary": "Thư viện nội dung",
+    "planningProcess": "Quy trình lập kế hoạch",
+    "brandStrategy": "Chiến lược thương hiệu",
+    "marketAnalysis": "Phân tích thị trường",
+    "campaignCalendar": "Lịch chiến dịch",
+    "budgetExpense": "Chi phí ngân sách",
     "planning": "Lập kế hoạch",
     "budget": "Ngân sách",
-    "trends": "Xu hướng",
-    "insights": "Thông tin chi tiết"
+    "trends": "Phân tích xu hướng",
+    "insights": "Thông tin chi tiết",
+    "abtest": "Kiểm tra A/B",
+    "engagement": "Phân tích tương tác",
+    "influencerManagement": "Quản lý influencer",
+    "monitoring": "Giám sát",
+    "settings": "Cài đặt Marketing"
   },
   "dashboard": {
     "title": "Bảng Điều Khiển",
@@ -171,16 +183,6 @@
     "total": "Tổng",
     "count": "cái"
   },
-  "marketing": {
-    "title": "Marketing",
-    "campaigns": "Chiến dịch",
-    "analytics": "Phân tích",
-    "content": "Nội dung",
-    "planning": "Lập kế hoạch",
-    "budget": "Ngân sách",
-    "trends": "Xu hướng",
-    "insights": "Thông tin chi tiết"
-  },
   "common": {
     "loading": "Đang tải...",
     "error": "Đã xảy ra lỗi",
@@ -269,12 +271,24 @@
   },
   "marketing": {
     "title": "Marketing",
+    "overview": "Tổng quan Marketing",
     "campaigns": "Chiến dịch",
     "analytics": "Phân tích",
-    "content": "Nội dung",
+    "content": "Quản lý nội dung",
+    "contentLibrary": "Thư viện nội dung",
+    "planningProcess": "Quy trình lập kế hoạch",
+    "brandStrategy": "Chiến lược thương hiệu",
+    "marketAnalysis": "Phân tích thị trường",
+    "campaignCalendar": "Lịch chiến dịch",
+    "budgetExpense": "Chi phí ngân sách",
     "planning": "Lập kế hoạch",
     "budget": "Ngân sách",
-    "trends": "Xu hướng",
-    "insights": "Thông tin chi tiết"
+    "trends": "Phân tích xu hướng",
+    "insights": "Thông tin chi tiết",
+    "abtest": "Kiểm tra A/B",
+    "engagement": "Phân tích tương tác",
+    "influencerManagement": "Quản lý influencer",
+    "monitoring": "Giám sát",
+    "settings": "Cài đặt Marketing"
   }
 }

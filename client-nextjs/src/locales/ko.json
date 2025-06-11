@@ -91,6 +91,107 @@
     "settings": "설정",
     "profile": "프로필"
   },
+  "customers": {
+    "title": "고객 관리",
+    "addCustomer": "고객 추가",
+    "customerList": "고객 목록",
+    "customerGrades": "고객 등급",
+    "customerHistory": "고객 이력",
+    "customerVoc": "고객 VOC",
+    "customerDetails": "고객 상세",
+    "companyName": "회사명",
+    "contactPerson": "담당자",
+    "phone": "전화번호",
+    "address": "주소",
+    "status": "상태"
+  },
+  "sales": {
+    "overview": "영업 현황",
+    "opportunities": "영업 기회",
+    "pipeline": "영업 파이프라인",
+    "quotes": "견적 관리",
+    "activities": "영업 활동",
+    "kpi": "KPI 관리"
+  },
+  "marketing": {
+    "title": "마케팅",
+    "overview": "마케팅 현황",
+    "campaigns": "캠페인",
+    "analytics": "분석",
+    "content": "컨텐츠 관리",
+    "contentLibrary": "컨텐츠 라이브러리",
+    "planningProcess": "기획 프로세스",
+    "brandStrategy": "브랜드 전략",
+    "marketAnalysis": "시장 분석",
+    "campaignCalendar": "캠페인 캘린더",
+    "budgetExpense": "예산 지출",
+    "planning": "기획",
+    "budget": "예산",
+    "trends": "트렌드 분석",
+    "insights": "인사이트",
+    "abtest": "A/B 테스트",
+    "engagement": "참여도 분석",
+    "influencerManagement": "인플루언서 관리",
+    "monitoring": "모니터링",
+    "settings": "마케팅 설정"
+  },
+  "employees": {
+    "overview": "직원 현황",
+    "profile": "프로필 관리",
+    "attendance": "근태 관리",
+    "leave": "휴가 관리",
+    "evaluation": "평가 관리",
+    "salary": "급여 관리",
+    "communication": "소통"
+  },
+  "accounting": {
+    "overview": "회계 현황",
+    "ledger": "원장 관리",
+    "voucher": "전표 관리",
+    "budget": "예산 관리",
+    "statements": "재무제표",
+    "reports": "회계 보고서",
+    "tax": "세무 관리",
+    "assets": "자산 관리",
+    "setup": "회계 설정"
+  },
+  "revenue": {
+    "overview": "수익 현황",
+    "record": "매출 기록",
+    "payment": "결제 관리"
+  },
+  "settings": {
+    "general": {
+      "title": "일반 설정"
+    },
+    "profileSettings": {
+      "title": "프로필 설정"
+    },
+    "accessControl": {
+      "title": "접근 제어"
+    },
+    "notifications": {
+      "title": "알림 설정"
+    },
+    "integrations": {
+      "title": "통합 관리"
+    },
+    "workflows": {
+      "title": "워크플로우"
+    },
+    "dataManagement": {
+      "title": "데이터 관리"
+    },
+    "auditLogs": {
+      "title": "감사 로그"
+    },
+    "billing": {
+      "title": "요금제"
+    }
+  },
+  "sidebar": {
+    "companyName": "LN Partners 그룹웨어"
+  },
   "auth": {
     "login": "로그인",
     "logout": "로그아웃",

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslation } from "../../hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { ChevronDown, ChevronRight, Menu, X, GripVertical } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
@@ -523,7 +523,7 @@ export function ResizableSidebar({ children }) {
             })}
           </nav>
 
-        
+
       </div>
     </aside>
 
