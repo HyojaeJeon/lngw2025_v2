@@ -1,0 +1,58 @@
+[nodemon] app crashed - waiting for file changes before starting...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+Connecting to database...
+Unable to start server: ConnectionRefusedError [SequelizeConnectionRefusedError]: connect ECONNREFUSED 127.0.0.1:3306
+    at ConnectionManager.connect (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/mysql/connection-manager.js:92:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async ConnectionManager._connect (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:222:24)
+    at async /home/runner/workspace/server/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:174:32
+    at async ConnectionManager.getConnection (/home/runner/workspace/server/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:197:7)
+    at async /home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:305:26
+    at async Sequelize.authenticate (/home/runner/workspace/server/node_modules/sequelize/lib/sequelize.js:457:5)
+    at async startServer (/home/runner/workspace/server/index.js:175:5) {
+  parent: Error: connect ECONNREFUSED 127.0.0.1:3306
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 3306,
+    fatal: true
+  },
+  original: Error: connect ECONNREFUSED 127.0.0.1:3306
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 3306,
+    fatal: true
+  }
+}
+[nodemon] app crashed - waiting for file changes before starting...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js`
+포트 5000에 실행 중인 프로세스가 없습니다.
+MySQL/MariaDB 서비스를 시작합니다...
+MySQL 시작 오류: Command failed: sudo service mariadb start
+mariadb: unrecognized service
+
+Unable to start server: Error: Command failed: sudo service mariadb start
+mariadb: unrecognized service
+
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at ChildProcess.exithandler (node:child_process:422:12)
+    at ChildProcess.emit (node:events:518:28)
+    at maybeClose (node:internal/child_process:1104:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: 'sudo service mariadb start',
+  stdout: '',
+  stderr: 'mariadb: unrecognized service\n'
+}
