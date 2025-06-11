@@ -23,7 +23,7 @@ import {
 // ====================
 export const useLanguage = () => {
   const dispatch = useDispatch();
-
+  
   // 셀렉터들
   const currentLanguage = useSelector(selectCurrentLanguage);
   const supportedLanguages = useSelector(selectSupportedLanguages);
@@ -103,11 +103,6 @@ export const useLanguage = () => {
     getCurrentLanguageName,
     getCurrentLanguageNativeName,
     getCurrentLanguageFlag,
-
-    // 헬퍼 함수들
-    getLanguageName: useCallback((code) => getLanguageName(code), []),
-    getLanguageNativeName: useCallback((code) => getLanguageNativeName(code), []),
-    getLanguageFlag: useCallback((code) => getLanguageFlag(code), []),
   };
 };
 
@@ -117,9 +112,32 @@ export const useLanguage = () => {
 export const useTranslation = () => {
   const dispatch = useDispatch();
   const currentLanguage = useSelector(selectCurrentLanguage);
-
+  
   // Redux 스토어의 translations 가져오기
   const translations = useSelector((state) => state.language?.translations || {});
+  
+  const t = useCallback((key) => {
+    return translations[currentLanguage]?.[key] || key;
+  }, [translations, currentLanguage]);
+
+  return { t, currentLanguage };
+};guage,
+    getCurrentLanguageName,
+    getCurrentLanguageNativeName,
+    getCurrentLanguageFlag,
+
+    // 헬퍼 함수들
+    getLanguageName: useCallback((code) => getLanguageName(code), []),
+    getLanguageNativeName: useCallback((code) => getLanguageNativeName(code), []),
+    getLanguageFlag: useCallback((code) => getLanguageFlag(code), []),
+  };
+};
+
+// ====================
+// 번역 메시지 훅 (향후 i18n 확장을 위한 기반)
+// ====================
+export const useTranslation = () => {
+  const { currentLanguage } = useLanguage();
 
   // 기본 메시지들 (임시)
   const messages = useMemo(() => ({
@@ -198,14 +216,14 @@ export const useTranslation = () => {
       accounting: '회계',
       employees: '직원',
       settings: '설정',
-
+      
       // Customer submenu
       'customers.list': '고객 목록',
       'customers.add': '고객 추가',
       'customers.voc': '고객의 소리',
       'customers.history': '고객 이력',
       'customers.grades': '고객 등급',
-
+      
       // Products submenu
       'products.list': '상품 목록',
       'products.add': '상품 추가',
@@ -213,7 +231,7 @@ export const useTranslation = () => {
       'products.models': '모델',
       'products.competitors': '경쟁사',
       'products.inventory': '재고',
-
+      
       // Sales submenu
       'sales.dashboard': '영업 대시보드',
       'sales.opportunities': '영업 기회',
@@ -221,7 +239,7 @@ export const useTranslation = () => {
       'sales.quotes': '견적',
       'sales.activities': '영업 활동',
       'sales.kpi': '영업 KPI',
-
+      
       // Revenue submenu
       'revenue.dashboard': '수익 대시보드',
       'revenue.record': '수익 기록',
@@ -230,7 +248,7 @@ export const useTranslation = () => {
       'revenue.payment': '결제',
       'revenue.statistics': '통계',
       'revenue.goals': '목표',
-
+      
       // Marketing submenu
       'marketing.dashboard': '마케팅 대시보드',
       'marketing.brandStrategy': '브랜드 전략',
@@ -247,7 +265,7 @@ export const useTranslation = () => {
       'marketing.engagement': '참여도',
       'marketing.insights': '인사이트',
       'marketing.settings': '마케팅 설정',
-
+      
       // Accounting submenu
       'accounting.dashboard': '회계 대시보드',
       'accounting.voucher': '전표',
@@ -257,7 +275,7 @@ export const useTranslation = () => {
       'accounting.tax': '세무',
       'accounting.budget': '예산',
       'accounting.reports': '보고서',
-
+      
       // Employees submenu
       'employees.dashboard': '직원 대시보드',
       'employees.leave': '휴가',
@@ -266,7 +284,7 @@ export const useTranslation = () => {
       'employees.attendance': '근태',
       'employees.evaluation': '평가',
       'employees.communication': '소통',
-
+      
       // Settings submenu
       'settings.dashboard': '설정 대시보드',
       'settings.accessControl': '접근 제어',
@@ -278,6 +296,72 @@ export const useTranslation = () => {
       'settings.dataManagement': '데이터 관리',
       'settings.auditLogs': '감사 로그',
       'settings.billing': '결제',
+      
+      // Products page specific
+      products: {
+        title: '상품 관리',
+        subtitle: '회사의 상품과 서비스를 관리합니다',
+        list: '상품 목록',
+        addNew: '새 상품 추가',
+        searchPlaceholder: '상품명, 카테고리, SKU로 검색...',
+        noProducts: '등록된 상품이 없습니다',
+        name: '상품명',
+        category: '카테고리',
+        price: '가격',
+        stock: '재고',
+        status: '상태',
+        actions: '작업',
+        active: '활성',
+        inactive: '비활성',
+        sku: 'SKU',
+        description: '설명',
+        createdAt: '등록일',
+        updatedAt: '수정일',
+        filterByCategory: '카테고리별 필터',
+        filterByStatus: '상태별 필터',
+        sortBy: '정렬',
+        sortByName: '이름순',
+        sortByPrice: '가격순',
+        sortByStock: '재고순',
+        sortByDate: '날짜순',
+        ascending: '오름차순',
+        descending: '내림차순',
+        confirmDelete: '정말로 이 제품을 삭제하시겠습니까?',
+        consumerPrice: '소비자가',
+        sold: '판매',
+        soldQuantity: '판매량',
+        models: '모델 수',
+        discontinued: '단종',
+        // Categories specific
+        categories: {
+          title: '카테고리 관리',
+          subtitle: '제품 카테고리를 등록하고 관리합니다',
+          add: '카테고리 추가',
+          edit: '카테고리 수정',
+          code: '카테고리 코드',
+          codeRequired: '카테고리 코드는 필수입니다',
+          nameKo: '한국어 이름',
+          nameVi: '베트남어 이름',
+          nameEn: '영어 이름',
+          nameKoRequired: '한국어 이름은 필수입니다',
+          nameViRequired: '베트남어 이름은 필수입니다',
+          nameEnOptional: '영어 이름 (선택사항)',
+          descriptionKo: '한국어 설명',
+          descriptionVi: '베트남어 설명',
+          descriptionEn: '영어 설명',
+          descriptionsOptional: '카테고리 설명 (선택사항)',
+          categoryNames: '카테고리 이름',
+          isActive: '활성 상태',
+          searchPlaceholder: '카테고리 코드, 이름으로 검색...',
+          searchFilter: '검색 및 필터',
+          confirmDelete: '정말로 이 카테고리를 삭제하시겠습니까?',
+          checkingCode: '코드 중복 검사 중...',
+          codeCheckError: '코드 중복 검사 중 오류가 발생했습니다',
+          saving: '카테고리를 저장하고 있습니다...',
+          saveError: '카테고리 저장 중 오류가 발생했습니다',
+          deleteError: '카테고리 삭제 중 오류가 발생했습니다',
+        },
+      },
     },
     en: {
       common: {
@@ -354,14 +438,14 @@ export const useTranslation = () => {
       accounting: 'Accounting',
       employees: 'Employees',
       settings: 'Settings',
-
+      
       // Customer submenu
       'customers.list': 'Customer List',
       'customers.add': 'Add Customer',
       'customers.voc': 'Voice of Customer',
       'customers.history': 'Customer History',
       'customers.grades': 'Customer Grades',
-
+      
       // Products submenu
       'products.list': 'Product List',
       'products.add': 'Add Product',
@@ -369,7 +453,7 @@ export const useTranslation = () => {
       'products.models': 'Models',
       'products.competitors': 'Competitors',
       'products.inventory': 'Inventory',
-
+      
       // Sales submenu
       'sales.dashboard': 'Sales Dashboard',
       'sales.opportunities': 'Opportunities',
@@ -377,7 +461,7 @@ export const useTranslation = () => {
       'sales.quotes': 'Quotes',
       'sales.activities': 'Activities',
       'sales.kpi': 'KPI',
-
+      
       // Revenue submenu
       'revenue.dashboard': 'Revenue Dashboard',
       'revenue.record': 'Records',
@@ -386,7 +470,7 @@ export const useTranslation = () => {
       'revenue.payment': 'Payment',
       'revenue.statistics': 'Statistics',
       'revenue.goals': 'Goals',
-
+      
       // Marketing submenu
       'marketing.dashboard': 'Marketing Dashboard',
       'marketing.brandStrategy': 'Brand Strategy',
@@ -403,7 +487,7 @@ export const useTranslation = () => {
       'marketing.engagement': 'Engagement',
       'marketing.insights': 'Insights',
       'marketing.settings': 'Marketing Settings',
-
+      
       // Accounting submenu
       'accounting.dashboard': 'Accounting Dashboard',
       'accounting.voucher': 'Voucher',
@@ -413,7 +497,7 @@ export const useTranslation = () => {
       'accounting.tax': 'Tax',
       'accounting.budget': 'Budget',
       'accounting.reports': 'Reports',
-
+      
       // Employees submenu
       'employees.dashboard': 'Employee Dashboard',
       'employees.leave': 'Leave',
@@ -422,7 +506,7 @@ export const useTranslation = () => {
       'employees.attendance': 'Attendance',
       'employees.evaluation': 'Evaluation',
       'employees.communication': 'Communication',
-
+      
       // Settings submenu
       'settings.dashboard': 'Settings Dashboard',
       'settings.accessControl': 'Access Control',
@@ -434,6 +518,72 @@ export const useTranslation = () => {
       'settings.dataManagement': 'Data Management',
       'settings.auditLogs': 'Audit Logs',
       'settings.billing': 'Billing',
+      
+      // Products page specific
+      products: {
+        title: 'Product Management',
+        subtitle: 'Manage your company products and services',
+        list: 'Product List',
+        addNew: 'Add New Product',
+        searchPlaceholder: 'Search by name, category, or SKU...',
+        noProducts: 'No products registered',
+        name: 'Product Name',
+        category: 'Category',
+        price: 'Price',
+        stock: 'Stock',
+        status: 'Status',
+        actions: 'Actions',
+        active: 'Active',
+        inactive: 'Inactive',
+        sku: 'SKU',
+        description: 'Description',
+        createdAt: 'Created At',
+        updatedAt: 'Updated At',
+        filterByCategory: 'Filter by Category',
+        filterByStatus: 'Filter by Status',
+        sortBy: 'Sort By',
+        sortByName: 'Name',
+        sortByPrice: 'Price',
+        sortByStock: 'Stock',
+        sortByDate: 'Date',
+        ascending: 'Ascending',
+        descending: 'Descending',
+        confirmDelete: 'Are you sure you want to delete this product?',
+        consumerPrice: 'Consumer Price',
+        sold: 'Sold',
+        soldQuantity: 'Sold Quantity',
+        models: 'Model Count',
+        discontinued: 'Discontinued',
+        // Categories specific
+        categories: {
+          title: 'Category Management',
+          subtitle: 'Register and manage product categories',
+          add: 'Add Category',
+          edit: 'Edit Category',
+          code: 'Category Code',
+          codeRequired: 'Category code is required',
+          nameKo: 'Korean Name',
+          nameVi: 'Vietnamese Name',
+          nameEn: 'English Name',
+          nameKoRequired: 'Korean name is required',
+          nameViRequired: 'Vietnamese name is required',
+          nameEnOptional: 'English Name (Optional)',
+          descriptionKo: 'Korean Description',
+          descriptionVi: 'Vietnamese Description',
+          descriptionEn: 'English Description',
+          descriptionsOptional: 'Category Description (Optional)',
+          categoryNames: 'Category Names',
+          isActive: 'Active Status',
+          searchPlaceholder: 'Search by category code or name...',
+          searchFilter: 'Search and Filter',
+          confirmDelete: 'Are you sure you want to delete this category?',
+          checkingCode: 'Checking for duplicate code...',
+          codeCheckError: 'Error checking for duplicate code',
+          saving: 'Saving category...',
+          saveError: 'Error saving category',
+          deleteError: 'Error deleting category',
+        },
+      },
     },
     vi: {
       common: {
@@ -510,14 +660,14 @@ export const useTranslation = () => {
       accounting: 'Kế toán',
       employees: 'Nhân viên',
       settings: 'Cài đặt',
-
+      
       // Customer submenu
       'customers.list': 'Danh sách khách hàng',
       'customers.add': 'Thêm khách hàng',
       'customers.voc': 'Tiếng nói khách hàng',
       'customers.history': 'Lịch sử khách hàng',
       'customers.grades': 'Cấp độ khách hàng',
-
+      
       // Products submenu
       'products.list': 'Danh sách sản phẩm',
       'products.add': 'Thêm sản phẩm',
@@ -525,7 +675,7 @@ export const useTranslation = () => {
       'products.models': 'Mô hình',
       'products.competitors': 'Đối thủ',
       'products.inventory': 'Kho hàng',
-
+      
       // Sales submenu
       'sales.dashboard': 'Bảng điều khiển bán hàng',
       'sales.opportunities': 'Cơ hội bán hàng',
@@ -533,7 +683,7 @@ export const useTranslation = () => {
       'sales.quotes': 'Báo giá',
       'sales.activities': 'Hoạt động bán hàng',
       'sales.kpi': 'KPI bán hàng',
-
+      
       // Revenue submenu
       'revenue.dashboard': 'Bảng điều khiển doanh thu',
       'revenue.record': 'Bản ghi',
@@ -542,7 +692,7 @@ export const useTranslation = () => {
       'revenue.payment': 'Thanh toán',
       'revenue.statistics': 'Thống kê',
       'revenue.goals': 'Mục tiêu',
-
+      
       // Marketing submenu
       'marketing.dashboard': 'Bảng điều khiển marketing',
       'marketing.brandStrategy': 'Chiến lược thương hiệu',
@@ -559,7 +709,7 @@ export const useTranslation = () => {
       'marketing.engagement': 'Tương tác',
       'marketing.insights': 'Thông tin chi tiết',
       'marketing.settings': 'Cài đặt marketing',
-
+      
       // Accounting submenu
       'accounting.dashboard': 'Bảng điều khiển kế toán',
       'accounting.voucher': 'Chứng từ',
@@ -569,7 +719,7 @@ export const useTranslation = () => {
       'accounting.tax': 'Thuế',
       'accounting.budget': 'Ngân sách',
       'accounting.reports': 'Báo cáo',
-
+      
       // Employees submenu
       'employees.dashboard': 'Bảng điều khiển nhân viên',
       'employees.leave': 'Nghỉ phép',
@@ -578,7 +728,7 @@ export const useTranslation = () => {
       'employees.attendance': 'Chấm công',
       'employees.evaluation': 'Đánh giá',
       'employees.communication': 'Giao tiếp',
-
+      
       // Settings submenu
       'settings.dashboard': 'Bảng điều khiển cài đặt',
       'settings.accessControl': 'Kiểm soát truy cập',
@@ -590,19 +740,79 @@ export const useTranslation = () => {
       'settings.dataManagement': 'Quản lý dữ liệu',
       'settings.auditLogs': 'Nhật ký kiểm toán',
       'settings.billing': 'Thanh toán',
+      
+      // Products page specific
+      products: {
+        title: 'Quản lý sản phẩm',
+        subtitle: 'Quản lý sản phẩm và dịch vụ của công ty',
+        list: 'Danh sách sản phẩm',
+        addNew: 'Thêm sản phẩm mới',
+        searchPlaceholder: 'Tìm kiếm theo tên, danh mục, hoặc SKU...',
+        noProducts: 'Chưa có sản phẩm nào được đăng ký',
+        name: 'Tên sản phẩm',
+        category: 'Danh mục',
+        price: 'Giá',
+        stock: 'Tồn kho',
+        status: 'Trạng thái',
+        actions: 'Thao tác',
+        active: 'Hoạt động',
+        inactive: 'Không hoạt động',
+        sku: 'SKU',
+        description: 'Mô tả',
+        createdAt: 'Ngày tạo',
+        updatedAt: 'Ngày cập nhật',
+        filterByCategory: 'Lọc theo danh mục',
+        filterByStatus: 'Lọc theo trạng thái',
+        sortBy: 'Sắp xếp theo',
+        sortByName: 'Tên',
+        sortByPrice: 'Giá',
+        sortByStock: 'Tồn kho',
+        sortByDate: 'Ngày',
+        ascending: 'Tăng dần',
+        descending: 'Giảm dần',
+        confirmDelete: 'Bạn có chắc chắn muốn xóa sản phẩm này không?',
+        consumerPrice: 'Giá tiêu dùng',
+        sold: 'Đã bán',
+        soldQuantity: 'Số lượng đã bán',
+        models: 'Số lượng mô hình',
+        discontinued: 'Ngừng sản xuất',
+        // Categories specific
+        categories: {
+          title: 'Quản lý danh mục',
+          subtitle: 'Đăng ký và quản lý danh mục sản phẩm',
+          add: 'Thêm danh mục',
+          edit: 'Chỉnh sửa danh mục',
+          code: 'Mã danh mục',
+          codeRequired: 'Mã danh mục là bắt buộc',
+          nameKo: 'Tên tiếng Hàn',
+          nameVi: 'Tên tiếng Việt',
+          nameEn: 'Tên tiếng Anh',
+          nameKoRequired: 'Tên tiếng Hàn là bắt buộc',
+          nameViRequired: 'Tên tiếng Việt là bắt buộc',
+          nameEnOptional: 'Tên tiếng Anh (Tùy chọn)',
+          descriptionKo: 'Mô tả tiếng Hàn',
+          descriptionVi: 'Mô tả tiếng Việt',
+          descriptionEn: 'Mô tả tiếng Anh',
+          descriptionsOptional: 'Mô tả danh mục (Tùy chọn)',
+          categoryNames: 'Tên danh mục',
+          isActive: 'Trạng thái hoạt động',
+          searchPlaceholder: 'Tìm kiếm theo mã danh mục hoặc tên...',
+          searchFilter: 'Tìm kiếm và lọc',
+          confirmDelete: 'Bạn có chắc chắn muốn xóa danh mục này không?',
+          checkingCode: 'Đang kiểm tra mã trùng lặp...',
+          codeCheckError: 'Lỗi kiểm tra mã trùng lặp',
+          saving: 'Đang lưu danh mục...',
+          saveError: 'Lỗi lưu danh mục',
+          deleteError: 'Lỗi xóa danh mục',
+        },
+      },
     },
   }), []);
 
   const t = useCallback((key) => {
-    // Redux에서 먼저 확인
-    if (translations[currentLanguage]?.[key]) {
-      return translations[currentLanguage][key];
-    }
-
-    // 기본 메시지에서 확인
     const keys = key.split('.');
     let value = messages[currentLanguage];
-
+    
     for (const k of keys) {
       if (value && typeof value === 'object') {
         value = value[k];
@@ -610,9 +820,9 @@ export const useTranslation = () => {
         break;
       }
     }
-
+    
     return typeof value === 'string' ? value : key;
-  }, [currentLanguage, messages, translations]);
+  }, [currentLanguage, messages]);
 
   return { t, currentLanguage };
 };
@@ -631,7 +841,7 @@ export const useLocaleFormat = () => {
     };
 
     const locale = localeMap[currentLanguage] || 'ko-KR';
-
+    
     return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',
@@ -648,7 +858,7 @@ export const useLocaleFormat = () => {
     };
 
     const locale = localeMap[currentLanguage] || 'ko-KR';
-
+    
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
@@ -663,7 +873,7 @@ export const useLocaleFormat = () => {
     };
 
     const locale = localeMap[currentLanguage] || 'ko-KR';
-
+    
     return new Intl.NumberFormat(locale, options).format(number);
   }, [currentLanguage]);
 
@@ -675,4 +885,4 @@ export const useLocaleFormat = () => {
   };
 };
 
-export default useLanguage;
+export default useLanguage; 
