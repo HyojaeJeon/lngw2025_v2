@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-
+import { useLanguage } from "../hooks/useLanguage.js";
 const LanguageContext = createContext();
 
 const translations = {
@@ -2519,15 +2519,21 @@ const translationObject2 = {
   },
 };
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
-  }
-  return context;
-};
 
 export const LanguageProvider = ({ children }) => {
+  // 언어 초기화 컴포넌트
+  function LanguageInitializer({ children }) {
+    const { initializeLanguageSettings, isInitialized } = useLanguage();
+
+    useEffect(() => {
+      if (!isInitialized) {
+        initializeLanguageSettings();
+      }
+    }, [initializeLanguageSettings, isInitialized]);
+
+    return children;
+  }
+  
   const [language, setLanguage] = useState("ko");
 
   useEffect(() => {
