@@ -27,7 +27,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { calculateObjectiveProgress } from "../_utils/calculations";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 
 const ObjectiveCard = ({
   objective,
@@ -53,7 +53,7 @@ const ObjectiveCard = ({
   onAddKeyResult,
   onRemoveNewKeyResult,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   // 체크리스트 변경 이력 및 모달 상태 관리
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [pendingCheck, setPendingCheck] = useState(null); // {krId, itemIndex}
@@ -122,12 +122,11 @@ const ObjectiveCard = ({
 
   const toggleChecklistItem = useCallback(
     (krId, itemIndex) => {
-      console.log('체크리스트 토글:', { krId, itemIndex });
+      console.log("체크리스트 토글:", { krId, itemIndex });
       onToggleChecklistItem(krId, itemIndex);
     },
-    [onToggleChecklistItem]
+    [onToggleChecklistItem],
   );
-
 
   return (
     <Card className="transition-all duration-300 border-0 shadow-lg hover:shadow-xl">
@@ -153,7 +152,7 @@ const ObjectiveCard = ({
                 />
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {t('설명 (선택사항)')}
+                    {t("설명 (선택사항)")}
                   </label>
                   <textarea
                     value={editingObjectiveData.description || ""}
@@ -611,10 +610,20 @@ const ObjectiveCard = ({
                             krId={kr.id}
                             krIndex={index}
                             isEditing={isEditing}
-                            onToggle={(krId, itemIndex) => handleChecklistClick(krId, itemIndex, item.completed)}
+                            onToggle={(krId, itemIndex) =>
+                              handleChecklistClick(
+                                krId,
+                                itemIndex,
+                                item.completed,
+                              )
+                            }
                             onUpdate={(text) =>
                               isEditing
-                                ? onUpdateChecklistItemInEdit(index, itemIndex, text)
+                                ? onUpdateChecklistItemInEdit(
+                                    index,
+                                    itemIndex,
+                                    text,
+                                  )
                                 : onUpdateChecklistItem(kr.id, itemIndex, text)
                             }
                             onRemove={() =>

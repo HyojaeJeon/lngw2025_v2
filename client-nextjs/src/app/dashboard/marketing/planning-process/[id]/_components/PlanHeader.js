@@ -1,27 +1,27 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from "@apollo/client";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { 
-  Calendar, 
-  User, 
-  Users, 
-  MessageSquare, 
+import {
+  Calendar,
+  User,
+  Users,
+  MessageSquare,
   Edit,
   Save,
-  X
+  X,
 } from "lucide-react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { calculateOverallProgress } from "../_utils/calculations";
-import { UPDATE_MARKETING_PLAN, GET_USERS_FOR_ASSIGNMENT } from "@/lib/graphql/marketingMutations.js";
-
-
+import {
+  UPDATE_MARKETING_PLAN,
+  GET_USERS_FOR_ASSIGNMENT,
+} from "@/lib/graphql/marketingMutations.js";
 
 const PlanHeader = ({ plan, objectives, onEditClick }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [isEditMode, setIsEditMode] = useState(false);
   const [form, setForm] = useState({ ...plan });
   const [users, setUsers] = useState([]);
@@ -31,14 +31,20 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
   const dropdownRef = useRef(null);
 
   // GraphQL 훅들
-  const [updateMarketingPlan, { loading: isSaving }] = useMutation(UPDATE_MARKETING_PLAN);
-  const { data: usersData, loading: usersLoading, fetchMore } = useQuery(GET_USERS_FOR_ASSIGNMENT, {
+  const [updateMarketingPlan, { loading: isSaving }] = useMutation(
+    UPDATE_MARKETING_PLAN,
+  );
+  const {
+    data: usersData,
+    loading: usersLoading,
+    fetchMore,
+  } = useQuery(GET_USERS_FOR_ASSIGNMENT, {
     variables: { offset: 0, limit: 10 },
     skip: !isEditMode,
     onCompleted: (data) => {
       setUsers(data.users || []);
       setUserOffset(10);
-    }
+    },
   });
 
   // 드롭다운 외부 클릭 시 닫기
@@ -49,14 +55,17 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // 사용자 목록 무한 스크롤
   const handleUserScroll = async (e) => {
     const el = e.target;
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && usersData?.usersCount > users.length) {
+    if (
+      el.scrollTop + el.clientHeight >= el.scrollHeight - 10 &&
+      usersData?.usersCount > users.length
+    ) {
       try {
         const { data } = await fetchMore({
           variables: { offset: userOffset, limit: 10 },
@@ -64,14 +73,14 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
             if (!fetchMoreResult) return prev;
             return {
               ...prev,
-              users: [...prev.users, ...fetchMoreResult.users]
+              users: [...prev.users, ...fetchMoreResult.users],
             };
-          }
+          },
         });
-        setUsers(prev => [...prev, ...data.users]);
-        setUserOffset(prev => prev + 10);
+        setUsers((prev) => [...prev, ...data.users]);
+        setUserOffset((prev) => prev + 10);
       } catch (error) {
-        console.error('사용자 목록 로드 오류:', error);
+        console.error("사용자 목록 로드 오류:", error);
       }
     }
   };
@@ -95,22 +104,22 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
             endDate: form.endDate,
             manager: form.manager,
             targetPersona: form.targetPersona,
-            coreMessage: form.coreMessage
-          }
-        }
+            coreMessage: form.coreMessage,
+          },
+        },
       });
-      
+
       setIsEditMode(false);
-      
+
       // 상위 컴포넌트에 변경사항 알림
       if (onEditClick) {
         onEditClick(data.updateMarketingPlan);
       }
-      
-      console.log('계획이 성공적으로 업데이트되었습니다.');
+
+      console.log("계획이 성공적으로 업데이트되었습니다.");
     } catch (error) {
-      console.error('저장 중 오류 발생:', error);
-      alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error("저장 중 오류 발생:", error);
+      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -123,17 +132,17 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
 
   // 담당자 선택
   const handleManagerSelect = (selectedUser) => {
-    setForm(prev => ({ 
-      ...prev, 
+    setForm((prev) => ({
+      ...prev,
       manager: selectedUser.name,
-      managerId: selectedUser.id 
+      managerId: selectedUser.id,
     }));
     setShowUserDropdown(false);
   };
 
   // 폼 입력 핸들러
   const handleInputChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -144,20 +153,22 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
           {isEditMode ? (
             <Input
               className="mb-3 text-3xl font-bold bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30"
-              value={form.title || ''}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              value={form.title || ""}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder={t("마케팅 계획 제목을 입력하세요")}
             />
           ) : (
-            <h1 className="mb-3 text-3xl font-bold break-words">{plan.title}</h1>
+            <h1 className="mb-3 text-3xl font-bold break-words">
+              {plan.title}
+            </h1>
           )}
 
           {/* 설명 */}
           {isEditMode ? (
             <textarea
               className="mb-4 text-lg bg-white/20 border border-white/30 rounded px-3 py-2 w-full text-white placeholder:text-white/60 focus:bg-white/30 focus:outline-none resize-none"
-              value={form.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              value={form.description || ""}
+              onChange={(e) => handleInputChange("description", e.target.value)}
               placeholder={t("계획에 대한 설명을 입력하세요")}
               rows={3}
             />
@@ -176,14 +187,18 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
                     <div className="space-y-1">
                       <Input
                         type="date"
-                        value={form.startDate || ''}
-                        onChange={(e) => handleInputChange('startDate', e.target.value)}
+                        value={form.startDate || ""}
+                        onChange={(e) =>
+                          handleInputChange("startDate", e.target.value)
+                        }
                         className="text-xs bg-white/20 border-white/30 text-white"
                       />
                       <Input
                         type="date"
-                        value={form.endDate || ''}
-                        onChange={(e) => handleInputChange('endDate', e.target.value)}
+                        value={form.endDate || ""}
+                        onChange={(e) =>
+                          handleInputChange("endDate", e.target.value)
+                        }
                         className="text-xs bg-white/20 border-white/30 text-white"
                       />
                     </div>
@@ -209,30 +224,32 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
                         onClick={() => setShowUserDropdown(!showUserDropdown)}
                         className="p-0 h-auto text-left font-semibold text-white hover:bg-white/10"
                       >
-                        {form.manager || '담당자 선택'}
+                        {form.manager || "담당자 선택"}
                       </Button>
-                      
+
                       {showUserDropdown && (
                         <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg z-50 max-h-60 overflow-hidden">
-                          <div 
+                          <div
                             ref={userListRef}
                             className="max-h-60 overflow-y-auto"
                             onScroll={handleUserScroll}
                           >
-                            {users.map(user => (
+                            {users.map((user) => (
                               <button
                                 key={user.id}
                                 onClick={() => handleManagerSelect(user)}
                                 className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-900"
                               >
-                                <img 
-                                  src={user.avatar} 
+                                <img
+                                  src={user.avatar}
                                   alt={user.name}
                                   className="w-6 h-6 rounded-full"
                                 />
                                 <div>
                                   <div className="font-medium">{user.name}</div>
-                                  <div className="text-xs text-gray-500">{user.position}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {user.position}
+                                  </div>
                                 </div>
                               </button>
                             ))}
@@ -260,8 +277,10 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
                   <p className="text-xs text-purple-200">{t("타겟 고객")}</p>
                   {isEditMode ? (
                     <Input
-                      value={form.targetPersona || ''}
-                      onChange={(e) => handleInputChange('targetPersona', e.target.value)}
+                      value={form.targetPersona || ""}
+                      onChange={(e) =>
+                        handleInputChange("targetPersona", e.target.value)
+                      }
                       placeholder="타겟 고객을 입력하세요"
                       className="font-semibold bg-white/20 border-white/30 text-white placeholder:text-white/60"
                     />
@@ -280,8 +299,10 @@ const PlanHeader = ({ plan, objectives, onEditClick }) => {
                   <p className="text-xs text-pink-200">{t("핵심 메시지")}</p>
                   {isEditMode ? (
                     <Input
-                      value={form.coreMessage || ''}
-                      onChange={(e) => handleInputChange('coreMessage', e.target.value)}
+                      value={form.coreMessage || ""}
+                      onChange={(e) =>
+                        handleInputChange("coreMessage", e.target.value)
+                      }
                       placeholder="핵심 메시지를 입력하세요"
                       className="text-sm font-semibold bg-white/20 border-white/30 text-white placeholder:text-white/60"
                     />

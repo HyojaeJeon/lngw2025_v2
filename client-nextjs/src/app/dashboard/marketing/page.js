@@ -11,8 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
-import { useRouter } from 'next/navigation';
+import { useTranslation } from "@/hooks/useLanguage.js";
+import { useRouter } from "next/navigation";
 import {
   BarChart3,
   Users,
@@ -63,7 +63,7 @@ import {
 } from "@/lib/graphql/marketingQueries.js";
 
 export default function MarketingDashboardPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState("30일");
   const router = useRouter();
 
@@ -110,11 +110,11 @@ export default function MarketingDashboardPage() {
       status: "진행중",
       keyResults: {
         completed: 8,
-        total: 12
-      }
+        total: 12,
+      },
     },
     {
-      id: "MP002", 
+      id: "MP002",
       title: "신제품 런칭 마케팅 전략",
       manager: "박기획",
       period: "2025-04-01 ~ 06-30",
@@ -123,8 +123,8 @@ export default function MarketingDashboardPage() {
       status: "진행중",
       keyResults: {
         completed: 2,
-        total: 8
-      }
+        total: 8,
+      },
     },
     {
       id: "MP003",
@@ -136,9 +136,9 @@ export default function MarketingDashboardPage() {
       status: "계획됨",
       keyResults: {
         completed: 1,
-        total: 15
-      }
-    }
+        total: 15,
+      },
+    },
   ];
 
   const upcomingContent = [
@@ -185,8 +185,18 @@ export default function MarketingDashboardPage() {
   ];
 
   const channelPerformance = [
-    { name: "Instagram", engagement: 45000, percentage: 35, color: "bg-pink-500" },
-    { name: "Facebook", engagement: 38000, percentage: 30, color: "bg-blue-500" },
+    {
+      name: "Instagram",
+      engagement: 45000,
+      percentage: 35,
+      color: "bg-pink-500",
+    },
+    {
+      name: "Facebook",
+      engagement: 38000,
+      percentage: 30,
+      color: "bg-blue-500",
+    },
     { name: "TikTok", engagement: 28000, percentage: 22, color: "bg-black" },
     { name: "YouTube", engagement: 17000, percentage: 13, color: "bg-red-500" },
   ];
@@ -263,23 +273,50 @@ export default function MarketingDashboardPage() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case "approval": return <CheckCircle className="w-4 h-4 text-orange-500" />;
-      case "comment": return <MessageSquare className="w-4 h-4 text-blue-500" />;
-      case "budget": return <DollarSign className="w-4 h-4 text-red-500" />;
-      case "integration": return <Globe className="w-4 h-4 text-purple-500" />;
-      case "performance": return <TrendingUp className="w-4 h-4 text-green-500" />;
-      default: return <Bell className="w-4 h-4 text-gray-500" />;
+      case "approval":
+        return <CheckCircle className="w-4 h-4 text-orange-500" />;
+      case "comment":
+        return <MessageSquare className="w-4 h-4 text-blue-500" />;
+      case "budget":
+        return <DollarSign className="w-4 h-4 text-red-500" />;
+      case "integration":
+        return <Globe className="w-4 h-4 text-purple-500" />;
+      case "performance":
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      default:
+        return <Bell className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "승인대기":
-        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">승인대기</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-orange-50 text-orange-700 border-orange-200"
+          >
+            승인대기
+          </Badge>
+        );
       case "예약완료":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">예약완료</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
+            예약완료
+          </Badge>
+        );
       case "제작중":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">제작중</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-700 border-blue-200"
+          >
+            제작중
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -299,8 +336,8 @@ export default function MarketingDashboardPage() {
             </p>
           </div>
           <div className="flex gap-2 items-center">
-            <select 
-              value={selectedPeriod} 
+            <select
+              value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
@@ -340,7 +377,9 @@ export default function MarketingDashboardPage() {
                   ) : (
                     <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
                   )}
-                  <span className={`text-sm ${kpiData.totalReach.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  <span
+                    className={`text-sm ${kpiData.totalReach.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
                     {kpiData.totalReach.change}% vs 지난 기간
                   </span>
                 </div>
@@ -366,7 +405,9 @@ export default function MarketingDashboardPage() {
                   ) : (
                     <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
                   )}
-                  <span className={`text-sm ${kpiData.totalEngagement.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  <span
+                    className={`text-sm ${kpiData.totalEngagement.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
                     {kpiData.totalEngagement.change}% vs 지난 기간
                   </span>
                 </div>
@@ -392,7 +433,9 @@ export default function MarketingDashboardPage() {
                   ) : (
                     <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
                   )}
-                  <span className={`text-sm ${kpiData.totalSpend.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  <span
+                    className={`text-sm ${kpiData.totalSpend.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
                     {kpiData.totalSpend.change}% vs 지난 기간
                   </span>
                 </div>
@@ -418,7 +461,9 @@ export default function MarketingDashboardPage() {
                   ) : (
                     <ArrowDown className="w-4 h-4 text-red-500 mr-1" />
                   )}
-                  <span className={`text-sm ${kpiData.avgEngagementRate.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  <span
+                    className={`text-sm ${kpiData.avgEngagementRate.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
                     {kpiData.avgEngagementRate.change}% vs 지난 기간
                   </span>
                 </div>
@@ -432,105 +477,119 @@ export default function MarketingDashboardPage() {
       {/* 영역 2: 캠페인 및 콘텐츠 현황 (메인 영역) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 진행 중인 마케팅 계획 */}
-              <Card className="shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center justify-between text-lg">
-                    <span className="flex items-center">
-                      <Target className="w-5 h-5 mr-2" />
-                      진행 중인 마케팅 계획
-                    </span>
-                    <Badge variant="secondary" className="bg-white/20 text-white">
-                      {activeMarketingPlans.filter(p => p.status === "진행중").length}개
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {activeMarketingPlans.slice(0, 3).map((plan) => (
-                      <div
-                        key={plan.id}
-                        className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer group"
-                        onClick={() => router.push(`/dashboard/marketing/planning-process/${plan.id}`)}
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors mb-1">
-                              {plan.title}
-                            </h4>
-                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                              <span className="flex items-center mr-4">
-                                <User className="w-3 h-3 mr-1" />
-                                담당자: {plan.manager}
-                              </span>
-                              <span className="flex items-center">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                기간: {plan.period}
-                              </span>
-                            </div>
-                            {getStatusBadge(plan.status)}
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        {/* 전체 진행률 바 */}
-                        <div className="mb-3">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600 dark:text-gray-400">전체 진행률</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {plan.progress}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                            <div
-                              className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
-                              style={{ width: `${plan.progress}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* 주요 목표(OKRs) 요약 */}
-                        <div className="mb-3">
-                          <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">주요 목표:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {plan.objectives.map((objective, index) => (
-                              <Badge 
-                                key={index} 
-                                variant="outline" 
-                                className="text-xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300"
-                              >
-                                {objective}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Key Results 진행 상황 */}
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          <span className="flex items-center">
-                            <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
-                            핵심 결과: {plan.keyResults.completed}/{plan.keyResults.total} 완료
-                          </span>
-                        </div>
+        <Card className="shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center justify-between text-lg">
+              <span className="flex items-center">
+                <Target className="w-5 h-5 mr-2" />
+                진행 중인 마케팅 계획
+              </span>
+              <Badge variant="secondary" className="bg-white/20 text-white">
+                {
+                  activeMarketingPlans.filter((p) => p.status === "진행중")
+                    .length
+                }
+                개
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {activeMarketingPlans.slice(0, 3).map((plan) => (
+                <div
+                  key={plan.id}
+                  className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer group"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/marketing/planning-process/${plan.id}`,
+                    )
+                  }
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors mb-1">
+                        {plan.title}
+                      </h4>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <span className="flex items-center mr-4">
+                          <User className="w-3 h-3 mr-1" />
+                          담당자: {plan.manager}
+                        </span>
+                        <span className="flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          기간: {plan.period}
+                        </span>
                       </div>
-                    ))}
-
+                      {getStatusBadge(plan.status)}
+                    </div>
                     <Button
-                      variant="outline"
-                      className="w-full mt-4 hover:shadow-md transition-all duration-300"
-                      onClick={() => router.push('/dashboard/marketing/planning-process')}
+                      size="sm"
+                      variant="ghost"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      새 마케팅 계획 수립
+                      <ChevronRight className="w-4 h-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* 전체 진행률 바 */}
+                  <div className="mb-3">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        전체 진행률
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {plan.progress}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                      <div
+                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${plan.progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 주요 목표(OKRs) 요약 */}
+                  <div className="mb-3">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">
+                      주요 목표:
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {plan.objectives.map((objective, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300"
+                        >
+                          {objective}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Key Results 진행 상황 */}
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center">
+                      <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                      핵심 결과: {plan.keyResults.completed}/
+                      {plan.keyResults.total} 완료
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              <Button
+                variant="outline"
+                className="w-full mt-4 hover:shadow-md transition-all duration-300"
+                onClick={() =>
+                  router.push("/dashboard/marketing/planning-process")
+                }
+              >
+                <Plus className="w-4 h-4 mr-2" />새 마케팅 계획 수립
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 다가오는 콘텐츠 발행 일정 */}
         <Card className="shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -548,7 +607,7 @@ export default function MarketingDashboardPage() {
                   className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
                   onClick={() => {
                     if (content.status === "승인대기") {
-                      window.location.href = '/dashboard/marketing/content';
+                      window.location.href = "/dashboard/marketing/content";
                     }
                   }}
                 >
@@ -626,7 +685,9 @@ export default function MarketingDashboardPage() {
                   <div
                     key={content.id}
                     className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-300 cursor-pointer"
-                    onClick={() => window.location.href = '/dashboard/marketing/insights'}
+                    onClick={() =>
+                      (window.location.href = "/dashboard/marketing/insights")
+                    }
                   >
                     <div className="text-center">
                       <div className="text-4xl mb-3">{content.thumbnail}</div>
@@ -635,13 +696,17 @@ export default function MarketingDashboardPage() {
                       </h5>
                       <div className="space-y-1 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">조회수</span>
+                          <span className="text-gray-600 dark:text-gray-400">
+                            조회수
+                          </span>
                           <span className="font-bold text-blue-600 dark:text-blue-400">
                             {content.views}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">반응</span>
+                          <span className="text-gray-600 dark:text-gray-400">
+                            반응
+                          </span>
                           <span className="font-bold text-green-600 dark:text-green-400">
                             {content.engagement}
                           </span>
@@ -666,7 +731,7 @@ export default function MarketingDashboardPage() {
                 <Bell className="w-5 h-5 text-red-600 dark:text-red-400" />
                 알림 및 할 일
                 <Badge variant="destructive" className="ml-2">
-                  {notifications.filter(n => n.urgent).length}
+                  {notifications.filter((n) => n.urgent).length}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -677,26 +742,30 @@ export default function MarketingDashboardPage() {
                     key={notification.id}
                     className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
                       notification.urgent
-                        ? 'border-red-200 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50'
+                        ? "border-red-200 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
+                        : "border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50"
                     }`}
-                    onClick={() => window.location.href = notification.action}
+                    onClick={() => (window.location.href = notification.action)}
                   >
                     <div className="flex items-start gap-3">
                       {getNotificationIcon(notification.type)}
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${
-                          notification.urgent 
-                            ? 'text-red-900 dark:text-red-100' 
-                            : 'text-gray-900 dark:text-white'
-                        }`}>
+                        <p
+                          className={`text-sm font-medium ${
+                            notification.urgent
+                              ? "text-red-900 dark:text-red-100"
+                              : "text-gray-900 dark:text-white"
+                          }`}
+                        >
                           {notification.message}
                         </p>
-                        <p className={`text-xs ${
-                          notification.urgent 
-                            ? 'text-red-600 dark:text-red-400' 
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}>
+                        <p
+                          className={`text-xs ${
+                            notification.urgent
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
                           {notification.time}
                         </p>
                       </div>

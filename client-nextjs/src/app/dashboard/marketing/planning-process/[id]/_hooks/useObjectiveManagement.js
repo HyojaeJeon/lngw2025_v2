@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-export const useObjectiveManagement = (objectives, setObjectives, keyResults, setKeyResults) => {
+export const useObjectiveManagement = (
+  objectives,
+  setObjectives,
+  keyResults,
+  setKeyResults,
+) => {
   // 목표 관리 기능을 위한 상태들
   const [collapsedObjectives, setCollapsedObjectives] = useState(new Set());
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
@@ -60,7 +65,7 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
     setEditingObjectiveData({
       title: objective.title,
       description: objective.description || "",
-      keyResults: objective.keyResults.map((kr) => ({
+      keyResults: objective.keyResults?.map((kr) => ({
         ...kr,
         checklist: kr.checklist || [],
       })),
@@ -88,13 +93,13 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
       // await api.deactivateObjective(objectiveToDelete.id);
 
       // 목표를 비활성화하고 리스트 최하단으로 이동
-      const updatedObjectives = objectives.map((obj) =>
+      const updatedObjectives = objectives?.map((obj) =>
         obj.id === objectiveToDelete.id ? { ...obj, isActive: false } : obj,
       );
 
       // 활성 목표와 비활성 목표를 분리하여 정렬
-      const activeObjectives = updatedObjectives.filter((obj) => obj.isActive);
-      const inactiveObjectives = updatedObjectives.filter(
+      const activeObjectives = updatedObjectives?.filter((obj) => obj.isActive);
+      const inactiveObjectives = updatedObjectives?.filter(
         (obj) => !obj.isActive,
       );
 
@@ -111,7 +116,7 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
     if (!editingObjectiveId || !editingObjectiveData) return;
 
     try {
-      const updatedObjectives = objectives.map((obj) =>
+      const updatedObjectives = objectives?.map((obj) =>
         obj.id === editingObjectiveId
           ? { ...obj, ...editingObjectiveData }
           : obj,
@@ -127,64 +132,73 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
 
   // Key Result 편집 헬퍼 함수들
   const updateKeyResultTitle = (krIndex, title) => {
-    setEditingObjectiveData(prev => ({
+    setEditingObjectiveData((prev) => ({
       ...prev,
-      keyResults: prev.keyResults.map((kr, index) => 
-        index === krIndex ? { ...kr, description: title } : kr
-      )
+      keyResults: prev.keyResults?.map((kr, index) =>
+        index === krIndex ? { ...kr, description: title } : kr,
+      ),
     }));
   };
 
   const updateKeyResultValue = (krIndex, field, value) => {
-    setEditingObjectiveData(prev => ({
+    setEditingObjectiveData((prev) => ({
       ...prev,
-      keyResults: prev.keyResults.map((kr, index) => 
-        index === krIndex ? { ...kr, [field]: value } : kr
-      )
+      keyResults: prev.keyResults?.map((kr, index) =>
+        index === krIndex ? { ...kr, [field]: value } : kr,
+      ),
     }));
   };
 
   const updateChecklistItemInEdit = (krIndex, itemIndex, text) => {
-    setEditingObjectiveData(prev => ({
+    setEditingObjectiveData((prev) => ({
       ...prev,
-      keyResults: prev.keyResults.map((kr, index) => 
-        index === krIndex ? {
-          ...kr,
-          checklist: kr.checklist.map((item, idx) => 
-            idx === itemIndex ? { ...item, text } : item
-          )
-        } : kr
-      )
+      keyResults: prev.keyResults?.map((kr, index) =>
+        index === krIndex
+          ? {
+              ...kr,
+              checklist: kr.checklist?.map((item, idx) =>
+                idx === itemIndex ? { ...item, text } : item,
+              ),
+            }
+          : kr,
+      ),
     }));
   };
 
   const addChecklistItemInEdit = (krIndex) => {
-    setEditingObjectiveData(prev => ({
+    setEditingObjectiveData((prev) => ({
       ...prev,
-      keyResults: prev.keyResults.map((kr, index) => 
-        index === krIndex ? {
-          ...kr,
-          checklist: [...(kr.checklist || []), { text: "", completed: false }]
-        } : kr
-      )
+      keyResults: prev.keyResults?.map((kr, index) =>
+        index === krIndex
+          ? {
+              ...kr,
+              checklist: [
+                ...(kr.checklist || []),
+                { text: "", completed: false },
+              ],
+            }
+          : kr,
+      ),
     }));
   };
 
   const removeChecklistItemInEdit = (krIndex, itemIndex) => {
-    setEditingObjectiveData(prev => ({
+    setEditingObjectiveData((prev) => ({
       ...prev,
-      keyResults: prev.keyResults.map((kr, index) => 
-        index === krIndex ? {
-          ...kr,
-          checklist: kr.checklist.filter((_, idx) => idx !== itemIndex)
-        } : kr
-      )
+      keyResults: prev.keyResults?.map((kr, index) =>
+        index === krIndex
+          ? {
+              ...kr,
+              checklist: kr.checklist.filter((_, idx) => idx !== itemIndex),
+            }
+          : kr,
+      ),
     }));
   };
 
   // 체크리스트 항목 추가
   const addChecklistItem = (krId) => {
-    const updatedKeyResults = keyResults.map((kr) =>
+    const updatedKeyResults = keyResults?.map((kr) =>
       kr.id === krId
         ? {
             ...kr,
@@ -208,11 +222,11 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
 
   // 체크리스트 항목 업데이트
   const updateChecklistItem = (krId, itemIndex, text) => {
-    const updatedKeyResults = keyResults.map((kr) =>
+    const updatedKeyResults = keyResults?.map((kr) =>
       kr.id === krId
         ? {
             ...kr,
-            checklist: (kr.checklist || []).map((item, index) =>
+            checklist: (kr.checklist || [])?.map((item, index) =>
               index === itemIndex ? { ...item, text } : item,
             ),
           }
@@ -231,8 +245,9 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
 
   // 체크리스트 항목 토글
   const toggleChecklistItem = (krId, itemIndex) => {
+    if (!keyResults) return;
     setKeyResults(
-      keyResults.map((kr) =>
+      keyResults?.map((kr) =>
         kr.id === krId
           ? {
               ...kr,
@@ -249,8 +264,9 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
 
   // 체크리스트 항목 삭제
   const removeChecklistItem = (krId, itemIndex) => {
+    if (!keyResults) return;
     setKeyResults(
-      keyResults.map((kr) =>
+      keyResults?.map((kr) =>
         kr.id === krId
           ? {
               ...kr,
@@ -270,7 +286,7 @@ export const useObjectiveManagement = (objectives, setObjectives, keyResults, se
       id: newId,
       title: newObjective.title,
       isActive: true,
-      keyResults: newObjective.keyResults.map((kr, index) => ({
+      keyResults: newObjective?.keyResults?.map((kr, index) => ({
         id: keyResults.length + index + 1,
         type: kr.type,
         description: kr.description,

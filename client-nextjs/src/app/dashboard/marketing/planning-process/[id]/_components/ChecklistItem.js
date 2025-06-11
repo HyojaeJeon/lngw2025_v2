@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { CheckCircle, Circle, Trash2 } from "lucide-react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 
 const ChecklistItem = ({
   item,
@@ -16,7 +16,7 @@ const ChecklistItem = ({
   onUpdate,
   onRemove,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   const handleToggle = () => {
     if (!isEditing) {
@@ -68,8 +68,8 @@ const ChecklistItem = ({
         variant="ghost"
         onClick={onRemove}
         className={`h-auto p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ${
-          isEditing 
-            ? "opacity-100" 
+          isEditing
+            ? "opacity-100"
             : "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         }`}
         type="button"
