@@ -1,11 +1,12 @@
+
 'use client';
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button.js';
-import { useLanguage } from '@/contexts/languageContext.js';
+import { useLanguageContext } from '@/contexts/languageContext.js';
 
 export default function GlobalError({ error, reset }) {
-  const { t } = useLanguage();
+  const { t } = useLanguageContext();
 
   useEffect(() => {
     console.error('Global Error:', error);
@@ -38,4 +39,4 @@ export default function GlobalError({ error, reset }) {
       </body>
     </html>
   );
-} 
+}

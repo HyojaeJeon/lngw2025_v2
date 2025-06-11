@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useTheme } from "../../contexts/themeContext.js";
@@ -10,13 +11,10 @@ import { useState } from "react";
 import Link from "next/link";
 import LanguageSelector from "../ui/LanguageSelector.js";
 import { useLanguage, useTranslation } from "../../hooks/useLanguage.js";
-import { useEffect } from "react";
 
 export default function Header({ onMenuToggle }) {
   const { currentLanguage, getNextLanguage, changeLanguage } = useLanguage();
   const { t } = useTranslation();
-
-
 
   const cycleLanguage = () => {
     const nextLang = getNextLanguage();

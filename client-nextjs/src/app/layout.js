@@ -1,3 +1,4 @@
+
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { LanguageProvider } from "@/contexts/languageContext.js";
@@ -6,7 +7,6 @@ import { ApolloProviderWrapper } from "@/providers/apolloProvider.js";
 import { ReduxProvider } from "@/providers/reduxProvider.js";
 import { Toaster } from "@/components/ui/toaster.js";
 import AuthInitializer from "@/components/ui/AuthInitializer";
-
 
 const inter = Inter({ subsets: ["latin"] });
 
