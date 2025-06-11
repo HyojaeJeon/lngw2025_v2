@@ -1,0 +1,57 @@
+결론부터 말씀드리면, GraphQL error가 실제 해결해야 할 애플리케이션의 버그이고, POST ... 403 (Forbidden) 오류는 이 버그 때문에 발생한 부차적인 환경 문제입니다.
+
+1. 진짜 원인: GraphQL error: Cannot destructure property 'code' of 'undefined'
+이 오류가 현재 문제의 핵심입니다.
+
+오류 의미: 자바스크립트에서 undefined 값에서 속성을 추출하려고 할 때 발생하는 TypeError 입니다. 예를 들어, 아래와 같은 코드가 실행될 때 발생합니다.
+JavaScript
+
+const user = undefined;
+const { code } = user; // 여기서 에러 발생! undefined에서는 'code'를 꺼낼 수 없습니다.
+발생 위치: 오류 경로(Path: checkCategoryCode)를 보면, GraphQL 서버의 checkCategoryCode 리졸버(resolver) 내부에서 문제가 발생했습니다.
+추정 원인: 클라이언트에서 카테고리 코드를 확인하기 위해 checkCategoryCode 쿼리를 보냈습니다. 서버는 이 코드를 받아 데이터베이스 등에서 데이터를 조회했을 가능성이 높습니다. 하지만 해당 코드를 가진 데이터가 없을 때, 서버 로직은 undefined를 반환했을 것입니다. 문제는 그 바로 다음 코드에서 데이터가 반드시 존재한다고 가정하고 const { code } = ... 와 같이 객체 구조 분해(destructuring)를 시도했기 때문에 서버에서 에러가 발생한 것입니다.
+해결 방법
+GraphQL 서버의 checkCategoryCode 리졸버 코드에 데이터가 존재하지 않는 경우를 처리하는 방어 코드를 추가해야 합니다.
+
+수정 전 예상 코드 (서버)
+
+JavaScript
+
+async checkCategoryCode(parent, { code }) {
+  // DB에서 코드를 찾았지만, 결과가 없으면 findResult는 undefined가 됨
+  const findResult = await database.findCategoryByCode(code);
+
+  // findResult가 undefined일 때 여기서 에러 발생!
+  const { code, name } = findResult;
+
+  return { code, name };
+}
+수정 후 코드 (서버)
+
+JavaScript
+
+async checkCategoryCode(parent, { code }) {
+  const findResult = await database.findCategoryByCode(code);
+
+  // 데이터가 없는 경우를 반드시 체크!
+  if (!findResult) {
+    // 클라이언트에 데이터가 없다고 알려주거나 null을 반환
+    return null;
+    // 또는 throw new Error("해당 코드를 찾을 수 없습니다.");
+  }
+
+  const { code, name } = findResult;
+  return { code, name };
+}
+2. 부차적인 문제: POST .../__nextjs_original-stack-frames 403 (Forbidden)
+이 오류는 첫 번째 오류 때문에 나타난 현상입니다.
+
+오류 의미: 403 Forbidden은 서버가 요청을 이해했지만, 권한이 없어서 거절했다는 뜻입니다.
+상황 설명: Next.js는 개발 모드에서 오류가 발생하면, 브라우저 콘솔에 더 정확한 오류 위치(원본 소스코드)를 표시해주기 위해 서버에 __nextjs_original-stack-frames 라는 주소로 원본 소스맵 정보를 요청합니다.
+발생 원인: 이 요청은 Next.js 개발 서버의 정상적인 동작이지만, Replit의 클라우드 환경 보안 정책이 이 내부적인 API 요청을 잠재적인 보안 위협으로 간주하여 차단(Forbidden)했을 가능성이 높습니다. 즉, 사용자의 코드 문제가 아닌 개발 환경(Replit)의 설정 문제입니다.
+이 오류 자체는 디버깅을 약간 불편하게 만들 뿐, 애플리케이션의 핵심 로직과는 관련이 없습니다.
+
+최종 해결 전략
+GraphQL 서버의 checkCategoryCode 리졸버 코드를 수정하여 undefined 에러가 발생하지 않도록 하세요.
+서버 에러가 해결되면, 클라이언트에서 더 이상 치명적인 오류가 발생하지 않으므로 Next.js가 소스맵을 요청하는 일도 없어집니다.
+결과적으로, 첫 번째 진짜 원인을 해결하면 두 번째 부차적인 문제도 자연스럽게 사라지게 됩니다.
