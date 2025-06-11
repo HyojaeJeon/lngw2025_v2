@@ -111,3 +111,57 @@ export const useTranslation = () => {
 
   return { t, currentLanguage };
 };
+
+// useLocaleFormat 훅 - 숫자와 통화 포맷팅
+export const useLocaleFormat = () => {
+  const [currentLanguage, setCurrentLanguage] = useState(DEFAULT_LANGUAGE);
+
+  // 언어 초기화
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("language") || DEFAULT_LANGUAGE;
+    if (SUPPORTED_LANGUAGES.includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // 숫자 포맷팅
+  const formatNumber = useCallback((number, options = {}) => {
+    if (number === null || number === undefined || isNaN(number)) return "";
+    
+    const locale = currentLanguage === "ko" ? "ko-KR" : 
+                   currentLanguage === "vi" ? "vi-VN" : "en-US";
+    
+    return new Intl.NumberFormat(locale, options).format(number);
+  }, [currentLanguage]);
+
+  // 통화 포맷팅
+  const formatCurrency = useCallback((amount, currencyCode = "VND", options = {}) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return "";
+    
+    const locale = currentLanguage === "ko" ? "ko-KR" : 
+                   currentLanguage === "vi" ? "vi-VN" : "en-US";
+    
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currencyCode,
+      ...options
+    }).format(amount);
+  }, [currentLanguage]);
+
+  // 날짜 포맷팅
+  const formatDate = useCallback((date, options = {}) => {
+    if (!date) return "";
+    
+    const locale = currentLanguage === "ko" ? "ko-KR" : 
+                   currentLanguage === "vi" ? "vi-VN" : "en-US";
+    
+    return new Intl.DateTimeFormat(locale, options).format(new Date(date));
+  }, [currentLanguage]);
+
+  return {
+    formatNumber,
+    formatCurrency,
+    formatDate,
+    currentLanguage
+  };
+};
