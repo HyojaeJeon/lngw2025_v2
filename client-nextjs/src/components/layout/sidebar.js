@@ -194,7 +194,7 @@ const sidebarItems = [
         href: "/dashboard/marketing/planning-process",
       },
       { name: "marketing.trends", href: "/dashboard/marketing/trends" },
-      
+
       // Phase 2: 기획 및 준비 (Planning & Preparation)
       {
         name: "marketing.campaignCalendar",
@@ -212,16 +212,16 @@ const sidebarItems = [
         name: "marketing.contentLibrary",
         href: "/dashboard/marketing/content-library",
       },
-      
+
       // Phase 3: 실행 및 발행 (Execution & Publishing)
       { name: "marketing.content", href: "/dashboard/marketing/content" },
       { name: "marketing.abtest", href: "/dashboard/marketing/abtest" },
-      
+
       // Phase 4: 성과 분석 및 소통 (Analysis & Engagement)
       { name: "marketing.monitoring", href: "/dashboard/marketing/monitoring" },
       { name: "marketing.engagement", href: "/dashboard/marketing/engagement" },
       { name: "marketing.insights", href: "/dashboard/marketing/insights" },
-      
+
       // Phase 5: 시스템 관리 (System)
       { name: "marketing.settings", href: "/dashboard/marketing/settings" },
     ],

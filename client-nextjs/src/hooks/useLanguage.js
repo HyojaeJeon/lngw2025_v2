@@ -153,6 +153,19 @@ export const useTranslation = () => {
         success: '성공',
         failed: '실패',
       },
+      header: {
+        notifications: '알림',
+        profile: '프로필',
+        settings: '설정',
+        logout: '로그아웃',
+        search: {
+          placeholder: '검색...',
+        },
+        menu: '메뉴',
+        toggleSidebar: '사이드바 토글',
+        toggleTheme: '테마 변경',
+        toggleLanguage: '언어 변경',
+      },
       navigation: {
         dashboard: '대시보드',
         customers: '고객 관리',
@@ -166,8 +179,9 @@ export const useTranslation = () => {
         profile: '프로필',
       },
       sidebar: {
-        companyName: 'CRM 시스템',
-        subTitle: '고객 관계 관리',
+        companyName: 'LN Partners',
+        subTitle: '그룹웨어',
+        menuTitle: '메뉴',
       },
       // Main navigation items
       dashboard: '대시보드',
@@ -361,6 +375,19 @@ export const useTranslation = () => {
         success: 'Success',
         failed: 'Failed',
       },
+      header: {
+        notifications: 'Notifications',
+        profile: 'Profile',
+        settings: 'Settings',
+        logout: 'Logout',
+        search: {
+          placeholder: 'Search...',
+        },
+        menu: 'Menu',
+        toggleSidebar: 'Toggle Sidebar',
+        toggleTheme: 'Toggle Theme',
+        toggleLanguage: 'Change Language',
+      },
       navigation: {
         dashboard: 'Dashboard',
         customers: 'Customers',
@@ -374,8 +401,9 @@ export const useTranslation = () => {
         profile: 'Profile',
       },
       sidebar: {
-        companyName: 'CRM System',
-        subTitle: 'Customer Relationship Management',
+        companyName: 'LN Partners',
+        subTitle: 'Groupware',
+        menuTitle: 'Menu',
       },
       // Main navigation items
       dashboard: 'Dashboard',
@@ -569,6 +597,19 @@ export const useTranslation = () => {
         success: 'Thành công',
         failed: 'Thất bại',
       },
+      header: {
+        notifications: 'Thông báo',
+        profile: 'Hồ sơ',
+        settings: 'Cài đặt',
+        logout: 'Đăng xuất',
+        search: {
+          placeholder: 'Tìm kiếm...',
+        },
+        menu: 'Menu',
+        toggleSidebar: 'Chuyển đổi thanh bên',
+        toggleTheme: 'Thay đổi chủ đề',
+        toggleLanguage: 'Thay đổi ngôn ngữ',
+      },
       navigation: {
         dashboard: 'Bảng điều khiển',
         customers: 'Khách hàng',
@@ -582,8 +623,9 @@ export const useTranslation = () => {
         profile: 'Hồ sơ',
       },
       sidebar: {
-        companyName: 'Hệ thống CRM',
-        subTitle: 'Quản lý quan hệ khách hàng',
+        companyName: 'LN Partners',
+        subTitle: 'Groupware',
+        menuTitle: 'Menu',
       },
       // Main navigation items
       dashboard: 'Bảng điều khiển',
