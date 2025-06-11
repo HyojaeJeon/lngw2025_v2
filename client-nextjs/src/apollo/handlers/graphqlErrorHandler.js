@@ -2,7 +2,7 @@
 
 import { notifyError, notifyWarning } from '../../utils/notifications.js';
 
-export const handleGraphQLError = (graphQLErrors, lang = 'ko') => {
+export const handleGraphQLErrors = (graphQLErrors, lang = 'ko') => {
   if (!graphQLErrors || !Array.isArray(graphQLErrors)) {
     return;
   }
@@ -64,4 +64,3 @@ export const handleGraphQLError = (graphQLErrors, lang = 'ko') => {
     }
   });
 };
-export { handleGraphQLErrors };
