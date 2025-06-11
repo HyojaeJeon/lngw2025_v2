@@ -66,7 +66,6 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-// 3. useLanguage 훅 (언어 정보 및 변경) - 삭제됨 (더 이상 사용되지 않음)
 
 // 4. useTranslation 훅 (번역 기능 전용)
 export const useTranslation = () => {
