@@ -39,7 +39,7 @@
     "password": "Password",
     "rememberMe": "Remember me",
     "submit": "Sign In",
-    "loading": "Signing in...",
+    "loading": "Loading...",
     "success": "Login successful",
     "success.description": "Redirecting to dashboard",
     "error": "Login failed",

@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 
 export default function Error({ error, reset }) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     console.error("Error:", error);

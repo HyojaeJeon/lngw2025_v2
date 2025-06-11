@@ -127,20 +127,20 @@ export const useLocaleFormat = () => {
   // 숫자 포맷팅
   const formatNumber = useCallback((number, options = {}) => {
     if (number === null || number === undefined || isNaN(number)) return "";
-    
+
     const locale = currentLanguage === "ko" ? "ko-KR" : 
                    currentLanguage === "vi" ? "vi-VN" : "en-US";
-    
+
     return new Intl.NumberFormat(locale, options).format(number);
   }, [currentLanguage]);
 
   // 통화 포맷팅
   const formatCurrency = useCallback((amount, currencyCode = "VND", options = {}) => {
     if (amount === null || amount === undefined || isNaN(amount)) return "";
-    
+
     const locale = currentLanguage === "ko" ? "ko-KR" : 
                    currentLanguage === "vi" ? "vi-VN" : "en-US";
-    
+
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currencyCode,
@@ -151,10 +151,10 @@ export const useLocaleFormat = () => {
   // 날짜 포맷팅
   const formatDate = useCallback((date, options = {}) => {
     if (!date) return "";
-    
+
     const locale = currentLanguage === "ko" ? "ko-KR" : 
                    currentLanguage === "vi" ? "vi-VN" : "en-US";
-    
+
     return new Intl.DateTimeFormat(locale, options).format(new Date(date));
   }, [currentLanguage]);
 
