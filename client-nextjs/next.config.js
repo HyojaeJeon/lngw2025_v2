@@ -24,16 +24,53 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // API 라우트 프록시 설정
+  // Replit 환경에서의 최적화 설정
+  experimental: {
+    // 빠른 새로고침 활성화
+    forceSwcTransforms: true,
+  },
+  
+  // 이미지 최적화 설정
+  images: {
+    domains: ['localhost'],
+    unoptimized: process.env.REPLIT ? true : false,
+  },
+  
+  // API 라우트 프록시 설정 (선택적 사용)
   async rewrites() {
+    // Replit 환경에서는 프록시 사용하지 않음
+    if (process.env.REPLIT) {
+      return [];
+    }
+    
+    // 로컬 개발 환경에서만 프록시 사용
     return [
       {
         source: "/api/:path*",
-        destination: `http://0.0.0.0:${process.env.SERVER_PORT || 5000}/api/:path*`,
+        destination: `http://localhost:${process.env.SERVER_PORT || 5000}/api/:path*`,
       },
       {
         source: "/graphql",
-        destination: `http://0.0.0.0:${process.env.SERVER_PORT || 5000}/graphql`,
+        destination: `http://localhost:${process.env.SERVER_PORT || 5000}/graphql`,
+      },
+    ];
+  },
+  
+  // 개발 환경 설정
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
       },
     ];
   },

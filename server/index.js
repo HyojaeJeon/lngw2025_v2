@@ -31,23 +31,8 @@ const getLanguageFromHeaders = (headers) => {
   return "en"; // 지원하지 않는 언어일 경우 영어로 대체
 };
 
-if (process.env.NODE_ENV === "production") {
-  // Docker 컨테이너 내부에서 윈도우 호스트 MySQL에 연결할 때
-  dbHost = "host.docker.internal";
-}
-
-// 이 값이 실제 브라우저(Next.js 등)에서 보내는 Origin 과 정확히 일치해야 합니다.
-const whitelist =
-  process.env.NODE_ENV === "production"
-    ? ["https://gw.lnpartners.biz"]
-    : [
-        "http://localhost:3000",
-        "http://localhost:3002",
-        "http://localhost:3003",
-        "http://localhost:3001",
-        "http://localhost:3201",
-        "https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:3002",
-      ];
+// Replit 환경 감지
+const isReplit = process.env.REPLIT || process.env.REPLIT_DB_URL;
 
 // ──────────────────────────────────────────────────────────────────────────
 // 포트 정리 및 MySQL 시작 함수
@@ -76,11 +61,19 @@ async function killPortProcesses(port) {
   }
 }
 
-async function startMySQL() {
+async function initializeDatabase() {
   try {
+    console.log('데이터베이스 초기화 중...');
+    
+    // Replit 환경에서는 SQLite 사용
+    if (isReplit) {
+      console.log('Replit 환경에서 SQLite를 사용합니다.');
+      return;
+    }
+
+    // 로컬 환경에서만 MySQL 서비스 시작 시도
     console.log('MySQL/MariaDB 서비스를 시작합니다...');
     
-    // 다양한 MySQL/MariaDB 서비스 명령어 시도
     const commands = [
       'sudo service mysql start',
       'sudo service mariadb start',
@@ -102,7 +95,8 @@ async function startMySQL() {
     }
 
     if (!serviceStarted) {
-      console.log('MySQL 서비스 시작 시도가 모두 실패했습니다. MySQL이 이미 실행 중이거나 설치되지 않았을 수 있습니다.');
+      console.log('MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.');
+      return;
     }
 
     // 데이터베이스와 사용자 생성
@@ -119,24 +113,24 @@ async function startMySQL() {
     // MySQL 연결 대기
     await new Promise(resolve => setTimeout(resolve, 3000));
   } catch (error) {
-    console.error('MySQL 시작 오류:', error.message);
-    // MySQL 시작 실패해도 계속 진행 (SQLite 등 다른 DB 사용 가능)
-    console.log('MySQL 없이 진행합니다. SQLite를 사용할 수 있습니다.');
+    console.error('데이터베이스 초기화 오류:', error.message);
+    console.log('SQLite를 사용하여 계속 진행합니다.');
   }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// 4) DB 연결 & Express 서버 시작
+// Express 서버 시작
 // ──────────────────────────────────────────────────────────────────────────
 async function startServer() {
   const app = express();
 
   // 기본 라우트 (리디렉션)
   app.get("/", (req, res) => {
-    if (process.env.REPLIT_DB_URL || process.env.REPLIT) {
-      return res.redirect(
-        "https://d00e8e41-73e1-4600-9cfd-aa4ac3896194-00-2bayp6iaukste.spock.replit.dev:3002/",
-      );
+    if (isReplit) {
+      // Replit 환경에서는 현재 호스트의 3000 포트로 리디렉션
+      const host = req.get('host');
+      const redirectUrl = `https://${host.replace(':80', '')}:3000/`;
+      return res.redirect(redirectUrl);
     }
 
     if (process.env.NODE_ENV !== "production") {
@@ -152,13 +146,18 @@ async function startServer() {
   app.use(
     cors({
       origin: function (origin, callback) {
-        // 개발 환경에서는 모든 origin 허용
-        if (process.env.NODE_ENV === "development") {
+        // 개발 환경이나 Replit 환경에서는 모든 origin 허용
+        if (process.env.NODE_ENV === "development" || isReplit) {
+          return callback(null, true);
+        }
+
+        // Origin이 없는 경우 (모바일 앱, Postman 등)
+        if (!origin) {
           return callback(null, true);
         }
 
         // Replit 도메인 패턴 허용
-        if (!origin || origin.includes("replit.dev") || origin.includes("localhost")) {
+        if (origin.includes("replit.dev") || origin.includes("localhost")) {
           return callback(null, true);
         }
 
@@ -176,6 +175,7 @@ async function startServer() {
           return callback(null, true);
         }
 
+        console.log(`CORS 차단된 origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       },
       credentials: true,
@@ -264,58 +264,58 @@ async function startServer() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 3) “/” 기본 라우트 및 헬스체크
+  // 헬스체크 엔드포인트
   // ──────────────────────────────────────────────────────────────────────────
   const PORT = process.env.PORT || 5000;
 
   app.get("/health", (req, res) => {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
+    res.json({ 
+      status: "OK", 
+      timestamp: new Date().toISOString(),
+      environment: isReplit ? "replit" : "local",
+      port: PORT
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 4) DB 연결 & Express 서버 시작
+  // 서버 시작
   // ──────────────────────────────────────────────────────────────────────────
   try {
-    // 서버 시작 전에 포트 정리 및 MySQL 시작
+    // 서버 시작 전에 포트 정리 및 데이터베이스 초기화
     await killPortProcesses(PORT);
-    await startMySQL();
+    await initializeDatabase();
 
     console.log("Connecting to database...");
     await models.sequelize.authenticate();
     console.log("Database connection established successfully.");
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development" || isReplit) {
       console.log("Syncing database...");
       await models.syncDatabase();
       console.log("Database synced successfully.");
     }
 
-    // 서버 시작 전 포트 확인 및 정리
+    // 서버 시작
     const server_instance = app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
-      console.log(
-        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-      );
+      console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`);
+      if (isReplit) {
+        console.log(`🌍 Replit 환경에서 실행 중`);
+      }
       if (process.env.APOLLO_PLAYGROUND === "true") {
-        console.log(
-          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-        );
+        console.log(`🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`);
       }
     });
 
     // 오류 처리
     server_instance.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        console.log(
-          `포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`,
-        );
+        console.log(`포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`);
         const newPort = PORT + 1;
         console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
         app.listen(newPort, "0.0.0.0", () => {
           console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
-          console.log(
-            `🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`,
-          );
+          console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`);
         });
       } else {
         console.error("서버 시작 오류:", err);

@@ -59,16 +59,16 @@ args = "sleep 8"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd client-nextjs && npm run dev -- --port 3002"
-
-[[ports]]
-localPort = 3000
-externalPort = 3002
-
-[[ports]]
-localPort = 3306
-externalPort = 3000
+args = "cd client-nextjs && npm run dev -- --port 3000"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
+localPort = 3306
+externalPort = 3306

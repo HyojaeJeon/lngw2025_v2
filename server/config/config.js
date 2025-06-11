@@ -1,9 +1,10 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Replit 환경 감지
+const isReplit = process.env.REPLIT || process.env.REPLIT_DB_URL;
+
 const commonConfig = {
-  dialect: "mysql",
-  dialectModule: require('mysql2'),
   timezone: process.env.DB_TIMEZONE || "+09:00",
   logging: process.env.NODE_ENV === "development" ? console.log : false,
   pool: { 
@@ -26,21 +27,39 @@ const commonConfig = {
   },
 };
 
+// SQLite 설정 (Replit 환경)
+const sqliteConfig = {
+  dialect: "sqlite",
+  storage: "./database.sqlite",
+  ...commonConfig
+};
+
+// MySQL 설정 (로컬 환경)
+const mysqlConfig = {
+  dialect: "mysql",
+  dialectModule: require('mysql2'),
+  ...commonConfig
+};
+
 module.exports = {
-  development: {
+  development: isReplit ? {
+    ...sqliteConfig
+  } : {
     username: process.env.DB_USER || "appuser",
     password: process.env.DB_PASSWORD || "gywo9988!@",
     database: process.env.DB_NAME || "lngw2025_db",
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || 3306,
-    ...commonConfig
+    ...mysqlConfig
   },
-  production: {
+  production: isReplit ? {
+    ...sqliteConfig
+  } : {
     username: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "lngw2025_db",
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || 3306,
-    ...commonConfig
+    ...mysqlConfig
   },
 };

@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -17,19 +16,31 @@ const getServerUrl = () => {
   if (typeof window !== "undefined") {
     // 클라이언트에서 실행될 때
     const origin = window.location.origin;
-    if (origin.includes("replit.dev")) {
-      // Replit 환경에서는 같은 도메인의 다른 포트 사용
-      return origin.replace(":3002", "") + "/graphql";
+    const hostname = window.location.hostname;
+    
+    // Replit 환경 감지
+    if (hostname.includes("replit.dev")) {
+      // Replit 환경에서는 현재 호스트의 포트 80(서버)으로 연결
+      const baseUrl = origin.replace(/:3000$/, ''); // 3000 포트 제거
+      return `${baseUrl}/graphql`;
     }
-    return "http://localhost:5000/graphql";
+    
+    // 로컬 개발 환경
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000/graphql";
+    }
+    
+    // 기본값
+    return `${origin}/graphql`;
   }
-  // 서버에서 실행될 때
+  
+  // 서버에서 실행될 때 (SSR)
   return "http://localhost:5000/graphql";
 };
 
 const httpLink = createHttpLink({
   uri: getServerUrl(),
-  credentials: "same-origin", // same-origin으로 변경
+  credentials: "include", // Replit에서 쿠키 전송을 위해 include로 변경
   headers: {
     "Content-Type": "application/json",
   },
@@ -85,12 +96,18 @@ const errorLink = onError(
       // CORS 오류 처리
       if (networkError.message && networkError.message.includes("CORS")) {
         console.error(
-          "CORS error detected. Please check server configuration.",
+          "CORS error detected. Server URL:",
+          getServerUrl()
+        );
+        console.error(
+          "Current origin:",
+          typeof window !== "undefined" ? window.location.origin : "SSR"
         );
       }
 
       if (networkError.statusCode === 401) {
         localStorage.removeItem("auth_token");
+        sessionStorage.removeItem("auth_token");
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
@@ -98,6 +115,12 @@ const errorLink = onError(
     }
   },
 );
+
+// Apollo Client 로깅 (개발 환경에서만)
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  console.log("Apollo Client Server URL:", getServerUrl());
+  console.log("Current origin:", window.location.origin);
+}
 
 export const apolloClient = new ApolloClient({
   link: from([errorLink, authLink, httpLink]),
@@ -122,9 +145,11 @@ export const apolloClient = new ApolloClient({
   defaultOptions: {
     watchQuery: {
       errorPolicy: "all",
+      fetchPolicy: "cache-and-network",
     },
     query: {
       errorPolicy: "all",
+      fetchPolicy: "cache-first",
     },
     mutate: {
       errorPolicy: "all",

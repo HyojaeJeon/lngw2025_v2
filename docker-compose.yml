@@ -1,5 +1,25 @@
 services:
   # ──────────────────────────────────────────────
+  # MySQL Database Service
+  # ──────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: lngw_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: lngw2025_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: gywo9988!@
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  # ──────────────────────────────────────────────
   # 1) app: Next.js + Express(동시 실행) + Webhook (포트 7000)
   # ──────────────────────────────────────────────
   app:
@@ -12,12 +32,18 @@ services:
       - HOST=0.0.0.0
       - PORT=3201
       - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_USER=appuser
+      - DB_PASSWORD=gywo9988!@
+      - DB_NAME=lngw2025_db
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "3201:3201"   # Next.js
-      - "5000:5000"   # Express
-      - "7000:7000"   # Webhook 서버
+      - "3201:3201" # Next.js
+      - "5000:5000" # Express
+      - "7000:7000" # Webhook 서버
+    depends_on:
+      - mysql
 
   # ──────────────────────────────────────────────
   # 2) nginx: HTTPS(SSL) 리버스 프록시
@@ -42,7 +68,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 
   # ──────────────────────────────────────────────
-  # 3) acme: Let’s Encrypt 기반 인증서 최초 발급
+  # 3) acme: Let's Encrypt 기반 인증서 최초 발급
   # ──────────────────────────────────────────────
   acme:
     image: neilpang/acme.sh
@@ -59,7 +85,7 @@ services:
       - "sh"
       - "-c"
       - |
-        # 1) Let’s Encrypt를 기본 CA로 설정
+        # 1) Let's Encrypt를 기본 CA로 설정
         acme.sh --set-default-ca --server letsencrypt
 
         # 2) 인증서 발급
