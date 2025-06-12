@@ -25,7 +25,7 @@
     "unknown": "Không xác định",
     "noPosition": "Không có chức vụ",
     "uploading": "Đang tải lên...",
-    "saving": "Đang lưu..."
+    "saving": "Đang lưu...",
   },
   "navigation": {
     "dashboard": "Bảng điều khiển",
@@ -270,12 +270,7 @@
     "unknown": "Không rõ",
     "noPosition": "Không có chức vụ"
   },
-  "profile": {
-    "settings": "Cài đặt hồ sơ",
-    "myProfile": "Hồ sơ của tôi",
-    "account": "Tài khoản",
-    "personalInfo": "Thông tin cá nhân"
-  },
+
   "marketing": {
     "title": "Marketing",
     "overview": "Tổng quan Marketing",
@@ -306,6 +301,104 @@
     "settings": "Cài đặt hồ sơ",
     "myProfile": "Hồ sơ của tôi",
     "account": "Tài khoản",
-    "personalInfo": "Thông tin cá nhân"
+    "personalInfo": "Thông tin cá nhân",
+  }
+  "address": {
+    "selectProvince": "Chọn Tỉnh/Thành phố",
+    "selectDistrict": "Chọn Quận/Huyện",
+    "selectWard": "Chọn Phường/Xã",
+    "detailAddress": "Nhập địa chỉ chi tiết"
+  },
+  "search": {
+    "salesPerson": "Tìm kiếm nhân viên kinh doanh..."
+  },
+  "image": {
+    "maxLimit": "Chỉ có thể tải lên tối đa 5 hình ảnh.",
+    "uploadError": "Đã xảy ra lỗi trong quá trình tải lên hình ảnh.",
+    "add": "Thêm hình ảnh"
+  },
+  "contact": {
+    "person": "Người phụ trách",
+    "profileImage": "Ảnh đại diện",
+    "name": "Tên",
+    "namePlaceholder": "Tên người phụ trách",
+    "department": "Phòng ban",
+    "departmentPlaceholder": "Tên phòng ban",
+    "position": "Chức vụ",
+    "positionPlaceholder": "Chức vụ",
+    "phone": "Số điện thoại",
+    "phonePlaceholder": "Số điện thoại",
+    "email": "Email",
+    "emailPlaceholder": "Email",
+    "birthDate": "Ngày sinh"
+  },
+  "year": "Năm",
+  "month": "Tháng",
+  "day": "Ngày",
+  "customer": {
+    "add": {
+        "title": "Thêm khách hàng mới",
+        "description": "Vui lòng nhập thông tin công ty và người phụ trách"
+    },
+    "addDescription": "Đăng ký thông tin khách hàng mới",
+    "customerDetails": "Chi tiết khách hàng",
+    "companyNamePlaceholder": "Nhập tên công ty",
+    "contactPersonPlaceholder": "Nhập tên người liên hệ",
+    "phonePlaceholder": "Nhập số điện thoại",
+    "emailPlaceholder": "Nhập địa chỉ email",
+    "addressPlaceholder": "Nhập địa chỉ",
+    "industry": "Ngành nghề",
+    "industryPlaceholder": "Nhập ngành nghề",
+    "companyType": "Loại hình công ty",
+    "selectCompanyType": "Chọn loại hình công ty",
+    "customerGrade": "Hạng khách hàng",
+    "assignedUser": "Người phụ trách",
+    "selectAssignedUser": "Chọn người phụ trách",
+    "basicInfo": "Thông tin cơ bản",
+    "socialMedia": "Mạng xã hội",
+    "profileImage": "Ảnh đại diện công ty",
+    "facilityImages": "Ảnh cơ sở vật chất",
+    "validation": {
+        "requiredFields": "Vui lòng điền vào các trường bắt buộc"
+    },
+    "messages": {
+        "createSuccess": "Tạo khách hàng thành công",
+        "createError": "Đã xảy ra lỗi khi tạo khách hàng"
+    },
+    "gradeSelect": "Chọn hạng khách hàng",
+    "grade": {
+        "vip": "Hạng A (VIP)",
+        "excellent": "Hạng B (Xuất sắc)",
+        "normal": "Hạng C (Thông thường)",
+        "standard": "Hạng D (Tiêu chuẩn)",
+        "basic": "Hạng E (Cơ bản)",
+        "custom": "Nhập trực tiếp"
+    },
+    "gradeCustomPlaceholder": "Vui lòng nhập hạng khách hàng",
+    "assignedUserDescription": "Vui lòng chọn nhân viên kinh doanh phụ trách khách hàng này",
+    "imageUploadHint": "Đăng ký hình ảnh",
+    "imageUploadDescription": "Vui lòng đăng ký ảnh đại diện và ảnh cơ sở vật chất của công ty khách hàng",
+    "contactPersonDescription": "Vui lòng thêm người phụ trách của công ty khách hàng",
+    "addContactPerson": "Thêm người phụ trách"
+  },
+  "company": {
+    "info": {
+        "basic": "Thông tin cơ bản của công ty",
+        "description": "Vui lòng nhập thông tin cơ bản của công ty khách hàng"
+    },
+    "type": {
+        "small": "Doanh nghiệp vừa và nhỏ",
+        "large": "Doanh nghiệp lớn",
+        "startup": "Công ty khởi nghiệp",
+        "public": "Cơ quan nhà nước",
+        "nonprofit": "Tổ chức phi lợi nhuận",
+        "custom": "Nhập trực tiếp"
+    },
+    "companyTypeCustomPlaceholder": "Vui lòng nhập loại hình công ty"
+  },
+  "sales": {
+      "person": {
+        "placeholder": "Tìm kiếm và chọn nhân viên kinh doanh phụ trách"
+      }
   }
 }

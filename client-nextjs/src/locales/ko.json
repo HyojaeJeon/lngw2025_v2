@@ -105,7 +105,43 @@
     "contactPerson": "담당자",
     "phone": "전화번호",
     "address": "주소",
-    "status": "상태"
+    "status": "상태",
+    "title": "고객 관리",
+    "addCustomer": "고객 추가",
+    "addDescription": "새로운 고객 정보를 등록하세요",
+    "customerList": "고객 목록",
+    "customerDetails": "고객 상세정보",
+    "companyName": "회사명",
+    "companyNamePlaceholder": "회사명을 입력하세요",
+    "contactPerson": "담당자",
+    "contactPersonPlaceholder": "담당자명을 입력하세요",
+    "phone": "전화번호",
+    "phonePlaceholder": "전화번호를 입력하세요",
+    "email": "이메일",
+    "emailPlaceholder": "이메일을 입력하세요",
+    "address": "주소",
+    "addressPlaceholder": "주소를 입력하세요",
+    "industry": "업종",
+    "industryPlaceholder": "업종을 입력하세요",
+    "companyType": "회사 유형",
+    "selectCompanyType": "회사 유형을 선택하세요",
+    "customerGrade": "고객 등급",
+    "assignedUser": "담당자",
+    "selectAssignedUser": "담당자를 선택하세요",
+    "status": "상태",
+    "basicInfo": "기본 정보",
+    "socialMedia": "소셜 미디어",
+    "profileImage": "프로필 이미지",
+    "profileImagePreview": "프로필 이미지 미리보기",
+    "uploadImage": "이미지 업로드",
+    "imageUploadHint": "JPG, PNG 파일만 업로드 가능합니다 (최대 1MB)",
+    "validation": {
+      "requiredFields": "필수 항목을 입력해주세요"
+    },
+    "messages": {
+      "createSuccess": "고객이 성공적으로 등록되었습니다",
+      "createError": "고객 등록 중 오류가 발생했습니다"
+    }
   },
   "sales": {
     "overview": "영업 현황",
@@ -252,44 +288,6 @@
       "descriptionKo": "한국어 설명"
     }
   },
-  "customers": {
-    "title": "고객 관리",
-    "addCustomer": "고객 추가",
-    "addDescription": "새로운 고객 정보를 등록하세요",
-    "customerList": "고객 목록",
-    "customerDetails": "고객 상세정보",
-    "companyName": "회사명",
-    "companyNamePlaceholder": "회사명을 입력하세요",
-    "contactPerson": "담당자",
-    "contactPersonPlaceholder": "담당자명을 입력하세요",
-    "phone": "전화번호",
-    "phonePlaceholder": "전화번호를 입력하세요",
-    "email": "이메일",
-    "emailPlaceholder": "이메일을 입력하세요",
-    "address": "주소",
-    "addressPlaceholder": "주소를 입력하세요",
-    "industry": "업종",
-    "industryPlaceholder": "업종을 입력하세요",
-    "companyType": "회사 유형",
-    "selectCompanyType": "회사 유형을 선택하세요",
-    "customerGrade": "고객 등급",
-    "assignedUser": "담당자",
-    "selectAssignedUser": "담당자를 선택하세요",
-    "status": "상태",
-    "basicInfo": "기본 정보",
-    "socialMedia": "소셜 미디어",
-    "profileImage": "프로필 이미지",
-    "profileImagePreview": "프로필 이미지 미리보기",
-    "uploadImage": "이미지 업로드",
-    "imageUploadHint": "JPG, PNG 파일만 업로드 가능합니다 (최대 1MB)",
-    "validation": {
-      "requiredFields": "필수 항목을 입력해주세요"
-    },
-    "messages": {
-      "createSuccess": "고객이 성공적으로 등록되었습니다",
-      "createError": "고객 등록 중 오류가 발생했습니다"
-    }
-  },
   "marketing": {
     "title": "마케팅",
     "campaigns": "캠페인",
@@ -298,12 +296,100 @@
     "planning": "기획",
     "budget": "예산",
     "trends": "트렌드",
-    "insights": "인사이트"
+    "insights": "인사이트",
+    "overview": "마케팅 현황",
+    "contentLibrary": "컨텐츠 라이브러리",
+    "planningProcess": "기획 프로세스",
+    "brandStrategy": "브랜드 전략",
+    "marketAnalysis": "시장 분석",
+    "campaignCalendar": "캠페인 캘린더",
+    "budgetExpense": "예산 지출",
+    "abtest": "A/B 테스트",
+    "engagement": "참여도 분석",
+    "influencerManagement": "인플루언서 관리",
+    "monitoring": "모니터링",
+    "settings": "마케팅 설정"
   },
-    "profile": {
+  "profile": {
     "settings": "프로필 설정",
     "myProfile": "내 프로필",
     "account": "계정",
     "personalInfo": "개인정보"
+  },
+  "address": {
+    "selectProvince": "도/시 선택",
+    "selectDistrict": "구/군 선택",
+    "selectWard": "동/읍/면 선택",
+    "detailAddress": "상세 주소를 입력하세요"
+  },
+  "search": {
+    "salesPerson": "담당자 검색..."
+  },
+  "image": {
+    "maxLimit": "최대 5개까지 업로드 가능합니다.",
+    "uploadError": "이미지 업로드 중 오류가 발생했습니다.",
+    "add": "이미지 추가"
+  },
+  "contact": {
+    "person": "담당자",
+    "profileImage": "프로필 이미지",
+    "name": "이름",
+    "namePlaceholder": "담당자 이름",
+    "department": "부서",
+    "departmentPlaceholder": "부서명",
+    "position": "직책",
+    "positionPlaceholder": "직책",
+    "phone": "전화번호",
+    "phonePlaceholder": "전화번호",
+    "email": "이메일",
+    "emailPlaceholder": "이메일",
+    "birthDate": "생년월일"
+  },
+  "year": "년",
+  "month": "월",
+  "day": "일",
+  "customer": {
+    "add": {
+      "title": "새로운 고객사 추가",
+      "description": "고객사 정보와 담당자 정보를 입력해 주세요"
+    },
+    "gradeSelect": "고객 등급 선택",
+    "grade": {
+      "vip": "A급 (VIP)",
+      "excellent": "B급 (우수)",
+      "normal": "C급 (일반)",
+      "standard": "D급 (표준)",
+      "basic": "E급 (기본)",
+      "custom": "직접입력"
+    },
+    "gradeCustomPlaceholder": "고객 등급을 입력하세요",
+    "assignedUserDescription": "이 고객사를 담당할 영업사원을 선택해 주세요",
+    "imageUploadHint": "이미지 등록",
+    "imageUploadDescription": "고객사의 프로필 이미지와 시설 사진을 등록해 주세요",
+    "facilityImages": "시설 사진",
+    "contactPersonDescription": "고객사의 담당자들을 추가해 주세요",
+    "addContactPerson": "담당자 추가",
+    "createSuccess": "고객사가 성공적으로 등록되었습니다.",
+    "createError": "고객사 등록 중 오류가 발생했습니다."
+  },
+  "company": {
+    "info": {
+      "basic": "기본 회사 정보",
+      "description": "고객사의 기본적인 정보를 입력해 주세요"
+    },
+    "type": {
+      "small": "중소기업",
+      "large": "대기업",
+      "startup": "스타트업",
+      "public": "공공기관",
+      "nonprofit": "비영리단체",
+      "custom": "직접입력"
+    },
+    "companyTypeCustomPlaceholder": "회사 유형을 입력하세요"
+  },
+  "sales": {
+    "person": {
+      "placeholder": "담당 영업사원을 검색하여 선택하세요"
+    }
   }
 }
