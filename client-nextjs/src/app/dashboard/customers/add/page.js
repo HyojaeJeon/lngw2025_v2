@@ -842,9 +842,10 @@ const ContactPersonForm = ({
             <select
               value={
                 contact.birthDate
-                  ? new Date(contact.birthDate).getFullYear()                  : ""
+                  ? new Date(contact.birthDate).getFullYear()
+                  : ""
               }
-              onChange{(e) => {
+              onChange={(e) => {
                 const year = e.target.value;
                 const month = contact.birthDate
                   ? new Date(contact.birthDate).getMonth() + 1
@@ -853,7 +854,7 @@ const ContactPersonForm = ({
                   ? new Date(contact.birthDate).getDate()
                   : 1;
                 if (year) {
-                  const newDate = newDate(year, month - 1, day)
+                  const newDate = new Date(year, month - 1, day)
                     .toISOString()
                     .split("T")[0];
                   updateContact(index, "birthDate", newDate);
