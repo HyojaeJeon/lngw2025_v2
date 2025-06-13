@@ -1126,23 +1126,30 @@ export default function AddCustomerPage() {
 
     try {
       // 주소 데이터 처리
-      let addressData = {};
-      if (typeof formData.address === 'object') {
-        addressData = {
-          city: formData.address.city,
-          district: formData.address.district,
-          province: formData.address.province,
-          detailAddress: formData.address.detailAddress,
-        };
-      } else {
-        addressData = { address: formData.address };
+      let processedFormData = { ...formData };
+      
+      if (typeof formData.address === 'object' && formData.address) {
+        // 주소 객체를 문자열로 변환
+        const addressParts = [
+          formData.address.city,
+          formData.address.district,
+          formData.address.province,
+          formData.address.detailAddress
+        ].filter(part => part && part.trim() !== '');
+        
+        processedFormData.address = addressParts.join(' ').trim();
+        
+        // 개별 주소 필드도 함께 전송 (백엔드에서 지원하는 경우)
+        processedFormData.city = formData.address.city || '';
+        processedFormData.district = formData.address.district || '';
+        processedFormData.province = formData.address.province || '';
+        processedFormData.detailAddress = formData.address.detailAddress || '';
       }
 
       const result = await createCustomer({
         variables: {
           input: {
-            ...formData,
-            ...addressData,
+            ...processedFormData,
             contacts: formData.contacts.map(contact => ({
               ...contact,
               birthDate: contact.birthDate ? new Date(contact.birthDate).toISOString() : null
