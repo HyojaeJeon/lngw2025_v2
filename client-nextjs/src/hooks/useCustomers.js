@@ -1,19 +1,21 @@
 
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import { USERS_QUERY, CREATE_CUSTOMER_MUTATION, CHECK_COMPANY_NAME_QUERY } from "../lib/graphql/customerOperations";
 import { useTranslation } from "./useLanguage";
 
 export function useUsers(search = "", limit = 10, offset = 0) {
-  const { loading, data, error, refetch } = useQuery(USERS_QUERY, {
+  const { loading, data, error, refetch, fetchMore } = useQuery(USERS_QUERY, {
     variables: { limit, offset, search },
-    errorPolicy: 'all'
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network'
   });
 
   return {
     users: data?.users || [],
     loading,
     error,
-    refetch
+    refetch,
+    fetchMore
   };
 }
 
@@ -24,22 +26,20 @@ export function useCreateCustomer() {
     errorPolicy: 'all'
   });
 
-  const createCustomer = async (input) => {
+  const createCustomer = async (variables) => {
     try {
-      const result = await createCustomerMutation({
-        variables: { input }
-      });
+      const result = await createCustomerMutation(variables);
       return {
         success: true,
         data: result.data?.createCustomer,
-        message: t("customers.messages.createSuccess")
+        message: t("customers.messages.createSuccess") || "고객사가 성공적으로 등록되었습니다."
       };
     } catch (err) {
       console.error("Create customer error:", err);
       return {
         success: false,
         error: err,
-        message: t("customers.messages.createError")
+        message: t("customers.messages.createError") || "고객사 등록 중 오류가 발생했습니다."
       };
     }
   };
@@ -53,13 +53,13 @@ export function useCreateCustomer() {
 }
 
 export function useCheckCompanyName() {
-  const [checkCompanyName, { loading, data, error }] = useMutation(CHECK_COMPANY_NAME_QUERY, {
+  const [checkCompanyNameQuery, { loading, data, error }] = useLazyQuery(CHECK_COMPANY_NAME_QUERY, {
     errorPolicy: 'all'
   });
 
   const checkName = async (name) => {
     try {
-      const result = await checkCompanyName({
+      const result = await checkCompanyNameQuery({
         variables: { name }
       });
       return result.data?.checkCompanyName;

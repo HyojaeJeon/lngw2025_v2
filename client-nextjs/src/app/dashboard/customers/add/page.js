@@ -986,7 +986,8 @@ export default function AddCustomerPage() {
     exists: false,
     message: "",
   });
-  const [checkCompanyName] = useLazyQuery(CHECK_COMPANY_NAME);
+  const { checkName } = useCheckCompanyName();
+  const { createCustomer, loading: createLoading } = useCreateCustomer();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -1003,8 +1004,6 @@ export default function AddCustomerPage() {
     contacts: [],
   });
 
-  const [createCustomer] = useMutation(CREATE_CUSTOMER);
-
   // Debounced company name validation
   const debouncedCheckCompanyName = useCallback(
     debounce(async (name) => {
@@ -1016,14 +1015,12 @@ export default function AddCustomerPage() {
       setCompanyNameCheck((prev) => ({ ...prev, checking: true }));
 
       try {
-        const { data } = await checkCompanyName({
-          variables: { name: name.trim() },
-        });
+        const result = await checkName(name.trim());
 
         setCompanyNameCheck({
           checking: false,
-          exists: data.checkCompanyName.exists,
-          message: data.checkCompanyName.message,
+          exists: result.exists,
+          message: result.message,
         });
       } catch (error) {
         console.error("Company name check error:", error);
@@ -1109,7 +1106,9 @@ export default function AddCustomerPage() {
     if (!formData.industry.trim()) errors.push("업종은 필수입니다.");
     if (!formData.companyType.trim()) errors.push("회사유형은 필수입니다.");
     if (!formData.grade.trim()) errors.push("고객등급은 필수입니다.");
-    if (!formData.address.trim()) errors.push("주소는 필수입니다.");
+    if (!formData.address || (typeof formData.address === 'object' && !formData.address.detailAddress)) {
+      errors.push("주소는 필수입니다.");
+    }
     if (formData.contacts.length === 0)
       errors.push("담당자는 최소 1명 필요합니다.");
 
@@ -1126,28 +1125,42 @@ export default function AddCustomerPage() {
     setIsSubmitting(true);
 
     try {
-      const { data } = await createCustomer({
+      // 주소 데이터 처리
+      let addressData = {};
+      if (typeof formData.address === 'object') {
+        addressData = {
+          city: formData.address.city,
+          district: formData.address.district,
+          province: formData.address.province,
+          detailAddress: formData.address.detailAddress,
+        };
+      } else {
+        addressData = { address: formData.address };
+      }
+
+      const result = await createCustomer({
         variables: {
           input: {
             ...formData,
-            companyType: formData.companyType,
-            grade: formData.grade,
-            city: formData.address.city,
-            district: formData.address.district,
-            province: formData.address.province,
-            detailAddress: formData.address.detailAddress,
+            ...addressData,
+            contacts: formData.contacts.map(contact => ({
+              ...contact,
+              birthDate: contact.birthDate ? new Date(contact.birthDate).toISOString() : null
+            }))
           },
         },
       });
 
-      console.log("Customer created:", data);
-      alert(
-        t("customer.createSuccess") || "고객사가 성공적으로 등록되었습니다.",
-      );
-      router.push("/dashboard/customers");
+      if (result.success) {
+        console.log("Customer created:", result.data);
+        alert(result.message);
+        router.push("/dashboard/customers");
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error) {
       console.error("Customer creation error:", error);
-      alert(t("customer.createError") || "고객사 등록 중 오류가 발생했습니다.");
+      alert(error.message || "고객사 등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1500,10 +1513,10 @@ export default function AddCustomerPage() {
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || createLoading}
               className="px-8 py-3 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg disabled:opacity-50"
             >
-              {isSubmitting
+              {(isSubmitting || createLoading)
                 ? t("common.saving") || "등록 중..."
                 : t("customers.addCustomer") || "고객사 등록"}
             </Button>

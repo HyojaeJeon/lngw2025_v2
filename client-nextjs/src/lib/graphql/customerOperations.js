@@ -7,8 +7,9 @@ export const USERS_QUERY = gql`
       id
       name
       email
+      phoneNumber
+      department
       position
-      avatar
     }
   }
 `;
@@ -26,11 +27,37 @@ export const CREATE_CUSTOMER_MUTATION = gql`
       grade
       address
       assignedUserId
+      assignedUser {
+        id
+        name
+        email
+        department
+        position
+      }
       status
       profileImage
       facebook
       tiktok
       instagram
+      contacts {
+        id
+        name
+        department
+        position
+        phone
+        email
+        birthDate
+        facebook
+        tiktok
+        instagram
+        profileImage
+      }
+      facilityImages {
+        id
+        imageUrl
+        description
+        sortOrder
+      }
       createdAt
       updatedAt
     }
