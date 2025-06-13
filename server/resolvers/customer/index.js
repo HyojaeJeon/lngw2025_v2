@@ -206,16 +206,19 @@ const customerResolvers = {
           throw createError("COMPANY_NAME_EXISTS", lang);
         }
 
-        // 주소 정보를 address 필드로 통합
-        let fullAddress = "";
+        // 주소 정보 처리
+        let fullAddress = customerData.address || "";
+        
+        // 개별 주소 필드가 있는 경우 통합
         if (city || district || province || detailAddress) {
-          fullAddress = [city, district, province, detailAddress].filter(Boolean).join(" ");
+          const addressParts = [city, district, province, detailAddress].filter(part => part && part.trim() !== '');
+          fullAddress = addressParts.join(' ').trim();
         }
 
         const customer = await models.Customer.create(
           {
             ...customerData,
-            address: fullAddress || customerData.address,
+            address: fullAddress,
             createdBy: user.id,
           },
           { transaction }

@@ -845,7 +845,9 @@ const ContactPersonForm = ({
                   : ""
               }
               onChange={(e) => {
-                const year = e.target.value;
+                const year =contact.birthDate
+                  ? new Date(contact.birthDate).getFullYear()
+                  : "";
                 const month = contact.birthDate
                                     ? new Date(contact.birthDate).getMonth() + 1
                   : 1;
@@ -1127,7 +1129,7 @@ export default function AddCustomerPage() {
     try {
       // 주소 데이터 처리
       let processedFormData = { ...formData };
-      
+
       if (typeof formData.address === 'object' && formData.address) {
         // 주소 객체를 문자열로 변환
         const addressParts = [
@@ -1136,9 +1138,9 @@ export default function AddCustomerPage() {
           formData.address.province,
           formData.address.detailAddress
         ].filter(part => part && part.trim() !== '');
-        
+
         processedFormData.address = addressParts.join(' ').trim();
-        
+
         // 개별 주소 필드도 함께 전송 (백엔드에서 지원하는 경우)
         processedFormData.city = formData.address.city || '';
         processedFormData.district = formData.address.district || '';
