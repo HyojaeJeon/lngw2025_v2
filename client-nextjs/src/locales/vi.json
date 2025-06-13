@@ -1,6 +1,6 @@
 {
   "common": {
-    "loading": "Đang tải"",
+    "loading": "Đang tải",
     "save": "Lưu",
     "cancel": "Hủy",
     "delete": "Xóa",
@@ -393,6 +393,54 @@
       "revenue": "Quản lý doanh thu",
       "accounting": "Quản lý kế toán",
       "settings": "Cài đặt hệ thống"
+    }
+  },
+  "auditLogs": {
+    "title": "Nhật ký kiểm toán",
+    "description": "Theo dõi và quản lý hoạt động hệ thống và hành vi người dùng",
+    "logs": "Nhật ký kiểm toán",
+    "analytics": "Phân tích & Thống kê",
+    "settings": "Cài đặt nhật ký",
+    "todayLogs": "Nhật ký hôm nay",
+    "failedActions": "Hành động thất bại",
+    "highRiskActions": "Hành động rủi ro cao",
+    "activeUsers": "Người dùng hoạt động",
+    "exportLogs": "Xuất",
+    "refreshLogs": "Làm mới",
+    "searchPlaceholder": "Tìm kiếm người dùng, hành động, tài nguyên...",
+    "dateRanges": {
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "week": "7 ngày qua",
+      "month": "30 ngày qua",
+      "custom": "Tùy chỉnh"
+    },
+    "categories": {
+      "all": "Tất cả danh mục",
+      "authentication": "Xác thực",
+      "customer": "Quản lý khách hàng",
+      "system": "Hệ thống",
+      "data": "Dữ liệu",
+      "settings": "Cài đặt"
+    },
+    "table": {
+      "timestamp": "Thời gian",
+      "user": "Người dùng",
+      "action": "Hành động",
+      "resource": "Tài nguyên",
+      "status": "Trạng thái",
+      "riskLevel": "Mức rủi ro",
+      "actions": "Thao tác",
+      "details": "Xem chi tiết"
+    },
+    "status": {
+      "success": "Thành công",
+      "failed": "Thất bại"
+    },
+    "riskLevel": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao"
     }
   }
 }

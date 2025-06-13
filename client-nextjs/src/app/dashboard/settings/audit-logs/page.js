@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { useTranslation } from "@/hooks/useLanguage.js";
 import {
@@ -101,21 +99,21 @@ export default function AuditLogsPage() {
     { id: "settings", name: "로그 설정", icon: Settings },
   ];
 
-  const categories = [
-    { value: "all", label: "전체 카테고리" },
-    { value: "authentication", label: "인증" },
-    { value: "customer", label: "고객 관리" },
-    { value: "system", label: "시스템" },
-    { value: "data", label: "데이터" },
-    { value: "settings", label: "설정" },
+  const dateRanges = [
+    { value: "today", label: t("auditLogs.dateRanges.today") },
+    { value: "yesterday", label: t("auditLogs.dateRanges.yesterday") },
+    { value: "week", label: t("auditLogs.dateRanges.week") },
+    { value: "month", label: t("auditLogs.dateRanges.month") },
+    { value: "custom", label: t("auditLogs.dateRanges.custom") },
   ];
 
-  const dateRanges = [
-    { value: "today", label: "오늘" },
-    { value: "yesterday", label: "어제" },
-    { value: "week", label: "지난 7일" },
-    { value: "month", label: "지난 30일" },
-    { value: "custom", label: "사용자 정의" },
+  const categories = [
+    { value: "all", label: t("auditLogs.categories.all") },
+    { value: "authentication", label: t("auditLogs.categories.authentication") },
+    { value: "customer", label: t("auditLogs.categories.customer") },
+    { value: "system", label: t("auditLogs.categories.system") },
+    { value: "data", label: t("auditLogs.categories.data") },
+    { value: "settings", label: t("auditLogs.categories.settings") },
   ];
 
   const getStatusIcon = (status) => {
@@ -231,7 +229,7 @@ export default function AuditLogsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                실패한 액션
+                {t("auditLogs.failedActions")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {systemMetrics.failedActions}
@@ -244,7 +242,7 @@ export default function AuditLogsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                고위험 액션
+                {t("auditLogs.highRiskActions")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
                 {systemMetrics.highRiskActions}
@@ -257,7 +255,7 @@ export default function AuditLogsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                활성 사용자
+                {t("auditLogs.activeUsers")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {systemMetrics.uniqueUsers}

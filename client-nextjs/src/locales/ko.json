@@ -281,7 +281,52 @@
       "title": "데이터 관리"
     },
     "auditLogs": {
-      "title": "감사 로그"
+      "title": "감사 로그",
+      "description": "시스템 활동 및 사용자 행동을 추적하고 관리합니다",
+      "logs": "감사 로그",
+      "analytics": "분석 및 통계",
+      "settings": "로그 설정",
+      "todayLogs": "오늘 로그",
+      "failedActions": "실패한 액션",
+      "highRiskActions": "고위험 액션",
+      "activeUsers": "활성 사용자",
+      "exportLogs": "내보내기",
+      "refreshLogs": "새로고침",
+      "searchPlaceholder": "사용자, 액션, 리소스 검색...",
+      "dateRanges": {
+        "today": "오늘",
+        "yesterday": "어제",
+        "week": "지난 7일",
+        "month": "지난 30일",
+        "custom": "사용자 정의"
+      },
+      "categories": {
+        "all": "전체 카테고리",
+        "authentication": "인증",
+        "customer": "고객 관리",
+        "system": "시스템",
+        "data": "데이터",
+        "settings": "설정"
+      },
+      "table": {
+        "timestamp": "시간",
+        "user": "사용자",
+        "action": "액션",
+        "resource": "리소스",
+        "status": "상태",
+        "riskLevel": "위험도",
+        "actions": "작업",
+        "details": "상세보기"
+      },
+      "status": {
+        "success": "성공",
+        "failed": "실패"
+      },
+      "riskLevel": {
+        "low": "낮음",
+        "medium": "보통",
+        "high": "높음"
+      }
     },
     "billing": {
       "title": "요금제"

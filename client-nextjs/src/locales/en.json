@@ -194,7 +194,52 @@
       "title": "Data Management"
     },
     "auditLogs": {
-      "title": "Audit Logs"
+      "title": "Audit Logs",
+      "description": "Track and manage system activities and user behaviors",
+      "logs": "Audit Logs",
+      "analytics": "Analytics & Statistics",
+      "settings": "Log Settings",
+      "todayLogs": "Today's Logs",
+      "failedActions": "Failed Actions",
+      "highRiskActions": "High Risk Actions",
+      "activeUsers": "Active Users",
+      "exportLogs": "Export",
+      "refreshLogs": "Refresh",
+      "searchPlaceholder": "Search users, actions, resources...",
+      "dateRanges": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "week": "Last 7 Days",
+        "month": "Last 30 Days",
+        "custom": "Custom"
+      },
+      "categories": {
+        "all": "All Categories",
+        "authentication": "Authentication",
+        "customer": "Customer Management",
+        "system": "System",
+        "data": "Data",
+        "settings": "Settings"
+      },
+      "table": {
+        "timestamp": "Timestamp",
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "status": "Status",
+        "riskLevel": "Risk Level",
+        "actions": "Actions",
+        "details": "View Details"
+      },
+      "status": {
+        "success": "Success",
+        "failed": "Failed"
+      },
+      "riskLevel": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
     },
     "billing": {
       "title": "Billing"
