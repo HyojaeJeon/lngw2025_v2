@@ -6,7 +6,7 @@ import {
   createHttpLink,
   from,
 } from "@apollo/client";
-import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+import { createUploadLink } from "apollo-upload-client";
 import { setContext } from "@apollo/client/link/context";
 import errorLink from "../apollo/errorLink";
 import { store } from "../store";
