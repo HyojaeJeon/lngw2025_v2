@@ -7,6 +7,7 @@
     "build": "cd client-nextjs && npm run build "
   },
   "dependencies": {
+    "apollo-upload-client": "^18.0.1",
     "autoprefixer": "^10.4.21",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",

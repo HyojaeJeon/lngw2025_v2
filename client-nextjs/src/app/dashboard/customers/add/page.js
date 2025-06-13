@@ -43,6 +43,12 @@ import {
   Save,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useLanguage.js";
+import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import { CustomSelect } from "@/components/common/CustomSelect.js";
+import CustomCategorySelect from "@/components/common/CustomCategorySelect.js";
+import { ImageUploader } from "@/components/common/ImageUploader.js";
+import { CustomCalendar } from "@/components/common/CustomCalendar.js";
+import { useUsers, useCreateCustomer, useCheckCompanyName } from "@/hooks/useCustomers.js";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
@@ -839,7 +845,7 @@ const ContactPersonForm = ({
                   ? new Date(contact.birthDate).getFullYear()
                   : ""
               }
-              onChange={(e) => {
+              onChange{(e) => {
                 const year = e.target.value;
                 const month = contact.birthDate
                   ? new Date(contact.birthDate).getMonth() + 1
