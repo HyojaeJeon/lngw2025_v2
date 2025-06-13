@@ -1,0 +1,117 @@
+You are an expert React/Next.js frontend engineer using Apollo Client. The backend GraphQL schema and resolvers for Customer already exist and support these types:
+
+  input CustomerInput {
+    name: String!
+    contactName: String
+    email: String
+    phone: String
+    industry: String
+    companyType: String
+    grade: String
+    city: String
+    district: String
+    province: String
+    detailAddress: String
+    assignedUserId: ID
+    profileImage: String
+    facilityImages: [String!]
+    contacts: [ContactPersonInput!]
+  }
+
+  input ContactPersonInput {
+    name: String!
+    department: String
+    position: String
+    phone: String
+    email: String
+    birthDate: Date
+    profileImage: String
+  }
+
+Your task: without altering any existing file or folder structure, generate the complete client-side code to:
+
+1. **Apollo Client Upload Support**  
+   - In `client/lib/apolloClient.js`, configure `createUploadLink` from `apollo-upload-client` so that file inputs can be sent to the backend.
+
+2. **GraphQL Operations**  
+   - Create `client/graphql/customers.js` exporting:  
+     ```js
+     import { gql } from "@apollo/client";
+
+     export const USERS_QUERY = gql`
+       query Users($limit: Int, $offset: Int, $search: String) {
+         users(limit: $limit, offset: $offset, search: $search) {
+           id
+           name
+           email
+           position
+         }
+       }
+     `;
+
+     export const CREATE_CUSTOMER_MUTATION = gql`
+       mutation CreateCustomer($input: CustomerInput!) {
+         createCustomer(input: $input) {
+           id
+           name
+           phone
+           email
+         }
+       }
+     `;
+     ```
+
+3. **Custom React Hook**  
+   - In `client/hooks/useCustomers.js`, implement:  
+     ```js
+     import { useQuery, useMutation } from "@apollo/client";
+     import { USERS_QUERY, CREATE_CUSTOMER_MUTATION } from "../graphql/customers";
+
+     export function useUsers(search = "") { /* useQuery(USERS_QUERY, { variables }) */ }
+     export function useCreateCustomer() { /* useMutation(CREATE_CUSTOMER_MUTATION) */ }
+     ```
+
+4. **Form Integration**  
+   - In `client/pages/dashboard/customers/add.jsx` (or `.tsx`):  
+     - Import and call `useUsers` to populate the 담당 영업사원 select.  
+     - Import and call `useCreateCustomer` on form submit:  
+       ```js
+       const [createCustomer, { loading, error }] = useCreateCustomer();
+       const handleSubmit = async (formValues) => {
+         await createCustomer({
+           variables: {
+             input: {
+               name: formValues.companyName,
+               phone: formValues.phone,
+               email: formValues.email,
+               industry: formValues.industry,
+               companyType: formValues.companyType,
+               grade: formValues.customerGrade,
+               city: formValues.address.city,
+               district: formValues.address.district,
+               province: formValues.address.province,
+               detailAddress: formValues.address.detail,
+               assignedUserId: formValues.assignedUserId,
+               profileImage: formValues.profileImageFile,
+               facilityImages: formValues.facilityImageFiles,
+               contacts: formValues.contacts.map(c => ({
+                 name: c.name,
+                 department: c.department,
+                 position: c.position,
+                 phone: c.phone,
+                 email: c.email,
+                 birthDate: c.birthDate,
+                 profileImage: c.profileImageFile
+               }))
+             }
+           }
+         });
+         // on success: redirect or show message
+       };
+       ```
+     - Wire each UI input (텍스트, 드롭다운, 파일 업로드 컴포넌트) to the above variables.
+
+5. **Type Safety (optional)**  
+   - If using TypeScript, generate the corresponding `*.d.ts` or `graphql-codegen` types matching the backend inputs and payloads.
+
+Please output the complete contents of any new or modified files (`apolloClient.js`, `graphql/customers.js`, `hooks/useCustomers.js`, and the updated `/pages/dashboard/customers/add.js`) with no other changes to the project.   
