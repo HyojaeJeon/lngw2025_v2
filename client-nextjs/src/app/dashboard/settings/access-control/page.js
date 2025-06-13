@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -156,7 +155,7 @@ export default function AccessControlPage() {
       await updatePermissionMatrix({
         variables: { input }
       });
-      
+
       await refetchMatrix();
       setPermissionChanges({});
       alert("권한 매트릭스가 저장되었습니다.");
@@ -293,13 +292,18 @@ export default function AccessControlPage() {
                     모듈
                   </th>
                   {rolesData?.roles?.map((role) => (
-                    <th
-                      key={role.id}
-                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                    >
-                      <div className="flex items-center justify-center space-x-1">
-                        <div className={`w-2 h-2 rounded ${role.color}`}></div>
-                        <span>{role.name}</span>
+                    <th key={role.id} className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <div className="flex flex-col items-center space-y-2">
+                        <span className={`px-2 py-1 rounded text-white text-xs ${role.color}`}>
+                          {role.name}
+                        </span>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 bg-green-500 rounded" title={t("accessControl.read")}></div>
+                          <div className="w-3 h-3 bg-blue-500 rounded" title={t("accessControl.write")}></div>
+                          <div className="w-3 h-3 bg-red-500 rounded" title={t("accessControl.delete")}></div>
+                          <div className="w-3 h-3 bg-purple-500 rounded" title={t("accessControl.approve")}></div>
+                          <div className="w-3 h-3 bg-orange-500 rounded" title={t("accessControl.systemConfig")}></div>
+</div>
                       </div>
                     </th>
                   ))}
@@ -317,7 +321,7 @@ export default function AccessControlPage() {
                           {["canRead", "canWrite", "canDelete"].map((perm) => {
                             const currentValue = permissionChanges[moduleMatrix.module]?.[permission.roleId]?.[perm] 
                               ?? permission[perm];
-                            
+
                             return (
                               <button
                                 key={perm}
@@ -584,7 +588,7 @@ function RoleModal({ title, role, onClose, onSave, modules, colorOptions, t }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const permissions = modules.map(module => ({
       module: module.key,
       ...(formData.permissions[module.key] || {

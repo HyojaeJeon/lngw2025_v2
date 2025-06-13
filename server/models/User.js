@@ -154,7 +154,7 @@ module.exports = (sequelize, DataTypes) => {
     // Role 관계
     User.belongsTo(models.Role, {
       foreignKey: "roleId",
-      as: "roleInfo",
+      as: "role",
     });
   };
 

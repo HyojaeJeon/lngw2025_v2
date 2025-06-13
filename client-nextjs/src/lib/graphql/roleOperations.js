@@ -75,7 +75,7 @@ export const GET_USERS_WITH_ROLES = gql`
       email
       department
       position
-      roleInfo {
+      role {
         id
         name
         englishName
@@ -148,7 +148,7 @@ export const UPDATE_USER_ROLE = gql`
       email
       department
       position
-      roleInfo {
+      role {
         id
         name
         englishName
