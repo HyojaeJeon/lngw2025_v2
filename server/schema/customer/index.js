@@ -13,10 +13,6 @@ const customerSchemaExtensions = gql`
     companyType: String
     grade: String
     address: String
-    city: String
-    district: String
-    province: String
-    detailAddress: String
     assignedUserId: ID
     status: String
     contactDepartment: String

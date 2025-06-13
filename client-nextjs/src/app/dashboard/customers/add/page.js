@@ -177,12 +177,16 @@ const AddressSelector = ({ value, onChange }) => {
       }));
     }
 
-    setAddress((prev) => ({
-      ...prev,
-      city: selected.province?.name || "",
-      district: selected.district?.name || "",
-      province: selected.ward?.name || "",
-    }));
+    // 주소 정보 업데이트 및 상위 컴포넌트에 전달
+    const updatedAddress = {
+      city: type === "province" ? item.name : (selected.province?.name || ""),
+      district: type === "district" ? item.name : (selected.district?.name || ""),
+      province: type === "ward" ? item.name : (selected.ward?.name || ""),
+      detailAddress: address.detailAddress || "",
+    };
+
+    setAddress(updatedAddress);
+    onChange(updatedAddress);
   };
 
   const renderDropdown = (type, list, placeholder, ref) => (
@@ -845,9 +849,7 @@ const ContactPersonForm = ({
                   : ""
               }
               onChange={(e) => {
-                const year =contact.birthDate
-                  ? new Date(contact.birthDate).getFullYear()
-                  : "";
+                const year = e.target.value;
                 const month = contact.birthDate
                                     ? new Date(contact.birthDate).getMonth() + 1
                   : 1;
@@ -1130,8 +1132,8 @@ export default function AddCustomerPage() {
       // 주소 데이터 처리
       let processedFormData = { ...formData };
 
+      // 주소가 객체인 경우 문자열로 변환
       if (typeof formData.address === 'object' && formData.address) {
-        // 주소 객체를 문자열로 변환
         const addressParts = [
           formData.address.city,
           formData.address.district,
@@ -1139,13 +1141,19 @@ export default function AddCustomerPage() {
           formData.address.detailAddress
         ].filter(part => part && part.trim() !== '');
 
+        // 주소를 하나의 문자열로 변환
         processedFormData.address = addressParts.join(' ').trim();
+        
+        // 개별 주소 필드 제거 (백엔드 스키마에 맞춤)
+        delete processedFormData.city;
+        delete processedFormData.district;
+        delete processedFormData.province;
+        delete processedFormData.detailAddress;
+      }
 
-        // 개별 주소 필드도 함께 전송 (백엔드에서 지원하는 경우)
-        processedFormData.city = formData.address.city || '';
-        processedFormData.district = formData.address.district || '';
-        processedFormData.province = formData.address.province || '';
-        processedFormData.detailAddress = formData.address.detailAddress || '';
+      // 빈 주소인 경우 기본값 설정
+      if (!processedFormData.address || processedFormData.address.trim() === '') {
+        processedFormData.address = '';
       }
 
       const result = await createCustomer({

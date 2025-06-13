@@ -206,14 +206,8 @@ const customerResolvers = {
           throw createError("COMPANY_NAME_EXISTS", lang);
         }
 
-        // 주소 정보 처리
-        let fullAddress = customerData.address || "";
-        
-        // 개별 주소 필드가 있는 경우 통합
-        if (city || district || province || detailAddress) {
-          const addressParts = [city, district, province, detailAddress].filter(part => part && part.trim() !== '');
-          fullAddress = addressParts.join(' ').trim();
-        }
+        // 주소 정보 처리 - 이미 클라이언트에서 문자열로 변환됨
+        const fullAddress = customerData.address || "";
 
         const customer = await models.Customer.create(
           {
@@ -273,10 +267,10 @@ const customerResolvers = {
             },
             {
               model: models.CustomerImage,
-              as: "images",
+              as: "facilityImages",
+              order: [["sortOrder", "ASC"]],
             },
           ],
-          order: [[{ model: models.CustomerImage, as: "images" }, "sortOrder", "ASC"]],
         });
 
         return createdCustomer;
@@ -590,7 +584,7 @@ const customerResolvers = {
         order: [["createdAt", "ASC"]],
       });
     },
-    images: async (customer) => {
+    facilityImages: async (customer) => {
       return await models.CustomerImage.findAll({
         where: { customerId: customer.id },
         order: [
