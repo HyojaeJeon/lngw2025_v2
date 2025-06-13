@@ -149,7 +149,14 @@ export default function AccessControlPage() {
     try {
       const input = Object.keys(permissionChanges).map(module => ({
         module,
-        permissions: permissionChanges[module]
+        permissions: Object.keys(permissionChanges[module]).map(roleId => ({
+          roleId: parseInt(roleId),
+          canRead: permissionChanges[module][roleId].canRead || false,
+          canWrite: permissionChanges[module][roleId].canWrite || false,
+          canDelete: permissionChanges[module][roleId].canDelete || false,
+          canApprove: permissionChanges[module][roleId].canApprove || false,
+          canSystemConfig: permissionChanges[module][roleId].canSystemConfig || false,
+        }))
       }));
 
       await updatePermissionMatrix({
