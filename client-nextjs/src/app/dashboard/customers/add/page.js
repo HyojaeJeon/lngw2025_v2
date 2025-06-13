@@ -1031,7 +1031,7 @@ export default function AddCustomerPage() {
         });
       }
     }, 500),
-    [checkCompanyName],
+    [checkName],
   );
 
   const handleInputChange = (e) => {
