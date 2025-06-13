@@ -26,190 +26,10 @@
     "noPosition": "Không có chức vụ",
     "uploading": "Đang tải lên...",
     "saving": "Đang lưu...",
-  },
-  "navigation": {
-    "dashboard": "Bảng điều khiển",
-    "customers": "Quản lý khách hàng",
-    "sales": "Quản lý bán hàng",
-    "marketing": "Marketing",
-    "products": "Quản lý sản phẩm",
-    "employees": "Quản lý nhân viên",
-    "accounting": "Kế toán",
-    "revenue": "Quản lý doanh thu",
-    "settings": "Cài đặt",
-    "profile": "Hồ sơ"
-  },
-  "auth": {
-    "login": "Đăng nhập",
-    "logout": "Đăng xuất",
-    "register": "Đăng ký",
-    "email": "Email",
-    "password": "Mật khẩu",
-    "confirmPassword": "Xác nhận mật khẩu",
-    "forgotPassword": "Quên mật khẩu?",
-    "rememberMe": "Ghi nhớ đăng nhập"
-  },
-  "dashboard": {
-    "title": "Bảng điều khiển",
-    "overview": "Tổng quan",
-    "recentActivities": "Hoạt động gần đây",
-    "quickStats": "Thống kê nhanh",
-    "notifications": "Thông báo"
-  },
-  "customers": {
-    "title": "Quản lý khách hàng",
-    "addCustomer": "Thêm khách hàng",
-    "customerList": "Danh sách khách hàng",
-    "customerDetails": "Chi tiết khách hàng",
-    "companyName": "Tên công ty",
-    "contactPerson": "Người liên hệ",
-    "phone": "Điện thoại",
-    "address": "Địa chỉ",
-    "status": "Trạng thái"
-  },
-  "marketing": {
-    "title": "Marketing",
-    "overview": "Tổng quan Marketing",
-    "campaigns": "Chiến dịch",
-    "analytics": "Phân tích",
-    "content": "Quản lý nội dung",
-    "contentLibrary": "Thư viện nội dung",
-    "planningProcess": "Quy trình lập kế hoạch",
-    "brandStrategy": "Chiến lược thương hiệu",
-    "marketAnalysis": "Phân tích thị trường",
-    "campaignCalendar": "Lịch chiến dịch",
-    "budgetExpense": "Chi phí ngân sách",
-    "planning": "Lập kế hoạch",
-    "budget": "Ngân sách",
-    "trends": "Phân tích xu hướng",
-    "insights": "Thông tin chi tiết",
-    "abtest": "Kiểm tra A/B",
-    "engagement": "Phân tích tương tác",
-    "influencerManagement": "Quản lý influencer",
-    "monitoring": "Giám sát",
-    "settings": "Cài đặt Marketing"
-  },
-  "dashboard": {
-    "title": "Bảng Điều Khiển",
-    "description": "Xem và quản lý hiệu suất kinh doanh của bạn một cách tổng quan",
-    "totalCustomers": "Tổng Số Khách Hàng",
-    "activeOpportunities": "Cơ Hội Đang Hoạt Động",
-    "monthlyRevenue": "Doanh Thu Hàng Tháng",
-    "successRate": "Tỷ Lệ Thành Công",
-    "recentCustomers": "Khách Hàng Gần Đây",
-    "recentCustomers.description": "Kiểm tra các khách hàng được thêm gần đây",
-    "opportunities": "Cơ Hội",
-    "opportunities.description": "Quản lý các cơ hội bán hàng đang diễn ra"
-  },
-  "products": {
-    "title": "Quản Lý Sản Phẩm",
-    "subtitle": "Quản lý thông tin sản phẩm và theo dõi tồn kho",
-    "name": "Tên Sản Phẩm",
-    "modelName": "Tên Model",
-    "sku": "Mã Sản Phẩm",
-    "category": "Danh Mục",
-    "price": "Giá",
-    "consumerPrice": "Giá Người Tiêu Dùng",
-    "stock": "Tồn Kho",
-    "status": "Trạng Thái",
-    "models": "Số Lượng Model",
-    "actions": "Hành Động",
-    "list": "Danh Sách Sản Phẩm",
-    "addNew": "Thêm Sản Phẩm",
-    "active": "Hoạt Động",
-    "inactive": "Không Hoạt Động",
-    "discontinued": "Ngưng Sản Xuất",
-    "sold": "Đã Bán",
-    "soldQuantity": "Số Lượng Bán",
-    "noProducts": "Không có sản phẩm nào",
-    "confirmDelete": "Bạn có chắc chắn muốn xóa sản phẩm này?",
-    "filterByCategory": "Lọc Theo Danh Mục",
-    "searchPlaceholder": "Tìm kiếm theo tên sản phẩm, model, mã...",
-    "categories": {
-      "title": "Quản Lý Danh Mục",
-      "subtitle": "Quản lý danh mục sản phẩm",
-      "noCategories": "Không có danh mục nào",
-      "categoryNames": "Tên Danh Mục",
-      "nameKo": "Tên Tiếng Hàn",
-      "nameVi": "Tên Tiếng Việt",
-      "nameEnOptional": "Tên Tiếng Anh (Tùy Chọn)",
-      "descriptionsOptional": "Mô Tả (Tùy Chọn)",
-      "descriptionKo": "Mô Tả Tiếng Hàn"
-    }
-  },
-  "products": {
-    "title": "Quản Lý Sản Phẩm",
-    "subtitle": "Quản lý thông tin sản phẩm và theo dõi tồn kho",
-    "name": "Tên Sản Phẩm",
-    "modelName": "Tên Model",
-    "sku": "Mã Sản Phẩm",
-    "category": "Danh Mục",
-    "price": "Giá",
-    "consumerPrice": "Giá Người Tiêu Dùng",
-    "stock": "Tồn Kho",
-    "status": "Trạng Thái",
-    "models": "Số Lượng Model",
-    "actions": "Hành Động",
-    "list": "Danh Sách Sản Phẩm",
-    "addNew": "Thêm Sản Phẩm",
-    "active": "Hoạt Động",
-    "inactive": "Không Hoạt Động",
-    "discontinued": "Ngưng Sản Xuất",
-    "sold": "Đã Bán",
-    "soldQuantity": "Số Lượng Bán",
-    "noProducts": "Không có sản phẩm nào",
-    "confirmDelete": "Bạn có chắc chắn muốn xóa sản phẩm này?",
-    "filterByCategory": "Lọc Theo Danh Mục",
-    "searchPlaceholder": "Tìm kiếm theo tên sản phẩm, model, mã...",
-    "categories": {
-      "title": "Quản Lý Danh Mục",
-      "subtitle": "Quản lý danh mục sản phẩm",
-      "noCategories": "Không có danh mục nào",
-      "categoryNames": "Tên Danh Mục",
-      "nameKo": "Tên Tiếng Hàn",
-      "nameVi": "Tên Tiếng Việt",
-      "nameEnOptional": "Tên Tiếng Anh (Tùy Chọn)",
-      "descriptionsOptional": "Mô Tả (Tùy Chọn)",
-      "descriptionKo": "Mô Tả Tiếng Hàn"
-    }
-  },
-  "common": {
-    "save": "Lưu",
-    "cancel": "Hủy",
-    "edit": "Chỉnh Sửa",
-    "delete": "Xóa",
-    "add": "Thêm",
-    "search": "Tìm Kiếm",
-    "filter": "Lọc",
-    "loading": "Đang Tải...",
-    "error": "Lỗi",
-    "success": "Thành Công",
-    "confirm": "Xác Nhận",
-    "close": "Đóng",
-    "clear": "Xóa",
-    "total": "Tổng",
-    "count": "cái"
-  },
-  "common": {
-    "loading": "Đang tải...",
-    "error": "Đã xảy ra lỗi",
-    "success": "Thành công",
-    "cancel": "Hủy",
-    "confirm": "Xác nhận",
-    "save": "Lưu",
-    "delete": "Xóa",
-    "edit": "Sửa",
-    "add": "Thêm",
-    "search": "Tìm kiếm",
-    "filter": "Lọc",
     "sort": "Sắp xếp",
-    "export": "Xuất",
-    "import": "Nhập",
-    "refresh": "Làm mới",
     "back": "Quay lại",
     "next": "Tiếp",
     "previous": "Trước",
-    "close": "Đóng",
     "open": "Mở",
     "view": "Xem",
     "select": "Chọn",
@@ -217,16 +37,12 @@
     "deselectAll": "Bỏ chọn tất cả",
     "noData": "Không có dữ liệu",
     "noResults": "Không tìm thấy kết quả",
-    "total": "Tổng cộng",
     "subtotal": "Tổng phụ",
     "required": "Bắt buộc",
     "optional": "Tùy chọn",
-    "yes": "Có",
-    "no": "Không",
     "ok": "OK",
     "apply": "Áp dụng",
     "reset": "Đặt lại",
-    "clear": "Xóa",
     "submit": "Gửi",
     "send": "Gửi",
     "upload": "Tải lên",
@@ -264,13 +80,97 @@
     "completed": "Hoàn thành",
     "inProgress": "Đang tiến hành",
     "failed": "Thất bại",
-    "warning": "Cảnh báo",
-    "info": "Thông tin",
-    "unassigned": "Chưa phân công",
-    "unknown": "Không rõ",
-    "noPosition": "Không có chức vụ"
+    "unassigned": "Chưa phân công"
   },
-
+  "navigation": {
+    "dashboard": "Bảng điều khiển",
+    "customers": "Quản lý khách hàng",
+    "sales": "Quản lý bán hàng",
+    "marketing": "Marketing",
+    "products": "Quản lý sản phẩm",
+    "employees": "Quản lý nhân viên",
+    "accounting": "Kế toán",
+    "revenue": "Quản lý doanh thu",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "register": "Đăng ký",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "rememberMe": "Ghi nhớ đăng nhập"
+  },
+  "dashboard": {
+    "title": "Bảng Điều Khiển",
+    "description": "Xem và quản lý hiệu suất kinh doanh của bạn một cách tổng quan",
+    "totalCustomers": "Tổng Số Khách Hàng",
+    "activeOpportunities": "Cơ Hội Đang Hoạt Động",
+    "monthlyRevenue": "Doanh Thu Hàng Tháng",
+    "successRate": "Tỷ Lệ Thành Công",
+    "recentCustomers": "Khách Hàng Gần Đây",
+    "recentCustomers.description": "Kiểm tra các khách hàng được thêm gần đây",
+    "opportunities": "Cơ Hội",
+    "opportunities.description": "Quản lý các cơ hội bán hàng đang diễn ra",
+    "overview": "Tổng quan",
+    "recentActivities": "Hoạt động gần đây",
+    "quickStats": "Thống kê nhanh",
+    "notifications": "Thông báo"
+  },
+  "customers": {
+    "title": "Quản lý khách hàng",
+    "addCustomer": "Thêm khách hàng",
+    "customerList": "Danh sách khách hàng",
+    "customerDetails": "Chi tiết khách hàng",
+    "companyName": "Tên công ty",
+    "contactPerson": "Người liên hệ",
+    "phone": "Điện thoại",
+    "address": "Địa chỉ",
+    "status": "Trạng thái",
+    "addDescription": "Đăng ký thông tin khách hàng mới",
+    "companyNamePlaceholder": "Nhập tên công ty",
+    "contactPersonPlaceholder": "Nhập tên người liên hệ",
+    "phonePlaceholder": "Nhập số điện thoại",
+    "emailPlaceholder": "Nhập địa chỉ email",
+    "addressPlaceholder": "Nhập địa chỉ",
+    "industry": "Ngành nghề",
+    "industryPlaceholder": "Nhập ngành nghề",
+    "companyType": "Loại hình công ty",
+    "selectCompanyType": "Chọn loại hình công ty",
+    "customerGrade": "Hạng khách hàng",
+    "assignedUser": "Người phụ trách",
+    "selectAssignedUser": "Chọn người phụ trách",
+    "basicInfo": "Thông tin cơ bản",
+    "socialMedia": "Mạng xã hội",
+    "profileImage": "Ảnh đại diện công ty",
+    "facilityImages": "Ảnh cơ sở vật chất",
+    "validation": {
+      "requiredFields": "Vui lòng điền vào các trường bắt buộc"
+    },
+    "messages": {
+      "createSuccess": "Tạo khách hàng thành công",
+      "createError": "Đã xảy ra lỗi khi tạo khách hàng"
+    },
+    "gradeSelect": "Chọn hạng khách hàng",
+    "grade": {
+      "vip": "Hạng A (VIP)",
+      "excellent": "Hạng B (Xuất sắc)",
+      "normal": "Hạng C (Thông thường)",
+      "standard": "Hạng D (Tiêu chuẩn)",
+      "basic": "Hạng E (Cơ bản)",
+      "custom": "Nhập trực tiếp"
+    },
+    "gradeCustomPlaceholder": "Vui lòng nhập hạng khách hàng",
+    "assignedUserDescription": "Vui lòng chọn nhân viên kinh doanh phụ trách khách hàng này",
+    "imageUploadHint": "Đăng ký hình ảnh",
+    "imageUploadDescription": "Vui lòng đăng ký ảnh đại diện và ảnh cơ sở vật chất của công ty khách hàng",
+    "contactPersonDescription": "Vui lòng thêm người phụ trách của công ty khách hàng",
+    "addContactPerson": "Thêm người phụ trách",
+    "email": "Email"
+  },
   "marketing": {
     "title": "Marketing",
     "overview": "Tổng quan Marketing",
@@ -293,6 +193,40 @@
     "monitoring": "Giám sát",
     "settings": "Cài đặt Marketing"
   },
+  "products": {
+    "title": "Quản Lý Sản Phẩm",
+    "subtitle": "Quản lý thông tin sản phẩm và theo dõi tồn kho",
+    "name": "Tên Sản Phẩm",
+    "modelName": "Tên Model",
+    "sku": "Mã Sản Phẩm",
+    "category": "Danh Mục",
+    "price": "Giá",
+    "consumerPrice": "Giá Người Tiêu Dùng",
+    "stock": "Tồn Kho",
+    "status": "Trạng Thái",
+    "models": "Số Lượng Model",
+    "actions": "Hành Động",
+    "list": "Danh Sách Sản Phẩm",
+    "addNew": "Thêm Sản Phẩm",
+    "discontinued": "Ngưng Sản Xuất",
+    "sold": "Đã Bán",
+    "soldQuantity": "Số Lượng Bán",
+    "noProducts": "Không có sản phẩm nào",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa sản phẩm này?",
+    "filterByCategory": "Lọc Theo Danh Mục",
+    "searchPlaceholder": "Tìm kiếm theo tên sản phẩm, model, mã...",
+    "categories": {
+      "title": "Quản Lý Danh Mục",
+      "subtitle": "Quản lý danh mục sản phẩm",
+      "noCategories": "Không có danh mục nào",
+      "categoryNames": "Tên Danh Mục",
+      "nameKo": "Tên Tiếng Hàn",
+      "nameVi": "Tên Tiếng Việt",
+      "nameEnOptional": "Tên Tiếng Anh (Tùy Chọn)",
+      "descriptionsOptional": "Mô Tả (Tùy Chọn)",
+      "descriptionKo": "Mô Tả Tiếng Hàn"
+    }
+  },
   "sidebar": {
     "companyName": "LN Partners Groupware",
     "subTitle": "Phần mềm quản lý doanh nghiệp"
@@ -301,8 +235,8 @@
     "settings": "Cài đặt hồ sơ",
     "myProfile": "Hồ sơ của tôi",
     "account": "Tài khoản",
-    "personalInfo": "Thông tin cá nhân",
-  }
+    "personalInfo": "Thông tin cá nhân"
+  },
   "address": {
     "selectProvince": "Chọn Tỉnh/Thành phố",
     "selectDistrict": "Chọn Quận/Huyện",
@@ -337,8 +271,8 @@
   "day": "Ngày",
   "customer": {
     "add": {
-        "title": "Thêm khách hàng mới",
-        "description": "Vui lòng nhập thông tin công ty và người phụ trách"
+      "title": "Thêm khách hàng mới",
+      "description": "Vui lòng nhập thông tin công ty và người phụ trách"
     },
     "addDescription": "Đăng ký thông tin khách hàng mới",
     "customerDetails": "Chi tiết khách hàng",
@@ -359,20 +293,20 @@
     "profileImage": "Ảnh đại diện công ty",
     "facilityImages": "Ảnh cơ sở vật chất",
     "validation": {
-        "requiredFields": "Vui lòng điền vào các trường bắt buộc"
+      "requiredFields": "Vui lòng điền vào các trường bắt buộc"
     },
     "messages": {
-        "createSuccess": "Tạo khách hàng thành công",
-        "createError": "Đã xảy ra lỗi khi tạo khách hàng"
+      "createSuccess": "Tạo khách hàng thành công",
+      "createError": "Đã xảy ra lỗi khi tạo khách hàng"
     },
     "gradeSelect": "Chọn hạng khách hàng",
     "grade": {
-        "vip": "Hạng A (VIP)",
-        "excellent": "Hạng B (Xuất sắc)",
-        "normal": "Hạng C (Thông thường)",
-        "standard": "Hạng D (Tiêu chuẩn)",
-        "basic": "Hạng E (Cơ bản)",
-        "custom": "Nhập trực tiếp"
+      "vip": "Hạng A (VIP)",
+      "excellent": "Hạng B (Xuất sắc)",
+      "normal": "Hạng C (Thông thường)",
+      "standard": "Hạng D (Tiêu chuẩn)",
+      "basic": "Hạng E (Cơ bản)",
+      "custom": "Nhập trực tiếp"
     },
     "gradeCustomPlaceholder": "Vui lòng nhập hạng khách hàng",
     "assignedUserDescription": "Vui lòng chọn nhân viên kinh doanh phụ trách khách hàng này",
@@ -383,22 +317,22 @@
   },
   "company": {
     "info": {
-        "basic": "Thông tin cơ bản của công ty",
-        "description": "Vui lòng nhập thông tin cơ bản của công ty khách hàng"
+      "basic": "Thông tin cơ bản của công ty",
+      "description": "Vui lòng nhập thông tin cơ bản của công ty khách hàng"
     },
     "type": {
-        "small": "Doanh nghiệp vừa và nhỏ",
-        "large": "Doanh nghiệp lớn",
-        "startup": "Công ty khởi nghiệp",
-        "public": "Cơ quan nhà nước",
-        "nonprofit": "Tổ chức phi lợi nhuận",
-        "custom": "Nhập trực tiếp"
+      "small": "Doanh nghiệp vừa và nhỏ",
+      "large": "Doanh nghiệp lớn",
+      "startup": "Công ty khởi nghiệp",
+      "public": "Cơ quan nhà nước",
+      "nonprofit": "Tổ chức phi lợi nhuận",
+      "custom": "Nhập trực tiếp"
     },
     "companyTypeCustomPlaceholder": "Vui lòng nhập loại hình công ty"
   },
   "sales": {
-      "person": {
-        "placeholder": "Tìm kiếm và chọn nhân viên kinh doanh phụ trách"
-      }
+    "person": {
+      "placeholder": "Tìm kiếm và chọn nhân viên kinh doanh phụ trách"
+    }
   }
 }
