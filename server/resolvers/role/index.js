@@ -143,7 +143,7 @@ const roleResolvers = {
           include: [
             {
               model: models.Role,
-              as: "role",
+              as: "userRole",
             },
           ],
           order: [["name", "ASC"]],
@@ -303,7 +303,7 @@ const roleResolvers = {
           include: [
             {
               model: models.Role,
-              as: "role",
+              as: "userRole",
             },
           ],
         });
