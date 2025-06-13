@@ -1,0 +1,30 @@
+Create customer error: EagerLoadingError [SequelizeEagerLoadingError]: CustomerImage is associated to Customer using an alias. You've included an alias (images), but it does not match the alias(es) defined in your association (facilityImages).
+    at Customer._getIncludedAssociation (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:574:15)
+    at Customer._validateIncludedElement (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:502:53)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/model.js:421:37
+    at Array.map (<anonymous>)
+    at Customer._validateIncludedElements (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:417:39)
+    at Customer.findAll (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1124:12)
+    at async Customer.findOne (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1240:12)
+    at async Customer.findByPk (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1221:12)
+    at async Object.createCustomer (/home/runner/workspace/server/resolvers/customer/index.js:263:33)
+Rollback error: Error: Transaction cannot be rolled back because it has been finished with state: commit
+    at Transaction.rollback (/home/runner/workspace/server/node_modules/sequelize/lib/transaction.js:59:13)
+    at Object.createCustomer (/home/runner/workspace/server/resolvers/customer/index.js:287:29)
+Database Error: EagerLoadingError [SequelizeEagerLoadingError]: CustomerImage is associated to Customer using an alias. You've included an alias (images), but it does not match the alias(es) defined in your association (facilityImages).
+    at Customer._getIncludedAssociation (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:574:15)
+    at Customer._validateIncludedElement (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:502:53)
+    at /home/runner/workspace/server/node_modules/sequelize/lib/model.js:421:37
+    at Array.map (<anonymous>)
+    at Customer._validateIncludedElements (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:417:39)
+    at Customer.findAll (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1124:12)
+    at async Customer.findOne (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1240:12)
+    at async Customer.findByPk (/home/runner/workspace/server/node_modules/sequelize/lib/model.js:1221:12)
+    at async Object.createCustomer (/home/runner/workspace/server/resolvers/customer/index.js:263:33)
+GraphQL Error: {
+  message: '고객 생성에 실패했습니다.',
+  code: 'INTERNAL_ERROR',
+  errorKey: 'CUSTOMER_CREATE_FAILED',
+  locations: [ { line: 2, column: 3 } ],
+  path: [ 'createCustomer' ]
+}
