@@ -1,0 +1,112 @@
+ModuleParseError: Module parse failed: Cannot parse JSON: Expected double-quoted property name in JSON at position 657 while parsing '{
+  "common": {
+    "loading": "Đang tải'
+You may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders
+Error: Cannot parse JSON: Expected double-quoted property name in JSON at position 657 while parsing '{
+  "common": {
+    "loading": "Đang tải'
+    at JsonParser.parse (/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:29:1049723)
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:29:411930
+    at processResult (/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:29:407884)
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:29:408906
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js:1:8727
+    at iterateNormalLoaders (/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js:1:5565)
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js:1:5426
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:29:408396
+    at eval (eval at create (/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:14:9224), <anonymous>:14:1)
+    at Array.<anonymous> (/home/runner/workspace/client-nextjs/node_modules/next/dist/build/webpack/plugins/profiling-plugin.js:177:29)
+    at runCallbacks (/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:1:166322)
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:1:168449
+    at /home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js:1:267828
+    at FSReqCallback.readFileAfterClose [as oncomplete] (node:internal/fs/read/context:68:3)
+
+Call Stack
+42
+
+JsonParser.parse
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:1049723)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:411930)
+processResult
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:407884)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408906)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:8727)
+iterateNormalLoaders
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5565)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5426)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408396)
+eval
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (14:9224)
+Array.<anonymous>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/build/webpack/plugins/profiling-plugin.js (177:29)
+runCallbacks
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:166322)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:168449)
+<unknown>
+/home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:267828)
+FSReqCallback.readFileAfterClose [as oncomplete]
+node:internal/fs/read/context (68:3)
+JsonParser.parse
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:1049723)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:411930)
+processResult
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:407884)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408906)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:8727)
+iterateNormalLoaders
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5565)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5426)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408396)
+eval
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (14:9224)
+Array.<anonymous>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/build/webpack/plugins/profiling-plugin.js (177:29)
+runCallbacks
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:166322)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:168449)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:267828)
+FSReqCallback.readFileAfterClose [as oncomplete]
+node:internal/fs/read/context (68:3)
+handleParseError
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:410403)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:412019)
+processResult
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:407884)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408906)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:8727)
+iterateNormalLoaders
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5565)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js (1:5426)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (29:408396)
+eval
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (14:9224)
+Array.<anonymous>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/build/webpack/plugins/profiling-plugin.js (177:29)
+runCallbacks
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:166322)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:168449)
+<unknown>
+file:///home/runner/workspace/client-nextjs/node_modules/next/dist/compiled/webpack/bundle5.js (1:267828)
+FSReqCallback.readFileAfterClose [as oncomplete]
+node:internal/fs/read/context (68:3)
+1
+2
+This error happened while generating the page. Any console logs will be displayed in the terminal window.
