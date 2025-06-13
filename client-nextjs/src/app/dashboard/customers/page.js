@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge.js";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.js";

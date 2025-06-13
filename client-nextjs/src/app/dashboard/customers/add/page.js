@@ -1143,7 +1143,7 @@ export default function AddCustomerPage() {
 
         // 주소를 하나의 문자열로 변환
         processedFormData.address = addressParts.join(' ').trim();
-        
+
         // 개별 주소 필드 제거 (백엔드 스키마에 맞춤)
         delete processedFormData.city;
         delete processedFormData.district;
