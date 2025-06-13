@@ -578,7 +578,7 @@ const ImageGallerySection = ({
 };
 
 const SearchableUserSelect = ({ value, onChange, placeholder }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
@@ -1060,7 +1060,7 @@ const ContactPersonCard = ({
   onDelete,
   canEdit = false,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <Card className="shadow-lg border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
@@ -1189,7 +1189,7 @@ export default function CustomerDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast, dismiss } = useToast();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [originalData, setOriginalData] = useState({});
