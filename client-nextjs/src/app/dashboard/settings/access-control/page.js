@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Shield,
   Users,
@@ -22,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function AccessControlPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("roles");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -121,21 +120,21 @@ export default function AccessControlPage() {
 
   const permissionMatrix = {
     "고객 관리": {
-      "슈퍼어드민": { read: true, write: true, delete: true },
+      슈퍼어드민: { read: true, write: true, delete: true },
       어드민: { read: true, write: true, delete: true },
       매니저: { read: true, write: true, delete: false },
       에디터: { read: true, write: true, delete: false },
       게스트: { read: true, write: false, delete: false },
     },
     "제품 관리": {
-      "슈퍼어드민": { read: true, write: true, delete: true },
+      슈퍼어드민: { read: true, write: true, delete: true },
       어드민: { read: true, write: true, delete: true },
       매니저: { read: true, write: true, delete: false },
       에디터: { read: true, write: true, delete: false },
       게스트: { read: true, write: false, delete: false },
     },
     "시스템 설정": {
-      "슈퍼어드민": { read: true, write: true, delete: true },
+      슈퍼어드민: { read: true, write: true, delete: true },
       어드민: { read: true, write: true, delete: false },
       매니저: { read: false, write: false, delete: false },
       에디터: { read: false, write: false, delete: false },
@@ -253,12 +252,12 @@ export default function AccessControlPage() {
                     {perm === "read"
                       ? "읽기"
                       : perm === "write"
-                      ? "쓰기"
-                      : perm === "delete"
-                      ? "삭제"
-                      : perm === "approve"
-                      ? "승인"
-                      : "시스템설정"}
+                        ? "쓰기"
+                        : perm === "delete"
+                          ? "삭제"
+                          : perm === "approve"
+                            ? "승인"
+                            : "시스템설정"}
                   </span>
                 </div>
               ))}
@@ -450,12 +449,12 @@ export default function AccessControlPage() {
                       user.role === "슈퍼어드민"
                         ? "bg-red-100 text-red-800"
                         : user.role === "어드민"
-                        ? "bg-orange-100 text-orange-800"
-                        : user.role === "매니저"
-                        ? "bg-blue-100 text-blue-800"
-                        : user.role === "에디터"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                          ? "bg-orange-100 text-orange-800"
+                          : user.role === "매니저"
+                            ? "bg-blue-100 text-blue-800"
+                            : user.role === "에디터"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {user.role}
@@ -642,7 +641,10 @@ export default function AccessControlPage() {
                 </label>
                 <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                   {roles.map((role) => (
-                    <option key={role.id} selected={role.name === selectedUser.role}>
+                    <option
+                      key={role.id}
+                      selected={role.name === selectedUser.role}
+                    >
                       {role.name}
                     </option>
                   ))}

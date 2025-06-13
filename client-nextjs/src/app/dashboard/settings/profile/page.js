@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { useSelector, useDispatch } from "react-redux";
-import { useLanguage } from '@/hooks/useLanguage.js';
-import { UPDATE_USER_PROFILE, VERIFY_CURRENT_PASSWORD, CHANGE_PASSWORD } from "@/lib/graphql/mutations.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
+import {
+  UPDATE_USER_PROFILE,
+  VERIFY_CURRENT_PASSWORD,
+  CHANGE_PASSWORD,
+} from "@/lib/graphql/mutations.js";
 import { GET_ME } from "@/lib/graphql/queries.js";
 import { setUser } from "@/store/slices/authSlice.js";
 import { useToast } from "@/hooks/useToast.js";
@@ -29,18 +33,18 @@ import {
 import imageCompression from "browser-image-compression";
 
 export default function ProfileSettingsPage() {
-  const { t, language } = useLanguage();
+  const { t, language } = useTranslation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("profile");
   const [showPassword, setShowPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-    const [currentPasswordVerified, setCurrentPasswordVerified] = useState(null);
-    const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [currentPasswordVerified, setCurrentPasswordVerified] = useState(null);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -89,9 +93,9 @@ export default function ProfileSettingsPage() {
     },
   });
 
-    const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
-    const [verifyCurrentPassword] = useMutation(VERIFY_CURRENT_PASSWORD);
-    const [changePassword] = useMutation(CHANGE_PASSWORD);
+  const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
+  const [verifyCurrentPassword] = useMutation(VERIFY_CURRENT_PASSWORD);
+  const [changePassword] = useMutation(CHANGE_PASSWORD);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -107,89 +111,97 @@ export default function ProfileSettingsPage() {
     allowMultipleSessions: false,
   });
 
-    // 비밀번호 강도 검증 함수
-    const checkPasswordStrength = (password) => {
-        const hasMinLength = password.length >= 8;
-        const hasUppercase = /[A-Z]/.test(password);
-        const hasLowercase = /[a-z]/.test(password);
-        const hasNumbers = /\d/.test(password);
-        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  // 비밀번호 강도 검증 함수
+  const checkPasswordStrength = (password) => {
+    const hasMinLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-        const conditionsMet = [hasMinLength, hasUppercase, hasLowercase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+    const conditionsMet = [
+      hasMinLength,
+      hasUppercase,
+      hasLowercase,
+      hasNumbers,
+      hasSpecialChar,
+    ].filter(Boolean).length;
 
-        let score = 0;
-        let label = "";
+    let score = 0;
+    let label = "";
 
-        if (conditionsMet >= 4 && hasMinLength && hasUppercase && hasSpecialChar) {
-            score = 3;
-            label = "강함";
-        } else if (conditionsMet >= 3 && hasMinLength) {
-            score = 2;
-            label = "보통";
-        } else if (conditionsMet >= 1) {
-            score = 1;
-            label = "약함";
-        }
-
-        return {
-            score,
-            label,
-            hasMinLength,
-            hasUppercase,
-            hasLowercase,
-            hasNumbers,
-            hasSpecialChar,
-            isMatching: passwordData.newPassword === passwordData.confirmPassword && passwordData.confirmPassword !== ""
-        };
-    };
-
-    const passwordStrength = checkPasswordStrength(passwordData.newPassword);
-
-    // 비밀번호 변경 버튼 활성화 조건
-    const canChangePassword =
-        currentPasswordVerified === true &&
-        passwordStrength.score >= 2 &&
-        passwordStrength.hasMinLength &&
-        passwordStrength.hasUppercase &&
-        passwordStrength.hasSpecialChar &&
-        passwordStrength.isMatching;
-
-    // 현재 비밀번호 검증 (debounced)
-    const debouncedVerifyPassword = useCallback(
-        debounce(async (password) => {
-            if (!password || password.length < 1) {
-                setCurrentPasswordVerified(null);
-                return;
-            }
-
-            setIsVerifyingPassword(true);
-            try {
-                const { data } = await verifyCurrentPassword({
-                    variables: { currentPassword: password }
-                });
-                setCurrentPasswordVerified(data.verifyCurrentPassword);
-            } catch (error) {
-                console.error("Password verification error:", error);
-                setCurrentPasswordVerified(false);
-            } finally {
-                setIsVerifyingPassword(false);
-            }
-        }, 500),
-        [verifyCurrentPassword]
-    );
-
-    // Debounce 함수
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+    if (conditionsMet >= 4 && hasMinLength && hasUppercase && hasSpecialChar) {
+      score = 3;
+      label = "강함";
+    } else if (conditionsMet >= 3 && hasMinLength) {
+      score = 2;
+      label = "보통";
+    } else if (conditionsMet >= 1) {
+      score = 1;
+      label = "약함";
     }
+
+    return {
+      score,
+      label,
+      hasMinLength,
+      hasUppercase,
+      hasLowercase,
+      hasNumbers,
+      hasSpecialChar,
+      isMatching:
+        passwordData.newPassword === passwordData.confirmPassword &&
+        passwordData.confirmPassword !== "",
+    };
+  };
+
+  const passwordStrength = checkPasswordStrength(passwordData.newPassword);
+
+  // 비밀번호 변경 버튼 활성화 조건
+  const canChangePassword =
+    currentPasswordVerified === true &&
+    passwordStrength.score >= 2 &&
+    passwordStrength.hasMinLength &&
+    passwordStrength.hasUppercase &&
+    passwordStrength.hasSpecialChar &&
+    passwordStrength.isMatching;
+
+  // 현재 비밀번호 검증 (debounced)
+  const debouncedVerifyPassword = useCallback(
+    debounce(async (password) => {
+      if (!password || password.length < 1) {
+        setCurrentPasswordVerified(null);
+        return;
+      }
+
+      setIsVerifyingPassword(true);
+      try {
+        const { data } = await verifyCurrentPassword({
+          variables: { currentPassword: password },
+        });
+        setCurrentPasswordVerified(data.verifyCurrentPassword);
+      } catch (error) {
+        console.error("Password verification error:", error);
+        setCurrentPasswordVerified(false);
+      } finally {
+        setIsVerifyingPassword(false);
+      }
+    }, 500),
+    [verifyCurrentPassword],
+  );
+
+  // Debounce 함수
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   const tabs = [
     { id: "profile", name: "기본 정보", icon: User },
@@ -199,56 +211,56 @@ export default function ProfileSettingsPage() {
   ];
 
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePasswordChange = (field, value) => {
-        setPasswordData(prev => ({ ...prev, [field]: value }));
-        if (field === "currentPassword") {
-            debouncedVerifyPassword(value);
-        }
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
+    if (field === "currentPassword") {
+      debouncedVerifyPassword(value);
+    }
   };
 
   const handlePasswordChangeSubmit = async () => {
-        if (!canChangePassword) return;
+    if (!canChangePassword) return;
 
-        setIsLoading(true);
-        try {
-            const { data } = await changePassword({
-                variables: {
-                    input: {
-                        currentPassword: passwordData.currentPassword,
-                        newPassword: passwordData.newPassword
-                    }
-                }
-            });
+    setIsLoading(true);
+    try {
+      const { data } = await changePassword({
+        variables: {
+          input: {
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+          },
+        },
+      });
 
-            if (data?.changePassword) {
-                setPasswordData({
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: ""
-                });
-                setCurrentPasswordVerified(null);
-                toast({
-                    title: "성공",
-                    description: "비밀번호가 성공적으로 변경되었습니다.",
-                });
-            }
-        } catch (error) {
-            console.error("Password change error:", error);
-            toast({
-                title: "오류",
-                description: error.message || "비밀번호 변경에 실패했습니다.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsLoading(false);
-        }
+      if (data?.changePassword) {
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setCurrentPasswordVerified(null);
+        toast({
+          title: "성공",
+          description: "비밀번호가 성공적으로 변경되었습니다.",
+        });
+      }
+    } catch (error) {
+      console.error("Password change error:", error);
+      toast({
+        title: "오류",
+        description: error.message || "비밀번호 변경에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSecurityChange = (field, value) => {
-    setSecuritySettings(prev => ({ ...prev, [field]: value }));
+    setSecuritySettings((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAvatarUpload = async (e) => {
@@ -285,7 +297,7 @@ export default function ProfileSettingsPage() {
 
         if (response.ok) {
           const result = await response.json();
-          setProfileData(prev => ({ ...prev, avatar: result.url }));
+          setProfileData((prev) => ({ ...prev, avatar: result.url }));
           toast({
             title: "성공",
             description: "프로필 사진이 업로드되었습니다.",
@@ -350,12 +362,19 @@ export default function ProfileSettingsPage() {
       });
 
       // emergencyContact, skills도 비교해서 변경된 경우만 추가
-      if (JSON.stringify(emergencyContacts) !== JSON.stringify(user.emergencyContact)) {
+      if (
+        JSON.stringify(emergencyContacts) !==
+        JSON.stringify(user.emergencyContact)
+      ) {
         changedFields.emergencyContact = emergencyContacts.filter(
-          (contact) => contact.name && contact.relationship && contact.phoneNumber,
+          (contact) =>
+            contact.name && contact.relationship && contact.phoneNumber,
         );
       }
-      if (JSON.stringify(skills.map((s) => s.trim()).filter(Boolean)) !== JSON.stringify((user.skills || []).map((s) => s.name))) {
+      if (
+        JSON.stringify(skills.map((s) => s.trim()).filter(Boolean)) !==
+        JSON.stringify((user.skills || []).map((s) => s.name))
+      ) {
         changedFields.skills = skills
           .filter((skill) => skill.trim() !== "")
           .map((skill) => ({ name: skill }));
@@ -398,21 +417,50 @@ export default function ProfileSettingsPage() {
 
   // 옵션 데이터
   const nationalityOptions = [
-    { value: "vietnam", label: { ko: "베트남", en: "Vietnam", vi: "Việt Nam" } },
-    { value: "korea", label: { ko: "한국", en: "South Korea", vi: "Hàn Quốc" } },
+    {
+      value: "vietnam",
+      label: { ko: "베트남", en: "Vietnam", vi: "Việt Nam" },
+    },
+    {
+      value: "korea",
+      label: { ko: "한국", en: "South Korea", vi: "Hàn Quốc" },
+    },
     { value: "usa", label: { ko: "미국", en: "United States", vi: "Hoa Kỳ" } },
     { value: "japan", label: { ko: "일본", en: "Japan", vi: "Nhật Bản" } },
     { value: "china", label: { ko: "중국", en: "China", vi: "Trung Quốc" } },
-    { value: "thailand", label: { ko: "태국", en: "Thailand", vi: "Thái Lan" } },
+    {
+      value: "thailand",
+      label: { ko: "태국", en: "Thailand", vi: "Thái Lan" },
+    },
     { value: "other", label: { ko: "기타", en: "Other", vi: "Khác" } },
   ];
 
   const departmentOptions = [
     { value: "sales", label: { ko: "영업", en: "Sales", vi: "Bán hàng" } },
-    { value: "inventory", label: { ko: "재고/배송", en: "Inventory/Shipping", vi: "Kho/Vận chuyển" } },
-    { value: "marketing", label: { ko: "마케팅", en: "Marketing", vi: "Marketing" } },
-    { value: "accounting", label: { ko: "회계", en: "Accounting", vi: "Kế toán" } },
-    { value: "support", label: { ko: "고객지원", en: "Customer Support", vi: "Hỗ trợ khách hàng" } },
+    {
+      value: "inventory",
+      label: {
+        ko: "재고/배송",
+        en: "Inventory/Shipping",
+        vi: "Kho/Vận chuyển",
+      },
+    },
+    {
+      value: "marketing",
+      label: { ko: "마케팅", en: "Marketing", vi: "Marketing" },
+    },
+    {
+      value: "accounting",
+      label: { ko: "회계", en: "Accounting", vi: "Kế toán" },
+    },
+    {
+      value: "support",
+      label: {
+        ko: "고객지원",
+        en: "Customer Support",
+        vi: "Hỗ trợ khách hàng",
+      },
+    },
     { value: "other", label: { ko: "기타", en: "Other", vi: "Khác" } },
   ];
 
@@ -426,7 +474,11 @@ export default function ProfileSettingsPage() {
         <div className="flex items-center space-x-6">
           <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
             {profileData.avatar ? (
-              <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              <img
+                src={profileData.avatar}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               profileData.name?.charAt(0).toUpperCase() || "U"
             )}
@@ -443,7 +495,7 @@ export default function ProfileSettingsPage() {
             <label
               htmlFor="avatar-upload"
               className={`px-4 py-2 rounded-lg ${
-                isEditing 
+                isEditing
                   ? "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
@@ -494,7 +546,9 @@ export default function ProfileSettingsPage() {
             <input
               type="tel"
               value={profileData.phoneNumber || ""}
-              onChange={(e) => handleProfileChange("phoneNumber", e.target.value)}
+              onChange={(e) =>
+                handleProfileChange("phoneNumber", e.target.value)
+              }
               disabled={!isEditing}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
@@ -517,7 +571,9 @@ export default function ProfileSettingsPage() {
             </label>
             <select
               value={profileData.nationality || ""}
-              onChange={(e) => handleProfileChange("nationality", e.target.value)}
+              onChange={(e) =>
+                handleProfileChange("nationality", e.target.value)
+              }
               disabled={!isEditing}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             >
@@ -536,7 +592,9 @@ export default function ProfileSettingsPage() {
             <input
               type="text"
               value={profileData.visaStatus || ""}
-              onChange={(e) => handleProfileChange("visaStatus", e.target.value)}
+              onChange={(e) =>
+                handleProfileChange("visaStatus", e.target.value)
+              }
               disabled={!isEditing}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
@@ -568,7 +626,9 @@ export default function ProfileSettingsPage() {
             </label>
             <select
               value={profileData.department || ""}
-              onChange={(e) => handleProfileChange("department", e.target.value)}
+              onChange={(e) =>
+                handleProfileChange("department", e.target.value)
+              }
               disabled={!isEditing}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             >
@@ -599,7 +659,9 @@ export default function ProfileSettingsPage() {
             <input
               type="text"
               value={profileData.employeeId || ""}
-              onChange={(e) => handleProfileChange("employeeId", e.target.value)}
+              onChange={(e) =>
+                handleProfileChange("employeeId", e.target.value)
+              }
               disabled={!isEditing}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
             />
@@ -680,7 +742,10 @@ export default function ProfileSettingsPage() {
         </div>
         <div className="space-y-4">
           {emergencyContacts.map((contact, index) => (
-            <div key={index} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg space-y-3">
+            <div
+              key={index}
+              className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg space-y-3"
+            >
               <div className="flex justify-between items-center">
                 <h4 className="font-medium text-gray-900 dark:text-white">
                   비상 연락처 {index + 1}
@@ -699,7 +764,9 @@ export default function ProfileSettingsPage() {
                   type="text"
                   placeholder="이름"
                   value={contact.name || ""}
-                  onChange={(e) => handleEmergencyContactChange(index, "name", e.target.value)}
+                  onChange={(e) =>
+                    handleEmergencyContactChange(index, "name", e.target.value)
+                  }
                   disabled={!isEditing}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
                 />
@@ -707,7 +774,13 @@ export default function ProfileSettingsPage() {
                   type="text"
                   placeholder="관계"
                   value={contact.relationship || ""}
-                  onChange={(e) => handleEmergencyContactChange(index, "relationship", e.target.value)}
+                  onChange={(e) =>
+                    handleEmergencyContactChange(
+                      index,
+                      "relationship",
+                      e.target.value,
+                    )
+                  }
                   disabled={!isEditing}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
                 />
@@ -715,7 +788,13 @@ export default function ProfileSettingsPage() {
                   type="tel"
                   placeholder="전화번호"
                   value={contact.phoneNumber || ""}
-                  onChange={(e) => handleEmergencyContactChange(index, "phoneNumber", e.target.value)}
+                  onChange={(e) =>
+                    handleEmergencyContactChange(
+                      index,
+                      "phoneNumber",
+                      e.target.value,
+                    )
+                  }
                   disabled={!isEditing}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
                 />
@@ -723,7 +802,9 @@ export default function ProfileSettingsPage() {
             </div>
           ))}
           {emergencyContacts.length === 0 && (
-            <p className="text-gray-500 text-sm">등록된 비상 연락처가 없습니다.</p>
+            <p className="text-gray-500 text-sm">
+              등록된 비상 연락처가 없습니다.
+            </p>
           )}
         </div>
       </div>
@@ -731,192 +812,240 @@ export default function ProfileSettingsPage() {
   );
 
   const renderPasswordTab = () => (
-        <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    비밀번호 변경
-                </h3>
-                <div className="space-y-4 max-w-md">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            현재 비밀번호
-                        </label>
-                        <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={passwordData.currentPassword}
-                                onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
-                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                        </div>
-                        {isVerifyingPassword && (
-                            <p className="text-blue-500 text-sm mt-1">비밀번호 확인 중...</p>
-                        )}
-                        {currentPasswordVerified === false && (
-                            <p className="text-red-500 text-sm mt-1">현재 비밀번호가 일치하지 않습니다.</p>
-                        )}
-                        {currentPasswordVerified === true && (
-                            <p className="text-green-500 text-sm mt-1">현재 비밀번호가 확인되었습니다.</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            새 비밀번호
-                        </label>
-                        <div className="relative">
-                            <input
-                                type={showNewPassword ? "text" : "password"}
-                                value={passwordData.newPassword}
-                                onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
-                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowNewPassword(!showNewPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            새 비밀번호 확인
-                        </label>
-                        <div className="relative">
-                            <input
-                                type={showConfirmPassword ? "text" : "password"}
-                                value={passwordData.confirmPassword}
-                                onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
-                                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 비밀번호 강도 및 상태 표시 */}
-                    {(passwordData.newPassword || passwordData.confirmPassword) && (
-                        <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            {/* 비밀번호 강도 */}
-                            {passwordData.newPassword && (
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            비밀번호 강도:
-                                        </span>
-                                        <span className={`text-sm font-bold ${
-                                            passwordStrength.label === "강함"
-                                                ? "text-green-600" 
-                                                : passwordStrength.label === "보통" 
-                                                ? "text-yellow-600" 
-                                                : passwordStrength.label === "약함"
-                                                ? "text-red-600"
-                                                : "text-gray-400"
-                                        }`}>
-                                            {passwordStrength.label}
-                                        </span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                                        <div 
-                                            className={`h-2 rounded-full transition-all duration-300 ${
-                                                passwordStrength.score === 3 
-                                                    ? "bg-green-500 w-full" 
-                                                    : passwordStrength.score === 2 
-                                                    ? "bg-yellow-500 w-2/3" 
-                                                    : passwordStrength.score === 1
-                                                    ? "bg-red-500 w-1/3"
-                                                    : "bg-gray-300 w-0"
-                                            }`}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* 비밀번호 조건 체크리스트 */}
-                            <div className="space-y-1">
-                                <div className={`flex items-center text-xs ${
-                                    passwordStrength.hasMinLength ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                }`}>
-                                    <span className="mr-2">
-                                        {passwordStrength.hasMinLength ? "✓" : "○"}
-                                    </span>
-                                    최소 8자 이상
-                                </div>
-                                <div className={`flex items-center text-xs ${
-                                    passwordStrength.hasUppercase ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                }`}>
-                                    <span className="mr-2">
-                                        {passwordStrength.hasUppercase ? "✓" : "○"}
-                                    </span>
-                                    대문자 포함
-                                </div>
-                                <div className={`flex items-center text-xs ${
-                                    passwordStrength.hasLowercase ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                }`}>
-                                    <span className="mr-2">
-                                        {passwordStrength.hasLowercase ? "✓" : "○"}
-                                    </span>
-                                    소문자 포함
-                                </div>
-                                <div className={`flex items-center text-xs ${
-                                    passwordStrength.hasNumbers ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                }`}>
-                                    <span className="mr-2">
-                                        {passwordStrength.hasNumbers ? "✓" : "○"}
-                                    </span>
-                                    숫자 포함
-                                </div>
-                                <div className={`flex items-center text-xs ${
-                                    passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                }`}>
-                                    <span className="mr-2">
-                                        {passwordStrength.hasSpecialChar ? "✓" : "○"}
-                                    </span>
-                                    특수문자 포함
-                                </div>
-                                {passwordData.confirmPassword && (
-                                    <div className={`flex items-center text-xs ${
-                                        passwordStrength.isMatching ? "text-green-600" : "text-red-500"
-                                    }`}>
-                                        <span className="mr-2">
-                                            {passwordStrength.isMatching ? "✓" : "✗"}
-                                        </span>
-                                        비밀번호 일치
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    <button
-                        onClick={handlePasswordChangeSubmit}
-                        disabled={!canChangePassword || isLoading}
-                        className={`w-full px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                            canChangePassword && !isLoading 
-                                ? "bg-blue-500 hover:bg-blue-600 text-white" 
-                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
-                    >
-                        <Lock className="w-4 h-4" />
-                        <span>{isLoading ? "변경 중..." : "비밀번호 변경"}</span>
-                    </button>
-                </div>
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          비밀번호 변경
+        </h3>
+        <div className="space-y-4 max-w-md">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              현재 비밀번호
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={passwordData.currentPassword}
+                onChange={(e) =>
+                  handlePasswordChange("currentPassword", e.target.value)
+                }
+                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
+            {isVerifyingPassword && (
+              <p className="text-blue-500 text-sm mt-1">비밀번호 확인 중...</p>
+            )}
+            {currentPasswordVerified === false && (
+              <p className="text-red-500 text-sm mt-1">
+                현재 비밀번호가 일치하지 않습니다.
+              </p>
+            )}
+            {currentPasswordVerified === true && (
+              <p className="text-green-500 text-sm mt-1">
+                현재 비밀번호가 확인되었습니다.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              새 비밀번호
+            </label>
+            <div className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  handlePasswordChange("newPassword", e.target.value)
+                }
+                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showNewPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              새 비밀번호 확인
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  handlePasswordChange("confirmPassword", e.target.value)
+                }
+                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* 비밀번호 강도 및 상태 표시 */}
+          {(passwordData.newPassword || passwordData.confirmPassword) && (
+            <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {/* 비밀번호 강도 */}
+              {passwordData.newPassword && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      비밀번호 강도:
+                    </span>
+                    <span
+                      className={`text-sm font-bold ${
+                        passwordStrength.label === "강함"
+                          ? "text-green-600"
+                          : passwordStrength.label === "보통"
+                            ? "text-yellow-600"
+                            : passwordStrength.label === "약함"
+                              ? "text-red-600"
+                              : "text-gray-400"
+                      }`}
+                    >
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        passwordStrength.score === 3
+                          ? "bg-green-500 w-full"
+                          : passwordStrength.score === 2
+                            ? "bg-yellow-500 w-2/3"
+                            : passwordStrength.score === 1
+                              ? "bg-red-500 w-1/3"
+                              : "bg-gray-300 w-0"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 비밀번호 조건 체크리스트 */}
+              <div className="space-y-1">
+                <div
+                  className={`flex items-center text-xs ${
+                    passwordStrength.hasMinLength
+                      ? "text-green-600"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="mr-2">
+                    {passwordStrength.hasMinLength ? "✓" : "○"}
+                  </span>
+                  최소 8자 이상
+                </div>
+                <div
+                  className={`flex items-center text-xs ${
+                    passwordStrength.hasUppercase
+                      ? "text-green-600"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="mr-2">
+                    {passwordStrength.hasUppercase ? "✓" : "○"}
+                  </span>
+                  대문자 포함
+                </div>
+                <div
+                  className={`flex items-center text-xs ${
+                    passwordStrength.hasLowercase
+                      ? "text-green-600"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="mr-2">
+                    {passwordStrength.hasLowercase ? "✓" : "○"}
+                  </span>
+                  소문자 포함
+                </div>
+                <div
+                  className={`flex items-center text-xs ${
+                    passwordStrength.hasNumbers
+                      ? "text-green-600"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="mr-2">
+                    {passwordStrength.hasNumbers ? "✓" : "○"}
+                  </span>
+                  숫자 포함
+                </div>
+                <div
+                  className={`flex items-center text-xs ${
+                    passwordStrength.hasSpecialChar
+                      ? "text-green-600"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="mr-2">
+                    {passwordStrength.hasSpecialChar ? "✓" : "○"}
+                  </span>
+                  특수문자 포함
+                </div>
+                {passwordData.confirmPassword && (
+                  <div
+                    className={`flex items-center text-xs ${
+                      passwordStrength.isMatching
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {passwordStrength.isMatching ? "✓" : "✗"}
+                    </span>
+                    비밀번호 일치
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={handlePasswordChangeSubmit}
+            disabled={!canChangePassword || isLoading}
+            className={`w-full px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+              canChangePassword && !isLoading
+                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            <Lock className="w-4 h-4" />
+            <span>{isLoading ? "변경 중..." : "비밀번호 변경"}</span>
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 
   const renderSecurityTab = () => (
     <div className="space-y-6">
@@ -926,11 +1055,26 @@ export default function ProfileSettingsPage() {
         </h3>
         <div className="space-y-4">
           {[
-            { key: "loginNotifications", label: "로그인 알림", desc: "새로운 기기에서 로그인할 때 알림" },
-            { key: "passwordChangeNotifications", label: "비밀번호 변경 알림", desc: "비밀번호가 변경될 때 알림" },
-            { key: "loginAttemptNotifications", label: "로그인 시도 알림", desc: "실패한 로그인 시도에 대한 알림" },
+            {
+              key: "loginNotifications",
+              label: "로그인 알림",
+              desc: "새로운 기기에서 로그인할 때 알림",
+            },
+            {
+              key: "passwordChangeNotifications",
+              label: "비밀번호 변경 알림",
+              desc: "비밀번호가 변경될 때 알림",
+            },
+            {
+              key: "loginAttemptNotifications",
+              label: "로그인 시도 알림",
+              desc: "실패한 로그인 시도에 대한 알림",
+            },
           ].map((setting) => (
-            <div key={setting.key} className="flex items-center justify-between">
+            <div
+              key={setting.key}
+              className="flex items-center justify-between"
+            >
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
                   {setting.label}
@@ -940,14 +1084,21 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
               <button
-                onClick={() => handleSecurityChange(setting.key, !securitySettings[setting.key])}
+                onClick={() =>
+                  handleSecurityChange(
+                    setting.key,
+                    !securitySettings[setting.key],
+                  )
+                }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   securitySettings[setting.key] ? "bg-blue-600" : "bg-gray-200"
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    securitySettings[setting.key] ? "translate-x-6" : "translate-x-1"
+                    securitySettings[setting.key]
+                      ? "translate-x-6"
+                      : "translate-x-1"
                   }`}
                 />
               </button>
@@ -967,7 +1118,9 @@ export default function ProfileSettingsPage() {
             </label>
             <select
               value={securitySettings.sessionTimeout}
-              onChange={(e) => handleSecurityChange("sessionTimeout", parseInt(e.target.value))}
+              onChange={(e) =>
+                handleSecurityChange("sessionTimeout", parseInt(e.target.value))
+              }
               className="w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value={15}>15분</option>
@@ -987,14 +1140,23 @@ export default function ProfileSettingsPage() {
               </div>
             </div>
             <button
-              onClick={() => handleSecurityChange("allowMultipleSessions", !securitySettings.allowMultipleSessions)}
+              onClick={() =>
+                handleSecurityChange(
+                  "allowMultipleSessions",
+                  !securitySettings.allowMultipleSessions,
+                )
+              }
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                securitySettings.allowMultipleSessions ? "bg-blue-600" : "bg-gray-200"
+                securitySettings.allowMultipleSessions
+                  ? "bg-blue-600"
+                  : "bg-gray-200"
               }`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  securitySettings.allowMultipleSessions ? "translate-x-6" : "translate-x-1"
+                  securitySettings.allowMultipleSessions
+                    ? "translate-x-6"
+                    : "translate-x-1"
                 }`}
               />
             </button>
@@ -1011,11 +1173,13 @@ export default function ProfileSettingsPage() {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             2단계 인증 (2FA)
           </h3>
-          <div className={`px-3 py-1 rounded-full text-sm ${
-            twoFactorEnabled 
-              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-          }`}>
+          <div
+            className={`px-3 py-1 rounded-full text-sm ${
+              twoFactorEnabled
+                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+            }`}
+          >
             {twoFactorEnabled ? "활성화됨" : "비활성화됨"}
           </div>
         </div>
@@ -1116,7 +1280,7 @@ export default function ProfileSettingsPage() {
           </div>
           <div className="flex space-x-2">
             {!isEditing ? (
-              <button 
+              <button
                 onClick={() => setIsEditing(true)}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
               >
@@ -1125,14 +1289,14 @@ export default function ProfileSettingsPage() {
               </button>
             ) : (
               <>
-                <button 
+                <button
                   onClick={() => setIsEditing(false)}
                   className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center space-x-2"
                 >
                   <X className="w-4 h-4" />
                   <span>취소</span>
                 </button>
-                <button 
+                <button
                   onClick={handleSave}
                   disabled={isLoading}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2 disabled:opacity-50"

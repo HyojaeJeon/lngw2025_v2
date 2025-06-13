@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Shield,
   Settings,
@@ -23,7 +23,7 @@ import {
 import Link from "next/link";
 
 export default function SettingsCenter() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   const settingsModules = [
     {

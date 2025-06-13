@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import { useTheme } from "@/contexts/themeContext.js";
 import {
   Settings,
@@ -19,7 +18,7 @@ import {
 } from "lucide-react";
 
 export default function GeneralSettingsPage() {
-  const { t, language, changeLanguage } = useLanguage();
+  const { t, language, changeLanguage } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [settings, setSettings] = useState({
     appName: "LN Partners CRM",
@@ -156,7 +155,9 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   value={previewSettings.appName}
-                  onChange={(e) => handleSettingChange("appName", e.target.value)}
+                  onChange={(e) =>
+                    handleSettingChange("appName", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -525,7 +526,9 @@ export default function GeneralSettingsPage() {
                 )}
                 <h4 className="font-bold">{previewSettings.appName}</h4>
               </div>
-              <p className="text-sm opacity-75">{previewSettings.description}</p>
+              <p className="text-sm opacity-75">
+                {previewSettings.description}
+              </p>
               <div className="flex space-x-2">
                 <button
                   style={{ backgroundColor: previewSettings.primaryColor }}
@@ -542,21 +545,28 @@ export default function GeneralSettingsPage() {
               </div>
               <div className="text-sm space-y-1">
                 <div>
-                  언어: {languages.find((l) => l.value === previewSettings.language)?.name}
+                  언어:{" "}
+                  {
+                    languages.find((l) => l.value === previewSettings.language)
+                      ?.name
+                  }
                 </div>
                 <div>
-                  시간대: {timezones.find((t) => t.value === previewSettings.timezone)?.name}
+                  시간대:{" "}
+                  {
+                    timezones.find((t) => t.value === previewSettings.timezone)
+                      ?.name
+                  }
                 </div>
                 <div>
-                  날짜: {new Date().toLocaleDateString("ko-KR", {
+                  날짜:{" "}
+                  {new Date().toLocaleDateString("ko-KR", {
                     year: "numeric",
                     month: "2-digit",
                     day: "2-digit",
                   })}
                 </div>
-                <div>
-                  통화: {previewSettings.currencySymbol}1,000
-                </div>
+                <div>통화: {previewSettings.currencySymbol}1,000</div>
               </div>
             </div>
           </div>

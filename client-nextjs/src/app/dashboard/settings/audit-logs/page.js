@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   FileText,
   Search,
@@ -22,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function AuditLogsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("logs");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDateRange, setSelectedDateRange] = useState("today");
@@ -138,7 +137,11 @@ export default function AuditLogsPage() {
     };
     return (
       <span className={`px-2 py-1 rounded-full text-xs ${colors[riskLevel]}`}>
-        {riskLevel === "low" ? "낮음" : riskLevel === "medium" ? "보통" : "높음"}
+        {riskLevel === "low"
+          ? "낮음"
+          : riskLevel === "medium"
+            ? "보통"
+            : "높음"}
       </span>
     );
   };
@@ -148,7 +151,8 @@ export default function AuditLogsPage() {
       log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.resource.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || log.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "all" || log.category === selectedCategory;
     const matchesUser = selectedUser === "all" || log.user === selectedUser;
     return matchesSearch && matchesCategory && matchesUser;
   });
@@ -213,7 +217,9 @@ export default function AuditLogsPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">오늘 로그</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                오늘 로그
+              </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {systemMetrics.todayLogs}
               </p>
@@ -224,7 +230,9 @@ export default function AuditLogsPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">실패한 액션</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                실패한 액션
+              </p>
               <p className="text-2xl font-bold text-red-600">
                 {systemMetrics.failedActions}
               </p>
@@ -235,7 +243,9 @@ export default function AuditLogsPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">고위험 액션</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                고위험 액션
+              </p>
               <p className="text-2xl font-bold text-orange-600">
                 {systemMetrics.highRiskActions}
               </p>
@@ -246,7 +256,9 @@ export default function AuditLogsPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">활성 사용자</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                활성 사용자
+              </p>
               <p className="text-2xl font-bold text-green-600">
                 {systemMetrics.uniqueUsers}
               </p>
@@ -287,7 +299,10 @@ export default function AuditLogsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr
+                  key={log.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {log.timestamp}
                   </td>
@@ -295,13 +310,17 @@ export default function AuditLogsPage() {
                     {log.user}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      log.action.includes("FAILED") || log.action.includes("DELETE")
-                        ? "bg-red-100 text-red-800"
-                        : log.action.includes("UPDATE") || log.action.includes("CREATE")
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        log.action.includes("FAILED") ||
+                        log.action.includes("DELETE")
+                          ? "bg-red-100 text-red-800"
+                          : log.action.includes("UPDATE") ||
+                              log.action.includes("CREATE")
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                      }`}
+                    >
                       {log.action}
                     </span>
                   </td>
@@ -320,7 +339,10 @@ export default function AuditLogsPage() {
                     {getRiskBadge(log.riskLevel)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900" title="상세보기">
+                    <button
+                      className="text-blue-600 hover:text-blue-900"
+                      title="상세보기"
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                   </td>
@@ -349,7 +371,10 @@ export default function AuditLogsPage() {
               { action: "DELETE", count: 234, percentage: 8 },
               { action: "EXPORT", count: 189, percentage: 7 },
             ].map((item) => (
-              <div key={item.action} className="flex items-center justify-between">
+              <div
+                key={item.action}
+                className="flex items-center justify-between"
+              >
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {item.action}
                 </span>
@@ -382,7 +407,10 @@ export default function AuditLogsPage() {
               { user: "정회계", actions: 76 },
               { user: "최영업", actions: 54 },
             ].map((item) => (
-              <div key={item.user} className="flex items-center justify-between">
+              <div
+                key={item.user}
+                className="flex items-center justify-between"
+              >
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {item.user}
                 </span>
@@ -457,7 +485,10 @@ export default function AuditLogsPage() {
             { category: "파일 업로드/다운로드", enabled: false },
             { category: "페이지 접근", enabled: false },
           ].map((item) => (
-            <div key={item.category} className="flex items-center justify-between">
+            <div
+              key={item.category}
+              className="flex items-center justify-between"
+            >
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {item.category}
               </span>

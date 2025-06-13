@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Database,
   Upload,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function DataManagementPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("backup");
   const [isBackupRunning, setIsBackupRunning] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -192,7 +191,9 @@ export default function DataManagementPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">마지막 백업</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                마지막 백업
+              </p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 2024-12-07 02:00
               </p>
@@ -203,7 +204,9 @@ export default function DataManagementPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">백업 크기</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                백업 크기
+              </p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 2.3GB
               </p>
@@ -214,7 +217,9 @@ export default function DataManagementPage() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">다음 백업</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                다음 백업
+              </p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 2024-12-08 02:00
               </p>
@@ -249,7 +254,7 @@ export default function DataManagementPage() {
             </button>
           </div>
         </div>
-        
+
         {isBackupRunning && (
           <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="flex items-center space-x-2">
@@ -298,12 +303,14 @@ export default function DataManagementPage() {
                     {backup.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      backup.type === 'scheduled' 
-                        ? "bg-blue-100 text-blue-800" 
-                        : "bg-green-100 text-green-800"
-                    }`}>
-                      {backup.type === 'scheduled' ? '자동' : '수동'}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        backup.type === "scheduled"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {backup.type === "scheduled" ? "자동" : "수동"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -322,17 +329,26 @@ export default function DataManagementPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      {backup.status === 'completed' && (
+                      {backup.status === "completed" && (
                         <>
-                          <button className="text-blue-600 hover:text-blue-900" title="다운로드">
+                          <button
+                            className="text-blue-600 hover:text-blue-900"
+                            title="다운로드"
+                          >
                             <Download className="w-4 h-4" />
                           </button>
-                          <button className="text-green-600 hover:text-green-900" title="복원">
+                          <button
+                            className="text-green-600 hover:text-green-900"
+                            title="복원"
+                          >
                             <RefreshCw className="w-4 h-4" />
                           </button>
                         </>
                       )}
-                      <button className="text-gray-600 hover:text-gray-900" title="상세보기">
+                      <button
+                        className="text-gray-600 hover:text-gray-900"
+                        title="상세보기"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
                     </div>
@@ -361,7 +377,7 @@ export default function DataManagementPage() {
             파일 업로드
           </button>
         </div>
-        
+
         <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400 mb-2">
@@ -380,7 +396,10 @@ export default function DataManagementPage() {
         </h3>
         <div className="space-y-4">
           {importJobs.map((job) => (
-            <div key={job.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+            <div
+              key={job.id}
+              className="border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <FileText className="w-5 h-5 text-gray-400" />
@@ -400,11 +419,13 @@ export default function DataManagementPage() {
                   </span>
                 </div>
               </div>
-              
-              {job.status === 'processing' && (
+
+              {job.status === "processing" && (
                 <div className="mb-2">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">진행률</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      진행률
+                    </span>
                     <span className="text-gray-900 dark:text-white">
                       {job.successRows} / {job.totalRows}
                     </span>
@@ -412,27 +433,37 @@ export default function DataManagementPage() {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${(job.successRows / job.totalRows) * 100}%` }}
+                      style={{
+                        width: `${(job.successRows / job.totalRows) * 100}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">전체 행:</span>
-                  <span className="ml-1 text-gray-900 dark:text-white">{job.totalRows}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    전체 행:
+                  </span>
+                  <span className="ml-1 text-gray-900 dark:text-white">
+                    {job.totalRows}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">성공:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    성공:
+                  </span>
                   <span className="ml-1 text-green-600">{job.successRows}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">오류:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    오류:
+                  </span>
                   <span className="ml-1 text-red-600">{job.errorRows}</span>
                 </div>
               </div>
-              
+
               {job.errorLog && (
                 <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-800 dark:text-red-200">
                   {job.errorLog}
@@ -565,7 +596,10 @@ export default function DataManagementPage() {
         </h3>
         <div className="space-y-4">
           {exportJobs.map((job) => (
-            <div key={job.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+            <div
+              key={job.id}
+              className="border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Download className="w-5 h-5 text-gray-400" />
@@ -585,7 +619,7 @@ export default function DataManagementPage() {
                       {getStatusText(job.status)}
                     </span>
                   </div>
-                  {job.status === 'completed' && (
+                  {job.status === "completed" && (
                     <div className="flex space-x-2">
                       <button className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
                         다운로드
@@ -597,16 +631,24 @@ export default function DataManagementPage() {
                   )}
                 </div>
               </div>
-              
-              {job.status === 'completed' && (
+
+              {job.status === "completed" && (
                 <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">파일 크기:</span>
-                    <span className="ml-1 text-gray-900 dark:text-white">{job.fileSize}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      파일 크기:
+                    </span>
+                    <span className="ml-1 text-gray-900 dark:text-white">
+                      {job.fileSize}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">만료일:</span>
-                    <span className="ml-1 text-gray-900 dark:text-white">{job.expiresAt}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      만료일:
+                    </span>
+                    <span className="ml-1 text-gray-900 dark:text-white">
+                      {job.expiresAt}
+                    </span>
                   </div>
                 </div>
               )}
@@ -663,7 +705,10 @@ export default function DataManagementPage() {
             color: "red",
           },
         ].map((item, index) => (
-          <div key={index} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+          <div
+            key={index}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6"
+          >
             <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
               {item.title}
             </h4>
@@ -672,20 +717,29 @@ export default function DataManagementPage() {
             </p>
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">예상 용량:</span>
-                <span className="text-gray-900 dark:text-white">{item.size}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  예상 용량:
+                </span>
+                <span className="text-gray-900 dark:text-white">
+                  {item.size}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">대상:</span>
-                <span className="text-gray-900 dark:text-white">{item.count}</span>
+                <span className="text-gray-900 dark:text-white">
+                  {item.count}
+                </span>
               </div>
             </div>
             <button
               className={`w-full py-2 px-4 rounded-lg font-medium ${
-                item.color === 'blue' ? 'bg-blue-500 hover:bg-blue-600' :
-                item.color === 'orange' ? 'bg-orange-500 hover:bg-orange-600' :
-                item.color === 'green' ? 'bg-green-500 hover:bg-green-600' :
-                'bg-red-500 hover:bg-red-600'
+                item.color === "blue"
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : item.color === "orange"
+                    ? "bg-orange-500 hover:bg-orange-600"
+                    : item.color === "green"
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
               } text-white`}
             >
               {item.action}
@@ -713,7 +767,12 @@ export default function DataManagementPage() {
               </div>
             </div>
             <button
-              onClick={() => setBackupSettings(prev => ({ ...prev, autoBackup: !prev.autoBackup }))}
+              onClick={() =>
+                setBackupSettings((prev) => ({
+                  ...prev,
+                  autoBackup: !prev.autoBackup,
+                }))
+              }
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 backupSettings.autoBackup ? "bg-blue-600" : "bg-gray-200"
               }`}
@@ -725,7 +784,7 @@ export default function DataManagementPage() {
               />
             </button>
           </div>
-          
+
           {backupSettings.autoBackup && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -735,7 +794,12 @@ export default function DataManagementPage() {
                 <input
                   type="time"
                   value={backupSettings.backupTime}
-                  onChange={(e) => setBackupSettings(prev => ({ ...prev, backupTime: e.target.value }))}
+                  onChange={(e) =>
+                    setBackupSettings((prev) => ({
+                      ...prev,
+                      backupTime: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -746,21 +810,45 @@ export default function DataManagementPage() {
                 <input
                   type="number"
                   value={backupSettings.retentionDays}
-                  onChange={(e) => setBackupSettings(prev => ({ ...prev, retentionDays: parseInt(e.target.value) }))}
+                  onChange={(e) =>
+                    setBackupSettings((prev) => ({
+                      ...prev,
+                      retentionDays: parseInt(e.target.value),
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
           )}
-          
+
           <div className="space-y-3">
             {[
-              { key: "compression", label: "백업 압축", desc: "백업 파일을 압축하여 저장 공간을 절약합니다" },
-              { key: "includeFiles", label: "파일 포함", desc: "업로드된 파일들도 백업에 포함합니다" },
-              { key: "includeDatabase", label: "데이터베이스 포함", desc: "데이터베이스를 백업에 포함합니다" },
-              { key: "cloudBackup", label: "클라우드 백업", desc: "백업을 클라우드 스토리지에도 저장합니다" },
+              {
+                key: "compression",
+                label: "백업 압축",
+                desc: "백업 파일을 압축하여 저장 공간을 절약합니다",
+              },
+              {
+                key: "includeFiles",
+                label: "파일 포함",
+                desc: "업로드된 파일들도 백업에 포함합니다",
+              },
+              {
+                key: "includeDatabase",
+                label: "데이터베이스 포함",
+                desc: "데이터베이스를 백업에 포함합니다",
+              },
+              {
+                key: "cloudBackup",
+                label: "클라우드 백업",
+                desc: "백업을 클라우드 스토리지에도 저장합니다",
+              },
             ].map((setting) => (
-              <div key={setting.key} className="flex items-center justify-between">
+              <div
+                key={setting.key}
+                className="flex items-center justify-between"
+              >
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                     {setting.label}
@@ -770,21 +858,28 @@ export default function DataManagementPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setBackupSettings(prev => ({ ...prev, [setting.key]: !prev[setting.key] }))}
+                  onClick={() =>
+                    setBackupSettings((prev) => ({
+                      ...prev,
+                      [setting.key]: !prev[setting.key],
+                    }))
+                  }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     backupSettings[setting.key] ? "bg-blue-600" : "bg-gray-200"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      backupSettings[setting.key] ? "translate-x-6" : "translate-x-1"
+                      backupSettings[setting.key]
+                        ? "translate-x-6"
+                        : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
             ))}
           </div>
-          
+
           {backupSettings.cloudBackup && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -792,7 +887,12 @@ export default function DataManagementPage() {
               </label>
               <select
                 value={backupSettings.cloudProvider}
-                onChange={(e) => setBackupSettings(prev => ({ ...prev, cloudProvider: e.target.value }))}
+                onChange={(e) =>
+                  setBackupSettings((prev) => ({
+                    ...prev,
+                    cloudProvider: e.target.value,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="aws">Amazon S3</option>

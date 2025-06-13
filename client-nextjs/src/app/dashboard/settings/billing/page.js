@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   CreditCard,
   DollarSign,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function BillingPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("subscription");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
@@ -100,12 +99,7 @@ export default function BillingPage() {
       period: "월",
       users: 5,
       storage: "10GB",
-      features: [
-        "기본 고객 관리",
-        "기본 리포트",
-        "이메일 지원",
-        "일일 백업",
-      ],
+      features: ["기본 고객 관리", "기본 리포트", "이메일 지원", "일일 백업"],
       recommended: false,
     },
     {
@@ -201,15 +195,17 @@ export default function BillingPage() {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             현재 구독 플랜
           </h3>
-          <div className={`px-3 py-1 rounded-full text-sm ${
-            currentPlan.status === 'active' 
-              ? "bg-green-100 text-green-800" 
-              : "bg-red-100 text-red-800"
-          }`}>
-            {currentPlan.status === 'active' ? '활성' : '비활성'}
+          <div
+            className={`px-3 py-1 rounded-full text-sm ${
+              currentPlan.status === "active"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {currentPlan.status === "active" ? "활성" : "비활성"}
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -226,7 +222,9 @@ export default function BillingPage() {
             </div>
           </div>
           <div>
-            <h5 className="font-medium text-gray-900 dark:text-white mb-2">포함된 기능</h5>
+            <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+              포함된 기능
+            </h5>
             <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               {currentPlan.features.map((feature, index) => (
                 <li key={index} className="flex items-center space-x-2">
@@ -237,7 +235,7 @@ export default function BillingPage() {
             </ul>
           </div>
         </div>
-        
+
         <div className="mt-6 flex space-x-3">
           <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
             플랜 업그레이드
@@ -257,7 +255,9 @@ export default function BillingPage() {
               다음 결제 예정
             </h4>
             <p className="text-sm text-blue-700 dark:text-blue-200">
-              {currentPlan.nextBillingDate}에 {formatCurrency(currentPlan.price, currentPlan.currency)}이 결제됩니다.
+              {currentPlan.nextBillingDate}에{" "}
+              {formatCurrency(currentPlan.price, currentPlan.currency)}이
+              결제됩니다.
             </p>
           </div>
         </div>
@@ -271,35 +271,54 @@ export default function BillingPage() {
         {Object.entries(usageStats).map(([key, usage]) => {
           const percentage = getUsagePercentage(usage.current, usage.limit);
           const colorClass = getUsageColor(percentage);
-          
+
           return (
-            <div key={key} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div
+              key={key}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium text-gray-900 dark:text-white">
-                  {key === 'users' ? '사용자' : 
-                   key === 'storage' ? '저장공간' :
-                   key === 'apiCalls' ? 'API 호출' : '이메일 발송'}
+                  {key === "users"
+                    ? "사용자"
+                    : key === "storage"
+                      ? "저장공간"
+                      : key === "apiCalls"
+                        ? "API 호출"
+                        : "이메일 발송"}
                 </h4>
-                {key === 'users' && <Users className="w-5 h-5 text-gray-400" />}
-                {key === 'storage' && <Database className="w-5 h-5 text-gray-400" />}
-                {key === 'apiCalls' && <Zap className="w-5 h-5 text-gray-400" />}
-                {key === 'emailSent' && <Bell className="w-5 h-5 text-gray-400" />}
+                {key === "users" && <Users className="w-5 h-5 text-gray-400" />}
+                {key === "storage" && (
+                  <Database className="w-5 h-5 text-gray-400" />
+                )}
+                {key === "apiCalls" && (
+                  <Zap className="w-5 h-5 text-gray-400" />
+                )}
+                {key === "emailSent" && (
+                  <Bell className="w-5 h-5 text-gray-400" />
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {usage.current} / {usage.limit === "무제한" ? "∞" : usage.limit}
-                    {key === 'storage' ? 'GB' : ''}
+                    {usage.current} /{" "}
+                    {usage.limit === "무제한" ? "∞" : usage.limit}
+                    {key === "storage" ? "GB" : ""}
                   </span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${colorClass}`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${colorClass}`}
+                  >
                     {percentage}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${
-                      percentage >= 90 ? 'bg-red-500' :
-                      percentage >= 70 ? 'bg-yellow-500' : 'bg-green-500'
+                      percentage >= 90
+                        ? "bg-red-500"
+                        : percentage >= 70
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
                     }`}
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   ></div>
@@ -341,8 +360,8 @@ export default function BillingPage() {
           <div
             key={plan.id}
             className={`relative bg-white dark:bg-gray-800 border-2 rounded-lg p-6 ${
-              plan.recommended 
-                ? "border-blue-500" 
+              plan.recommended
+                ? "border-blue-500"
                 : "border-gray-200 dark:border-gray-700"
             }`}
           >
@@ -353,20 +372,22 @@ export default function BillingPage() {
                 </span>
               </div>
             )}
-            
+
             <div className="text-center mb-6">
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 {plan.name}
               </h4>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
                 {formatCurrency(plan.price, plan.currency)}
-                <span className="text-sm font-normal text-gray-500">/ {plan.period}</span>
+                <span className="text-sm font-normal text-gray-500">
+                  / {plan.period}
+                </span>
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 사용자 {plan.users}명, 저장공간 {plan.storage}
               </p>
             </div>
-            
+
             <ul className="space-y-3 mb-6">
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-center space-x-3">
@@ -377,14 +398,14 @@ export default function BillingPage() {
                 </li>
               ))}
             </ul>
-            
+
             <button
               className={`w-full py-2 px-4 rounded-lg font-medium ${
                 currentPlan.name === plan.name
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : plan.recommended
-                  ? "bg-blue-500 text-white hover:bg-blue-600"
-                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                    : "border border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
               disabled={currentPlan.name === plan.name}
             >
@@ -442,12 +463,14 @@ export default function BillingPage() {
                   {formatCurrency(bill.amount, bill.currency)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    bill.status === 'paid' 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {bill.status === 'paid' ? '결제완료' : '결제실패'}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      bill.status === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {bill.status === "paid" ? "결제완료" : "결제실패"}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Link,
   Key,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function IntegrationsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("api");
   const [showApiModal, setShowApiModal] = useState(false);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
@@ -72,7 +71,8 @@ export default function IntegrationsPage() {
       provider: "Google",
       model: "gemini-pro",
       enabled: true,
-      endpoint: "https://generativelanguage.googleapis.com/v1/models/gemini-pro",
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1/models/gemini-pro",
       maxTokens: 2048,
       temperature: 0.9,
     },
@@ -135,7 +135,7 @@ export default function IntegrationsPage() {
   ];
 
   const toggleSecretVisibility = (id) => {
-    setShowSecrets(prev => ({ ...prev, [id]: !prev[id] }));
+    setShowSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const renderApiKeysTab = () => (
@@ -165,47 +165,70 @@ export default function IntegrationsPage() {
                   <h4 className="font-semibold text-gray-900 dark:text-white">
                     {api.name}
                   </h4>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    api.status === 'active' 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {api.status === 'active' ? '활성' : '비활성'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      api.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {api.status === "active" ? "활성" : "비활성"}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">API 키:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      API 키:
+                    </span>
                     <div className="flex items-center space-x-2 mt-1">
                       <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
-                        {showSecrets[api.id] ? api.key.replace(/\*/g, 'X') : api.key}
+                        {showSecrets[api.id]
+                          ? api.key.replace(/\*/g, "X")
+                          : api.key}
                       </code>
                       <button
                         onClick={() => toggleSecretVisibility(api.id)}
                         className="text-gray-400 hover:text-gray-600"
                       >
-                        {showSecrets[api.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showSecrets[api.id] ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">마지막 사용:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      마지막 사용:
+                    </span>
                     <div className="mt-1">{api.lastUsed}</div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">사용량:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      사용량:
+                    </span>
                     <div className="mt-1">{api.usage}</div>
                   </div>
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-green-500" title="테스트">
+                <button
+                  className="p-2 text-gray-500 hover:text-green-500"
+                  title="테스트"
+                >
                   <TestTube className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-blue-500" title="편집">
+                <button
+                  className="p-2 text-gray-500 hover:text-blue-500"
+                  title="편집"
+                >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-red-500" title="삭제">
+                <button
+                  className="p-2 text-gray-500 hover:text-red-500"
+                  title="삭제"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -315,7 +338,10 @@ export default function IntegrationsPage() {
                   />
                 </button>
               </div>
-              <button className="p-2 text-gray-500 hover:text-green-500" title="연결 테스트">
+              <button
+                className="p-2 text-gray-500 hover:text-green-500"
+                title="연결 테스트"
+              >
                 <TestTube className="w-4 h-4" />
               </button>
             </div>
@@ -384,17 +410,21 @@ export default function IntegrationsPage() {
                   <h4 className="font-semibold text-gray-900 dark:text-white">
                     {client.name}
                   </h4>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    client.status === 'active' 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {client.status === 'active' ? '활성' : '비활성'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      client.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {client.status === "active" ? "활성" : "비활성"}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">클라이언트 ID:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      클라이언트 ID:
+                    </span>
                     <div className="mt-1">
                       <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs break-all">
                         {client.clientId}
@@ -402,7 +432,9 @@ export default function IntegrationsPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">권한 범위:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      권한 범위:
+                    </span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {client.scopes.map((scope, index) => (
                         <span
@@ -417,10 +449,16 @@ export default function IntegrationsPage() {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-blue-500" title="편집">
+                <button
+                  className="p-2 text-gray-500 hover:text-blue-500"
+                  title="편집"
+                >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-red-500" title="삭제">
+                <button
+                  className="p-2 text-gray-500 hover:text-red-500"
+                  title="삭제"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -458,17 +496,21 @@ export default function IntegrationsPage() {
                   <h4 className="font-semibold text-gray-900 dark:text-white">
                     {webhook.name}
                   </h4>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    webhook.status === 'active' 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {webhook.status === 'active' ? '활성' : '비활성'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      webhook.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {webhook.status === "active" ? "활성" : "비활성"}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">URL:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      URL:
+                    </span>
                     <div className="mt-1">
                       <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs break-all">
                         {webhook.url}
@@ -476,7 +518,9 @@ export default function IntegrationsPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">이벤트:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      이벤트:
+                    </span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {webhook.events.map((event, index) => (
                         <span
@@ -489,19 +533,30 @@ export default function IntegrationsPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">성공률:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      성공률:
+                    </span>
                     <div className="mt-1">{webhook.success}%</div>
                   </div>
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-green-500" title="테스트">
+                <button
+                  className="p-2 text-gray-500 hover:text-green-500"
+                  title="테스트"
+                >
                   <TestTube className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-blue-500" title="편집">
+                <button
+                  className="p-2 text-gray-500 hover:text-blue-500"
+                  title="편집"
+                >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-red-500" title="삭제">
+                <button
+                  className="p-2 text-gray-500 hover:text-red-500"
+                  title="삭제"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -552,12 +607,21 @@ export default function IntegrationsPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
                   {[
-                    "customer.created", "customer.updated", "customer.deleted",
-                    "order.created", "order.completed", "payment.received",
-                    "user.login", "user.logout", "system.error"
+                    "customer.created",
+                    "customer.updated",
+                    "customer.deleted",
+                    "order.created",
+                    "order.completed",
+                    "payment.received",
+                    "user.login",
+                    "user.logout",
+                    "system.error",
                   ].map((event) => (
                     <label key={event} className="flex items-center space-x-2">
-                      <input type="checkbox" className="w-4 h-4 text-blue-600" />
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600"
+                      />
                       <span className="text-sm">{event}</span>
                     </label>
                   ))}

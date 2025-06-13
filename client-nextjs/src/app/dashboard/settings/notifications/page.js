@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from '@/hooks/useLanguage.js';
 import {
   Bell,
   Mail,
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 export default function NotificationSettingsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("channels");
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);

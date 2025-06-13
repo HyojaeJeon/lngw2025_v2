@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Workflow,
   FileText,
@@ -24,7 +23,7 @@ import {
 } from "lucide-react";
 
 export default function WorkflowsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("templates");
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showWorkflowDesigner, setShowWorkflowDesigner] = useState(false);
@@ -172,43 +171,66 @@ export default function WorkflowsPage() {
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                     v{template.version}
                   </span>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    template.status === 'active' 
-                      ? "bg-green-100 text-green-800" 
-                      : template.status === 'draft'
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {template.status === 'active' ? '활성' : template.status === 'draft' ? '초안' : '비활성'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded ${
+                      template.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : template.status === "draft"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {template.status === "active"
+                      ? "활성"
+                      : template.status === "draft"
+                        ? "초안"
+                        : "비활성"}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">유형:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      유형:
+                    </span>
                     <div className="mt-1">{template.type}</div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">카테고리:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      카테고리:
+                    </span>
                     <div className="mt-1">{template.category}</div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">수정일:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      수정일:
+                    </span>
                     <div className="mt-1">{template.lastModified}</div>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">사용 횟수:</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      사용 횟수:
+                    </span>
                     <div className="mt-1">{template.usage}회</div>
                   </div>
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-green-500" title="미리보기">
+                <button
+                  className="p-2 text-gray-500 hover:text-green-500"
+                  title="미리보기"
+                >
                   <Eye className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-gray-700" title="복사">
+                <button
+                  className="p-2 text-gray-500 hover:text-gray-700"
+                  title="복사"
+                >
                   <Copy className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-gray-700" title="다운로드">
+                <button
+                  className="p-2 text-gray-500 hover:text-gray-700"
+                  title="다운로드"
+                >
                   <Download className="w-4 h-4" />
                 </button>
                 <button
@@ -221,7 +243,10 @@ export default function WorkflowsPage() {
                 >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-red-500" title="삭제">
+                <button
+                  className="p-2 text-gray-500 hover:text-red-500"
+                  title="삭제"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -299,7 +324,9 @@ export default function WorkflowsPage() {
                 </div>
               </div>
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-900 dark:text-white">미리보기</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white">
+                  미리보기
+                </h4>
                 <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700 min-h-[400px]">
                   <p className="text-gray-500 dark:text-gray-400 text-center">
                     템플릿 미리보기가 여기에 표시됩니다.
@@ -357,12 +384,14 @@ export default function WorkflowsPage() {
                   <h4 className="font-semibold text-gray-900 dark:text-white">
                     {workflow.name}
                   </h4>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    workflow.status === 'active' 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {workflow.status === 'active' ? '활성' : '비활성'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      workflow.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {workflow.status === "active" ? "활성" : "비활성"}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -370,7 +399,10 @@ export default function WorkflowsPage() {
                 </p>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-green-500" title="실행">
+                <button
+                  className="p-2 text-gray-500 hover:text-green-500"
+                  title="실행"
+                >
                   <Play className="w-4 h-4" />
                 </button>
                 <button
@@ -383,7 +415,10 @@ export default function WorkflowsPage() {
                 >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-red-500" title="삭제">
+                <button
+                  className="p-2 text-gray-500 hover:text-red-500"
+                  title="삭제"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -416,19 +451,27 @@ export default function WorkflowsPage() {
             {/* 통계 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <span className="text-gray-500 dark:text-gray-400">트리거:</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  트리거:
+                </span>
                 <div className="mt-1">{workflow.trigger}</div>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">마지막 실행:</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  마지막 실행:
+                </span>
                 <div className="mt-1">{workflow.lastRun}</div>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">총 실행 횟수:</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  총 실행 횟수:
+                </span>
                 <div className="mt-1">{workflow.totalRuns}회</div>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">성공률:</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  성공률:
+                </span>
                 <div className="mt-1">{workflow.successRate}%</div>
               </div>
             </div>
@@ -488,7 +531,7 @@ export default function WorkflowsPage() {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
-              
+
               {/* 드래그 앤 드롭 승인 단계 디자이너 */}
               <div>
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -566,7 +609,9 @@ export default function WorkflowsPage() {
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {templateVersions.map((version) => {
-              const template = documentTemplates.find(t => t.id === version.templateId);
+              const template = documentTemplates.find(
+                (t) => t.id === version.templateId,
+              );
               return (
                 <tr key={version.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -583,12 +628,14 @@ export default function WorkflowsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      version.status === 'current'
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}>
-                      {version.status === 'current' ? '현재' : '아카이브'}
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        version.status === "current"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {version.status === "current" ? "현재" : "아카이브"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
@@ -599,14 +646,23 @@ export default function WorkflowsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900" title="미리보기">
+                      <button
+                        className="text-blue-600 hover:text-blue-900"
+                        title="미리보기"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="text-green-600 hover:text-green-900" title="다운로드">
+                      <button
+                        className="text-green-600 hover:text-green-900"
+                        title="다운로드"
+                      >
                         <Download className="w-4 h-4" />
                       </button>
-                      {version.status !== 'current' && (
-                        <button className="text-orange-600 hover:text-orange-900" title="복원">
+                      {version.status !== "current" && (
+                        <button
+                          className="text-orange-600 hover:text-orange-900"
+                          title="복원"
+                        >
                           <RotateCcw className="w-4 h-4" />
                         </button>
                       )}
