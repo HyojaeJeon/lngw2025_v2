@@ -598,13 +598,11 @@ function RoleModal({ title, role, onClose, onSave, modules, colorOptions, t }) {
 
     const permissions = modules.map(module => ({
       module: module.key,
-      ...(formData.permissions[module.key] || {
-        canRead: false,
-        canWrite: false,
-        canDelete: false,
-        canApprove: false,
-        canSystemConfig: false,
-      })
+      canRead: formData.permissions[module.key]?.canRead || false,
+      canWrite: formData.permissions[module.key]?.canWrite || false,
+      canDelete: formData.permissions[module.key]?.canDelete || false,
+      canApprove: formData.permissions[module.key]?.canApprove || false,
+      canSystemConfig: formData.permissions[module.key]?.canSystemConfig || false,
     }));
 
     onSave({
@@ -786,6 +784,7 @@ function UserRoleModal({ user, roles, onClose, onSave, t }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+```text
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               사용자
             </label>
