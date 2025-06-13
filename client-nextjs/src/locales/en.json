@@ -236,5 +236,31 @@
     "myProfile": "My Profile",
     "account": "Account",
     "personalInfo": "Personal Information"
+  },
+  "customer": {
+    "list": "Customer List",
+    "add": "Add Customer",
+    "edit": "Edit Customer",
+    "delete": "Delete Customer",
+    "name": "Company Name",
+    "contactName": "Contact Name",
+    "email": "Email",
+    "phone": "Phone",
+    "industry": "Industry",
+    "grade": "Grade",
+    "status": "Status",
+    "address": "Address",
+    "assignedUser": "Assigned User",
+    "created": "Customer has been successfully registered",
+    "companyNamePlaceholder": "Enter company name",
+    "contactPhonePlaceholder": "Enter contact phone number",
+    "contactEmailPlaceholder": "Enter contact email",
+    "industryPlaceholder": "Enter industry"
+  },
+  "error": {
+    "network": "Network error occurred",
+    "server": "Server error occurred",
+    "unknown": "Unknown error occurred",
+    "companyNameExists": "Company name already exists"
   }
 }

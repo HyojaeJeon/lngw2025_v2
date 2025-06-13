@@ -1,6 +1,6 @@
 {
   "common": {
-    "loading": "Đang tải..."...",
+    "loading": "Đang tải...",
     "save": "Lưu",
     "cancel": "Hủy",
     "delete": "Xóa",
@@ -334,5 +334,31 @@
     "person": {
       "placeholder": "Tìm kiếm và chọn nhân viên kinh doanh phụ trách"
     }
+  },
+  "customer": {
+    "list": "Danh sách khách hàng",
+    "add": "Thêm khách hàng",
+    "edit": "Chỉnh sửa khách hàng",
+    "delete": "Xóa khách hàng",
+    "name": "Tên công ty",
+    "contactName": "Tên người liên hệ",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "industry": "Ngành nghề",
+    "grade": "Cấp độ",
+    "status": "Trạng thái",
+    "address": "Địa chỉ",
+    "assignedUser": "Nhân viên phụ trách",
+    "created": "Khách hàng đã được đăng ký thành công",
+    "companyNamePlaceholder": "Nhập tên công ty",
+    "contactPhonePlaceholder": "Nhập số điện thoại người liên hệ",
+    "contactEmailPlaceholder": "Nhập email người liên hệ",
+    "industryPlaceholder": "Nhập ngành nghề"
+  },
+  "error": {
+    "network": "Đã xảy ra lỗi mạng",
+    "server": "Đã xảy ra lỗi máy chủ",
+    "unknown": "Đã xảy ra lỗi không xác định",
+    "companyNameExists": "Tên công ty đã tồn tại"
   }
 }

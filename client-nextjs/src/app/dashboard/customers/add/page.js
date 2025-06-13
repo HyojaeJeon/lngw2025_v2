@@ -842,8 +842,7 @@ const ContactPersonForm = ({
             <select
               value={
                 contact.birthDate
-                  ? new Date(contact.birthDate).getFullYear()
-                  : ""
+                  ? new Date(contact.birthDate).getFullYear()                  : ""
               }
               onChange{(e) => {
                 const year = e.target.value;

@@ -391,5 +391,31 @@
     "person": {
       "placeholder": "담당 영업사원을 검색하여 선택하세요"
     }
+  },
+  "customer": {
+    "list": "고객사 목록",
+    "add": "고객사 추가",
+    "edit": "고객사 수정",
+    "delete": "고객사 삭제",
+    "name": "회사명",
+    "contactName": "담당자명",
+    "email": "이메일",
+    "phone": "전화번호",
+    "industry": "업종",
+    "grade": "등급",
+    "status": "상태",
+    "address": "주소",
+    "assignedUser": "담당 직원",
+    "created": "고객사가 성공적으로 등록되었습니다",
+    "companyNamePlaceholder": "회사명을 입력하세요",
+    "contactPhonePlaceholder": "담당자 전화번호를 입력하세요",
+    "contactEmailPlaceholder": "담당자 이메일을 입력하세요",
+    "industryPlaceholder": "업종을 입력하세요"
+  },
+  "error": {
+    "network": "네트워크 오류가 발생했습니다",
+    "server": "서버 오류가 발생했습니다",
+    "unknown": "알 수 없는 오류가 발생했습니다",
+    "companyNameExists": "이미 존재하는 회사명입니다"
   }
 }
