@@ -115,6 +115,10 @@ const StockMovement = require("./StockMovement")(
   sequelize,
   Sequelize.DataTypes,
 );
+const CustomerActivity = require("./CustomerActivity")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 
 // 모든 모델이 로드된 후 관계 설정
 const models = {
@@ -152,6 +156,7 @@ const models = {
   Warehouse,
   InventoryRecord,
   StockMovement,
+  CustomerActivity,
 };
 
 // Associate 함수 호출 - 모든 모델이 준비된 후
@@ -195,6 +200,7 @@ const syncOrder = [
   "Skill",
   "EmergencyContact",
   "Experience",
+  "CustomerActivity",
 ];
 
 // 데이터베이스 동기화 함수
