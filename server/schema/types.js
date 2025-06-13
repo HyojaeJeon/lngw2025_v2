@@ -34,6 +34,8 @@ const types = gql`
     firstName: String
     lastName: String
     role: String
+    roleId: ID
+    userRole: Role
     department: String
     position: String
     phoneNumber: String

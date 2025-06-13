@@ -794,7 +794,7 @@ function UserRoleModal({ user, roles, onClose, onSave, t }) {
             <select 
               value={selectedRoleId}
               onChange={(e) => setSelectedRoleId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700text-gray-900 dark:text-white"
               required
             >
               <option value="">역할을 선택하세요</option>

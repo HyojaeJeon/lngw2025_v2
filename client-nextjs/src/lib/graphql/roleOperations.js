@@ -1,4 +1,3 @@
-
 import { gql } from "@apollo/client";
 
 // Queries
@@ -75,10 +74,10 @@ export const GET_USERS_WITH_ROLES = gql`
       email
       department
       position
-      role {
+      roleId
+      userRole {
         id
         name
-        englishName
         color
       }
     }

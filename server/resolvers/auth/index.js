@@ -50,15 +50,19 @@ const authResolvers = {
       requireAuth(user, lang);
 
       try {
-        const userData = await models.User.findByPk(user.id, {
+        const currentUser = await models.User.findByPk(user.id, {
           include: [
             {
-              model: models.EmergencyContact,
-              as: "emergencyContact",
+              model: models.Role,
+              as: "userRole",
             },
             {
               model: models.Skill,
               as: "skills",
+            },
+            {
+              model: models.EmergencyContact,
+              as: "emergencyContact",
             },
             {
               model: models.Experience,
@@ -67,25 +71,25 @@ const authResolvers = {
           ],
         });
 
-        if (!userData) {
+        if (!currentUser) {
           throw createError("USER_NOT_FOUND", lang);
         }
 
-        return userData;
+        return currentUser;
       } catch (error) {
         if (error.extensions?.errorKey) {
           throw error;
         }
-        handleDatabaseError(error, lang, "USER_NOT_FOUND");
+        handleDatabaseError(error, lang, "USER_FETCH_FAILED");
       }
     },
 
     employees: async (_, { filter }, { user, lang }) => {
       requireAuth(user, lang);
-      
+
       try {
         const where = {};
-        
+
         if (filter?.search) {
           where[models.Sequelize.Op.or] = [
             { name: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
@@ -401,12 +405,12 @@ const authResolvers = {
 
       try {
         const { currentPassword, newPassword } = input;
-        
+
         // 새 비밀번호 유효성 검사
         if (!validatePassword(newPassword)) {
           throw createError("WEAK_PASSWORD", lang);
         }
-        
+
         const userData = await models.User.findByPk(user.userId);
         if (!userData) {
           throw createError("USER_NOT_FOUND", lang);
