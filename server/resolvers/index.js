@@ -11,6 +11,7 @@ const authResolvers = require("./auth/index");
 
 // Customer resolvers
 const customerResolvers = require("./customer/index");
+const customerActivityResolvers = require("./customerActivity/index");
 
 // Category resolvers
 const categoryResolvers = require("./category/index");
@@ -56,6 +57,7 @@ const resolvers = merge(
   scalarResolvers,
   authResolvers,
   customerResolvers,
+  customerActivityResolvers,
   categoryResolvers,
   productResolvers,
   contentResolvers,
@@ -68,4 +70,4 @@ const resolvers = merge(
   engagementResolvers
 );
 
-module.exports = resolvers; 
+module.exports = resolvers;

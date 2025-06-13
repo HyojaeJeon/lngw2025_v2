@@ -1,48 +1,54 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { mkdir } from 'fs/promises';
 
 export async function POST(request) {
   try {
-    const data = await request.formData();
-    const file = data.get('file');
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const type = formData.get('type') || 'general'; // activity, customer, general
 
     if (!file) {
-      return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 });
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
+
+    const timestamp = Date.now();
+    const fileName = `${timestamp}_${file.name}`;
+
+    // 타입별로 폴더 구분
+    let subFolder = 'general';
+    if (type === 'activity') {
+      subFolder = 'activities';
+    } else if (type === 'customer') {
+      subFolder = 'customers';
+    }
+
+    const uploadDir = join(process.cwd(), 'public', 'uploads', subFolder);
+    const uploadPath = join(uploadDir, fileName);
+
+    // 디렉토리가 없으면 생성
+    try {
+      await mkdir(uploadDir, { recursive: true });
+    } catch (error) {
+      // 이미 존재하는 경우 무시
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 파일명 생성 (타임스탬프 + 원본 파일명)
-    const timestamp = Date.now();
-    const filename = `${timestamp}_${file.name}`;
-    const path = join(process.cwd(), 'public/uploads', filename);
+    await writeFile(uploadPath, buffer);
 
-    // 업로드 디렉토리가 없으면 생성
-    try {
-      await writeFile(path, buffer);
-    } catch (error) {
-      // 디렉토리가 없는 경우 생성
-      const { mkdir } = await import('fs/promises');
-      const uploadDir = join(process.cwd(), 'public/uploads');
-      await mkdir(uploadDir, { recursive: true });
-      await writeFile(path, buffer);
-    }
-
-    const url = `/uploads/${filename}`;
-    
     return NextResponse.json({ 
-      success: true, 
-      url,
-      message: '파일이 성공적으로 업로드되었습니다.' 
+      fileName,
+      originalName: file.name,
+      url: `/uploads/${subFolder}/${fileName}`,
+      size: file.size,
+      type: file.type,
+      message: 'File uploaded successfully' 
     });
-
   } catch (error) {
-    console.error('파일 업로드 오류:', error);
-    return NextResponse.json({ 
-      error: '파일 업로드에 실패했습니다.' 
-    }, { status: 500 });
+    console.error('Upload error:', error);
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

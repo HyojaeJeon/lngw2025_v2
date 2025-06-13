@@ -14,6 +14,7 @@ const authSchema = require("./auth");
 
 // Customer schema
 const customerSchema = require("./customer");
+const customerActivitySchema = require("./customerActivity");
 
 // Category schema
 const categorySchema = require("./category");
@@ -38,6 +39,7 @@ const typeDefs = mergeTypeDefs([
   types,
   authSchema,
   customerSchema,
+  customerActivitySchema,
   categorySchema,
   productSchema,
   contentSchema,
@@ -50,4 +52,4 @@ const typeDefs = mergeTypeDefs([
   engagementSchema,
 ]);
 
-module.exports = typeDefs; 
+module.exports = typeDefs;

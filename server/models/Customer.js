@@ -113,6 +113,13 @@ module.exports = (sequelize, DataTypes) => {
       as: "opportunities",
     });
 
+    // CustomerActivity와의 관계
+    Customer.hasMany(models.CustomerActivity, {
+      foreignKey: "customerId",
+      as: "activities",
+      onDelete: "CASCADE",
+    });
+
     // SalesItem과의 관계
     Customer.hasMany(models.SalesItem, {
       foreignKey: "customerId",
