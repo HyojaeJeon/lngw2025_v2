@@ -47,12 +47,11 @@ import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
 import { CustomSelect } from "@/components/common/CustomSelect.js";
 import CustomCategorySelect from "@/components/common/CustomCategorySelect.js";
 import { ImageUploader } from "@/components/common/ImageUploader.js";
-import { CustomCalendar } from "@/components/common/CustomCalendar.js";
+import CustomCalendar from "@/components/common/CustomCalendar.js";
 import { useUsers, useCreateCustomer, useCheckCompanyName } from "@/hooks/useCustomers.js";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
-import CustomCalendar from "@/components/common/CustomCalendar.js";
 
 // 이미지 로딩 모달 컴포넌트
 const ImageLoadingModal = ({ isVisible }) => {
@@ -848,7 +847,7 @@ const ContactPersonForm = ({
               onChange={(e) => {
                 const year = e.target.value;
                 const month = contact.birthDate
-                  ? new Date(contact.birthDate).getMonth() + 1
+                                    ? new Date(contact.birthDate).getMonth() + 1
                   : 1;
                 const day = contact.birthDate
                   ? new Date(contact.birthDate).getDate()
