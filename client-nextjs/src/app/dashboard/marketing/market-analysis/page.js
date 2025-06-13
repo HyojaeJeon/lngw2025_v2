@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   TrendingUp,
   Target,
@@ -33,7 +32,7 @@ import {
 } from "lucide-react";
 
 export default function MarketAnalysisPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("market");
   const [marketData, setMarketData] = useState({
     size: 2.5,
@@ -42,7 +41,7 @@ export default function MarketAnalysisPage() {
       { name: "스킨케어", share: 45, growth: 12 },
       { name: "메이크업", share: 35, growth: 18 },
       { name: "헤어케어", share: 20, growth: 8 },
-    ]
+    ],
   });
   const [trendKeywords, setTrendKeywords] = useState([
     { keyword: "K-뷰티", score: 95, trend: "up" },
@@ -90,33 +89,36 @@ export default function MarketAnalysisPage() {
   ];
 
   const addSWOTItem = (category) => {
-    setNewCompetitor(prev => ({
+    setNewCompetitor((prev) => ({
       ...prev,
-      [category]: [...prev[category], ""]
+      [category]: [...prev[category], ""],
     }));
   };
 
   const updateSWOTItem = (category, index, value) => {
-    setNewCompetitor(prev => ({
+    setNewCompetitor((prev) => ({
       ...prev,
-      [category]: prev[category].map((item, i) => i === index ? value : item)
+      [category]: prev[category].map((item, i) => (i === index ? value : item)),
     }));
   };
 
   const removeSWOTItem = (category, index) => {
-    setNewCompetitor(prev => ({
+    setNewCompetitor((prev) => ({
       ...prev,
-      [category]: prev[category].filter((_, i) => i !== index)
+      [category]: prev[category].filter((_, i) => i !== index),
     }));
   };
 
   const handleAddCompetitor = () => {
     if (newCompetitor.name && newCompetitor.marketShare) {
-      setCompetitors(prev => [...prev, {
-        ...newCompetitor,
-        id: Date.now(),
-        marketShare: parseFloat(newCompetitor.marketShare)
-      }]);
+      setCompetitors((prev) => [
+        ...prev,
+        {
+          ...newCompetitor,
+          id: Date.now(),
+          marketShare: parseFloat(newCompetitor.marketShare),
+        },
+      ]);
       setNewCompetitor({
         name: "",
         marketShare: "",
@@ -131,15 +133,15 @@ export default function MarketAnalysisPage() {
 
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const newReports = files.map(file => ({
+    const newReports = files.map((file) => ({
       id: Date.now() + Math.random(),
       name: file.name,
       type: file.type,
       size: file.size,
       uploadDate: new Date().toISOString(),
-      url: URL.createObjectURL(file)
+      url: URL.createObjectURL(file),
     }));
-    setReports(prev => [...prev, ...newReports]);
+    setReports((prev) => [...prev, ...newReports]);
   };
 
   return (
@@ -188,8 +190,12 @@ export default function MarketAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">시장 규모</p>
-                    <p className="text-2xl font-bold text-gray-900">${marketData.size}B</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      시장 규모
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${marketData.size}B
+                    </p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-500" />
                 </div>
@@ -201,7 +207,9 @@ export default function MarketAnalysisPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">성장률</p>
-                    <p className="text-2xl font-bold text-gray-900">{marketData.growth}%</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {marketData.growth}%
+                    </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-blue-500" />
                 </div>
@@ -212,8 +220,12 @@ export default function MarketAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">주요 세그먼트</p>
-                    <p className="text-2xl font-bold text-gray-900">{marketData.segments.length}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      주요 세그먼트
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {marketData.segments.length}
+                    </p>
                   </div>
                   <PieChart className="w-8 h-8 text-purple-500" />
                 </div>
@@ -228,11 +240,16 @@ export default function MarketAnalysisPage() {
               <CardContent>
                 <div className="space-y-4">
                   {marketData.segments.map((segment, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">{segment.name}</span>
-                          <span className="text-sm text-gray-600">{segment.share}%</span>
+                          <span className="text-sm text-gray-600">
+                            {segment.share}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
@@ -243,7 +260,9 @@ export default function MarketAnalysisPage() {
                       </div>
                       <div className="ml-4 text-right">
                         <p className="text-sm text-gray-600">성장률</p>
-                        <p className={`font-medium ${segment.growth > 10 ? 'text-green-600' : 'text-orange-600'}`}>
+                        <p
+                          className={`font-medium ${segment.growth > 10 ? "text-green-600" : "text-orange-600"}`}
+                        >
                           +{segment.growth}%
                         </p>
                       </div>
@@ -269,21 +288,26 @@ export default function MarketAnalysisPage() {
               <CardContent>
                 <div className="space-y-3">
                   {trendKeywords.map((keyword, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <span
                           className={`w-3 h-3 rounded-full ${
                             keyword.trend === "up"
                               ? "bg-green-500"
                               : keyword.trend === "down"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
+                                ? "bg-red-500"
+                                : "bg-yellow-500"
                           }`}
                         />
                         <span className="font-medium">{keyword.keyword}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-lg font-bold">{keyword.score}</span>
+                        <span className="text-lg font-bold">
+                          {keyword.score}
+                        </span>
                         <p className="text-xs text-gray-500">트렌드 점수</p>
                       </div>
                     </div>
@@ -305,13 +329,16 @@ export default function MarketAnalysisPage() {
                         <span
                           key={index}
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            index === 0 ? "text-2xl bg-blue-100 text-blue-800" :
-                            index === 1 ? "text-xl bg-green-100 text-green-800" :
-                            index === 2 ? "text-lg bg-purple-100 text-purple-800" :
-                            "text-base bg-gray-100 text-gray-800"
+                            index === 0
+                              ? "text-2xl bg-blue-100 text-blue-800"
+                              : index === 1
+                                ? "text-xl bg-green-100 text-green-800"
+                                : index === 2
+                                  ? "text-lg bg-purple-100 text-purple-800"
+                                  : "text-base bg-gray-100 text-gray-800"
                           }`}
                           style={{
-                            fontSize: `${1.5 - index * 0.1}rem`
+                            fontSize: `${1.5 - index * 0.1}rem`,
                           }}
                         >
                           {keyword.keyword}
@@ -352,10 +379,15 @@ export default function MarketAnalysisPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <h4 className="font-medium text-green-600 mb-2">강점 (Strengths)</h4>
+                        <h4 className="font-medium text-green-600 mb-2">
+                          강점 (Strengths)
+                        </h4>
                         <ul className="text-sm space-y-1">
                           {competitor.strengths.map((strength, index) => (
-                            <li key={index} className="flex items-center space-x-1">
+                            <li
+                              key={index}
+                              className="flex items-center space-x-1"
+                            >
                               <span className="w-1 h-1 bg-green-500 rounded-full" />
                               <span>{strength}</span>
                             </li>
@@ -363,10 +395,15 @@ export default function MarketAnalysisPage() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-medium text-red-600 mb-2">약점 (Weaknesses)</h4>
+                        <h4 className="font-medium text-red-600 mb-2">
+                          약점 (Weaknesses)
+                        </h4>
                         <ul className="text-sm space-y-1">
                           {competitor.weaknesses.map((weakness, index) => (
-                            <li key={index} className="flex items-center space-x-1">
+                            <li
+                              key={index}
+                              className="flex items-center space-x-1"
+                            >
                               <span className="w-1 h-1 bg-red-500 rounded-full" />
                               <span>{weakness}</span>
                             </li>
@@ -374,21 +411,33 @@ export default function MarketAnalysisPage() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-medium text-blue-600 mb-2">기회 (Opportunities)</h4>
+                        <h4 className="font-medium text-blue-600 mb-2">
+                          기회 (Opportunities)
+                        </h4>
                         <ul className="text-sm space-y-1">
-                          {competitor.opportunities.map((opportunity, index) => (
-                            <li key={index} className="flex items-center space-x-1">
-                              <span className="w-1 h-1 bg-blue-500 rounded-full" />
-                              <span>{opportunity}</span>
-                            </li>
-                          ))}
+                          {competitor.opportunities.map(
+                            (opportunity, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center space-x-1"
+                              >
+                                <span className="w-1 h-1 bg-blue-500 rounded-full" />
+                                <span>{opportunity}</span>
+                              </li>
+                            ),
+                          )}
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-medium text-orange-600 mb-2">위협 (Threats)</h4>
+                        <h4 className="font-medium text-orange-600 mb-2">
+                          위협 (Threats)
+                        </h4>
                         <ul className="text-sm space-y-1">
                           {competitor.threats.map((threat, index) => (
-                            <li key={index} className="flex items-center space-x-1">
+                            <li
+                              key={index}
+                              className="flex items-center space-x-1"
+                            >
                               <span className="w-1 h-1 bg-orange-500 rounded-full" />
                               <span>{threat}</span>
                             </li>
@@ -414,7 +463,12 @@ export default function MarketAnalysisPage() {
                         <Label>회사명</Label>
                         <Input
                           value={newCompetitor.name}
-                          onChange={(e) => setNewCompetitor(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCompetitor((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
                           placeholder="경쟁사명을 입력하세요"
                         />
                       </div>
@@ -423,7 +477,12 @@ export default function MarketAnalysisPage() {
                         <Input
                           type="number"
                           value={newCompetitor.marketShare}
-                          onChange={(e) => setNewCompetitor(prev => ({ ...prev, marketShare: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCompetitor((prev) => ({
+                              ...prev,
+                              marketShare: e.target.value,
+                            }))
+                          }
                           placeholder="0.0"
                         />
                       </div>
@@ -431,15 +490,28 @@ export default function MarketAnalysisPage() {
 
                     {/* SWOT Analysis Form */}
                     <div className="grid grid-cols-2 gap-6">
-                      {["strengths", "weaknesses", "opportunities", "threats"].map((category) => (
+                      {[
+                        "strengths",
+                        "weaknesses",
+                        "opportunities",
+                        "threats",
+                      ].map((category) => (
                         <div key={category}>
                           <div className="flex items-center justify-between mb-2">
                             <Label className="capitalize">
-                              {category === "strengths" ? "강점" :
-                               category === "weaknesses" ? "약점" :
-                               category === "opportunities" ? "기회" : "위협"}
+                              {category === "strengths"
+                                ? "강점"
+                                : category === "weaknesses"
+                                  ? "약점"
+                                  : category === "opportunities"
+                                    ? "기회"
+                                    : "위협"}
                             </Label>
-                            <Button size="sm" variant="outline" onClick={() => addSWOTItem(category)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addSWOTItem(category)}
+                            >
                               <Plus className="w-3 h-3" />
                             </Button>
                           </div>
@@ -448,7 +520,13 @@ export default function MarketAnalysisPage() {
                               <div key={index} className="flex space-x-2">
                                 <Input
                                   value={item}
-                                  onChange={(e) => updateSWOTItem(category, index, e.target.value)}
+                                  onChange={(e) =>
+                                    updateSWOTItem(
+                                      category,
+                                      index,
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder={`${category} 항목을 입력하세요`}
                                   className="text-sm"
                                 />
@@ -456,7 +534,9 @@ export default function MarketAnalysisPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => removeSWOTItem(category, index)}
+                                    onClick={() =>
+                                      removeSWOTItem(category, index)
+                                    }
                                   >
                                     <Trash2 className="w-3 h-3" />
                                   </Button>
@@ -469,12 +549,13 @@ export default function MarketAnalysisPage() {
                     </div>
 
                     <div className="flex justify-end space-x-2">
-                      <Button variant="outline" onClick={() => setShowAddCompetitor(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddCompetitor(false)}
+                      >
                         취소
                       </Button>
-                      <Button onClick={handleAddCompetitor}>
-                        추가
-                      </Button>
+                      <Button onClick={handleAddCompetitor}>추가</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -505,8 +586,12 @@ export default function MarketAnalysisPage() {
                   />
                   <label htmlFor="report-upload" className="cursor-pointer">
                     <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg font-medium text-gray-600">시장 리포트를 업로드하세요</p>
-                    <p className="text-sm text-gray-400">PDF, DOC, XLS 파일 지원</p>
+                    <p className="text-lg font-medium text-gray-600">
+                      시장 리포트를 업로드하세요
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      PDF, DOC, XLS 파일 지원
+                    </p>
                   </label>
                 </div>
 
@@ -514,7 +599,10 @@ export default function MarketAnalysisPage() {
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold">업로드된 리포트</h3>
                     {reports.map((report) => (
-                      <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={report.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-3">
                           <BarChart3 className="w-8 h-8 text-blue-500" />
                           <div>

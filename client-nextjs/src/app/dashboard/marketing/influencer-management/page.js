@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Users,
   Plus,
@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 
 export default function InfluencerManagementPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");

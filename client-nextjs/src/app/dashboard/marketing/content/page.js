@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   FileText,
   Heart,

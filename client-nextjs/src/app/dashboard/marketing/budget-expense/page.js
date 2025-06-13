@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   DollarSign,
   Plus,
@@ -37,7 +36,7 @@ import {
 } from "lucide-react";
 
 export default function BudgetExpensePage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("budget");
   const [selectedPeriod, setSelectedPeriod] = useState("2024-06");
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,8 +54,8 @@ export default function BudgetExpensePage() {
       subcategories: [
         { name: "촬영 비용", allocated: 4000000, spent: 2800000 },
         { name: "편집 비용", allocated: 3000000, spent: 1900000 },
-        { name: "모델료", allocated: 3000000, spent: 1800000 }
-      ]
+        { name: "모델료", allocated: 3000000, spent: 1800000 },
+      ],
     },
     {
       id: 2,
@@ -68,8 +67,8 @@ export default function BudgetExpensePage() {
       subcategories: [
         { name: "Facebook 광고", allocated: 6000000, spent: 5200000 },
         { name: "Instagram 광고", allocated: 5000000, spent: 4100000 },
-        { name: "Google 광고", allocated: 4000000, spent: 3000000 }
-      ]
+        { name: "Google 광고", allocated: 4000000, spent: 3000000 },
+      ],
     },
     {
       id: 3,
@@ -81,8 +80,8 @@ export default function BudgetExpensePage() {
       subcategories: [
         { name: "메가 인플루언서", allocated: 5000000, spent: 3500000 },
         { name: "매크로 인플루언서", allocated: 2000000, spent: 1500000 },
-        { name: "마이크로 인플루언서", allocated: 1000000, spent: 500000 }
-      ]
+        { name: "마이크로 인플루언서", allocated: 1000000, spent: 500000 },
+      ],
     },
     {
       id: 4,
@@ -94,9 +93,9 @@ export default function BudgetExpensePage() {
       subcategories: [
         { name: "상품 제작", allocated: 2000000, spent: 1200000 },
         { name: "배송비", allocated: 1500000, spent: 900000 },
-        { name: "운영비", allocated: 1500000, spent: 700000 }
-      ]
-    }
+        { name: "운영비", allocated: 1500000, spent: 700000 },
+      ],
+    },
   ]);
   const [expenses, setExpenses] = useState([
     {
@@ -108,7 +107,7 @@ export default function BudgetExpensePage() {
       amount: 800000,
       receipt: "receipt_001.pdf",
       approver: "김마케팅",
-      status: "approved"
+      status: "approved",
     },
     {
       id: 2,
@@ -119,7 +118,7 @@ export default function BudgetExpensePage() {
       amount: 1200000,
       receipt: "fb_invoice_001.pdf",
       approver: "박광고",
-      status: "approved"
+      status: "approved",
     },
     {
       id: 3,
@@ -130,7 +129,7 @@ export default function BudgetExpensePage() {
       amount: 2000000,
       receipt: "influencer_001.pdf",
       approver: "이매니저",
-      status: "pending"
+      status: "pending",
     },
     {
       id: 4,
@@ -141,15 +140,15 @@ export default function BudgetExpensePage() {
       amount: 600000,
       receipt: "goods_001.pdf",
       approver: "최이벤트",
-      status: "approved"
-    }
+      status: "approved",
+    },
   ]);
   const [newBudget, setNewBudget] = useState({
     category: "",
     allocated: "",
     period: "",
     description: "",
-    subcategories: [{ name: "", allocated: "" }]
+    subcategories: [{ name: "", allocated: "" }],
   });
   const [newExpense, setNewExpense] = useState({
     date: "",
@@ -157,7 +156,7 @@ export default function BudgetExpensePage() {
     subcategory: "",
     description: "",
     amount: "",
-    receipt: null
+    receipt: null,
   });
 
   const tabs = [
@@ -167,13 +166,27 @@ export default function BudgetExpensePage() {
     { id: "analytics", label: "분석", icon: PieChart },
   ];
 
-  const categories = ["all", "콘텐츠 제작", "광고비", "인플루언서", "이벤트/프로모션", "기타"];
-  const periods = ["2024-06", "2024-05", "2024-04", "2024-03", "2024-02", "2024-01"];
+  const categories = [
+    "all",
+    "콘텐츠 제작",
+    "광고비",
+    "인플루언서",
+    "이벤트/프로모션",
+    "기타",
+  ];
+  const periods = [
+    "2024-06",
+    "2024-05",
+    "2024-04",
+    "2024-03",
+    "2024-02",
+    "2024-01",
+  ];
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW'
+    return new Intl.NumberFormat("ko-KR", {
+      style: "currency",
+      currency: "KRW",
     }).format(amount);
   };
 
@@ -189,16 +202,30 @@ export default function BudgetExpensePage() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      approved: { label: "승인", color: "bg-green-100 text-green-800", icon: CheckCircle },
-      pending: { label: "대기", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-      rejected: { label: "반려", color: "bg-red-100 text-red-800", icon: XCircle }
+      approved: {
+        label: "승인",
+        color: "bg-green-100 text-green-800",
+        icon: CheckCircle,
+      },
+      pending: {
+        label: "대기",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: Clock,
+      },
+      rejected: {
+        label: "반려",
+        color: "bg-red-100 text-red-800",
+        icon: XCircle,
+      },
     };
-    
+
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
-    
+
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color} flex items-center`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${config.color} flex items-center`}
+      >
         <Icon className="w-3 h-3 mr-1" />
         {config.label}
       </span>
@@ -206,25 +233,25 @@ export default function BudgetExpensePage() {
   };
 
   const addSubcategory = () => {
-    setNewBudget(prev => ({
+    setNewBudget((prev) => ({
       ...prev,
-      subcategories: [...prev.subcategories, { name: "", allocated: "" }]
+      subcategories: [...prev.subcategories, { name: "", allocated: "" }],
     }));
   };
 
   const updateSubcategory = (index, field, value) => {
-    setNewBudget(prev => ({
+    setNewBudget((prev) => ({
       ...prev,
-      subcategories: prev.subcategories.map((sub, i) => 
-        i === index ? { ...sub, [field]: value } : sub
-      )
+      subcategories: prev.subcategories.map((sub, i) =>
+        i === index ? { ...sub, [field]: value } : sub,
+      ),
     }));
   };
 
   const removeSubcategory = (index) => {
-    setNewBudget(prev => ({
+    setNewBudget((prev) => ({
       ...prev,
-      subcategories: prev.subcategories.filter((_, i) => i !== index)
+      subcategories: prev.subcategories.filter((_, i) => i !== index),
     }));
   };
 
@@ -235,19 +262,19 @@ export default function BudgetExpensePage() {
         id: Date.now(),
         allocated: parseInt(newBudget.allocated),
         spent: 0,
-        subcategories: newBudget.subcategories.map(sub => ({
+        subcategories: newBudget.subcategories.map((sub) => ({
           ...sub,
           allocated: parseInt(sub.allocated) || 0,
-          spent: 0
-        }))
+          spent: 0,
+        })),
       };
-      setBudgets(prev => [...prev, budget]);
+      setBudgets((prev) => [...prev, budget]);
       setNewBudget({
         category: "",
         allocated: "",
         period: "",
         description: "",
-        subcategories: [{ name: "", allocated: "" }]
+        subcategories: [{ name: "", allocated: "" }],
       });
       setShowBudgetModal(false);
     }
@@ -260,16 +287,16 @@ export default function BudgetExpensePage() {
         id: Date.now(),
         amount: parseInt(newExpense.amount),
         status: "pending",
-        approver: "대기중"
+        approver: "대기중",
       };
-      setExpenses(prev => [...prev, expense]);
+      setExpenses((prev) => [...prev, expense]);
       setNewExpense({
         date: "",
         category: "",
         subcategory: "",
         description: "",
         amount: "",
-        receipt: null
+        receipt: null,
       });
       setShowExpenseModal(false);
     }
@@ -278,33 +305,49 @@ export default function BudgetExpensePage() {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setNewExpense(prev => ({ ...prev, receipt: file }));
+      setNewExpense((prev) => ({ ...prev, receipt: file }));
     }
   };
 
-  const filteredBudgets = budgets.filter(budget => 
-    budget.period === selectedPeriod &&
-    (selectedCategory === "all" || budget.category === selectedCategory)
+  const filteredBudgets = budgets.filter(
+    (budget) =>
+      budget.period === selectedPeriod &&
+      (selectedCategory === "all" || budget.category === selectedCategory),
   );
 
-  const filteredExpenses = expenses.filter(expense => {
+  const filteredExpenses = expenses.filter((expense) => {
     const expenseMonth = expense.date.substring(0, 7);
     const matchesPeriod = expenseMonth === selectedPeriod;
-    const matchesCategory = selectedCategory === "all" || expense.category === selectedCategory;
-    const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesCategory =
+      selectedCategory === "all" || expense.category === selectedCategory;
+    const matchesSearch =
+      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      expense.category.toLowerCase().includes(searchTerm.toLowerCase());
+
     return matchesPeriod && matchesCategory && matchesSearch;
   });
 
-  const totalBudget = filteredBudgets.reduce((acc, budget) => acc + budget.allocated, 0);
-  const totalSpent = filteredBudgets.reduce((acc, budget) => acc + budget.spent, 0);
+  const totalBudget = filteredBudgets.reduce(
+    (acc, budget) => acc + budget.allocated,
+    0,
+  );
+  const totalSpent = filteredBudgets.reduce(
+    (acc, budget) => acc + budget.spent,
+    0,
+  );
   const remainingBudget = totalBudget - totalSpent;
   const overallUsage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
-  const monthlyExpenses = filteredExpenses.reduce((acc, expense) => acc + expense.amount, 0);
-  const pendingExpenses = filteredExpenses.filter(exp => exp.status === "pending").length;
-  const approvedExpenses = filteredExpenses.filter(exp => exp.status === "approved").length;
+  const monthlyExpenses = filteredExpenses.reduce(
+    (acc, expense) => acc + expense.amount,
+    0,
+  );
+  const pendingExpenses = filteredExpenses.filter(
+    (exp) => exp.status === "pending",
+  ).length;
+  const approvedExpenses = filteredExpenses.filter(
+    (exp) => exp.status === "approved",
+  ).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -321,7 +364,10 @@ export default function BudgetExpensePage() {
               </p>
             </div>
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => setShowBudgetModal(true)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowBudgetModal(true)}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 예산 설정
               </Button>
@@ -344,8 +390,10 @@ export default function BudgetExpensePage() {
                   onChange={(e) => setSelectedPeriod(e.target.value)}
                   className="w-full mt-1 p-2 border border-gray-300 rounded-md"
                 >
-                  {periods.map(period => (
-                    <option key={period} value={period}>{period}</option>
+                  {periods.map((period) => (
+                    <option key={period} value={period}>
+                      {period}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -356,14 +404,14 @@ export default function BudgetExpensePage() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full mt-1 p-2 border border-gray-300 rounded-md"
                 >
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <option key={category} value={category}>
                       {category === "all" ? "전체 카테고리" : category}
                     </option>
                   ))}
                 </select>
               </div>
-              {(activeTab === "expenses") && (
+              {activeTab === "expenses" && (
                 <div className="lg:col-span-2">
                   <Label>검색</Label>
                   <div className="relative mt-1">
@@ -388,7 +436,9 @@ export default function BudgetExpensePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">총 예산</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalBudget)}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(totalBudget)}
+                  </p>
                 </div>
                 <Calculator className="w-8 h-8 text-blue-500" />
               </div>
@@ -400,8 +450,12 @@ export default function BudgetExpensePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">사용 금액</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalSpent)}</p>
-                  <p className="text-xs text-gray-500">{overallUsage.toFixed(1)}% 사용</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(totalSpent)}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {overallUsage.toFixed(1)}% 사용
+                  </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-green-500" />
               </div>
@@ -413,7 +467,9 @@ export default function BudgetExpensePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">잔여 예산</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(remainingBudget)}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(remainingBudget)}
+                  </p>
                 </div>
                 <Wallet className="w-8 h-8 text-purple-500" />
               </div>
@@ -425,7 +481,9 @@ export default function BudgetExpensePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">대기 승인</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingExpenses}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {pendingExpenses}
+                  </p>
                   <p className="text-xs text-gray-500">건</p>
                 </div>
                 <Receipt className="w-8 h-8 text-orange-500" />
@@ -463,14 +521,21 @@ export default function BudgetExpensePage() {
         {activeTab === "budget" && (
           <div className="space-y-6">
             {filteredBudgets.map((budget) => {
-              const usagePercentage = getUsagePercentage(budget.spent, budget.allocated);
+              const usagePercentage = getUsagePercentage(
+                budget.spent,
+                budget.allocated,
+              );
               return (
                 <Card key={budget.id}>
                   <CardHeader>
                     <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg">{budget.category}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {budget.category}
+                      </CardTitle>
                       <div className="flex items-center space-x-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getUsageColor(usagePercentage)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getUsageColor(usagePercentage)}`}
+                        >
                           {usagePercentage.toFixed(1)}% 사용
                         </span>
                         <Button size="sm" variant="outline">
@@ -478,7 +543,9 @@ export default function BudgetExpensePage() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{budget.description}</p>
+                    <p className="text-sm text-gray-600">
+                      {budget.description}
+                    </p>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -486,15 +553,23 @@ export default function BudgetExpensePage() {
                       <div>
                         <div className="flex justify-between text-sm mb-2">
                           <span>전체 진행률</span>
-                          <span>{formatCurrency(budget.spent)} / {formatCurrency(budget.allocated)}</span>
+                          <span>
+                            {formatCurrency(budget.spent)} /{" "}
+                            {formatCurrency(budget.allocated)}
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
                             className={`h-3 rounded-full ${
-                              usagePercentage >= 90 ? "bg-red-500" :
-                              usagePercentage >= 70 ? "bg-yellow-500" : "bg-green-500"
+                              usagePercentage >= 90
+                                ? "bg-red-500"
+                                : usagePercentage >= 70
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
                             }`}
-                            style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                            style={{
+                              width: `${Math.min(usagePercentage, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -504,25 +579,42 @@ export default function BudgetExpensePage() {
                         <h4 className="font-medium mb-3">세부 항목</h4>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           {budget.subcategories.map((sub, index) => {
-                            const subUsage = getUsagePercentage(sub.spent, sub.allocated);
+                            const subUsage = getUsagePercentage(
+                              sub.spent,
+                              sub.allocated,
+                            );
                             return (
-                              <div key={index} className="p-3 border rounded-lg">
+                              <div
+                                key={index}
+                                className="p-3 border rounded-lg"
+                              >
                                 <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">{sub.name}</span>
-                                  <span className="text-sm text-gray-600">{subUsage.toFixed(1)}%</span>
+                                  <span className="font-medium">
+                                    {sub.name}
+                                  </span>
+                                  <span className="text-sm text-gray-600">
+                                    {subUsage.toFixed(1)}%
+                                  </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
                                   <div
                                     className={`h-2 rounded-full ${
-                                      subUsage >= 90 ? "bg-red-400" :
-                                      subUsage >= 70 ? "bg-yellow-400" : "bg-green-400"
+                                      subUsage >= 90
+                                        ? "bg-red-400"
+                                        : subUsage >= 70
+                                          ? "bg-yellow-400"
+                                          : "bg-green-400"
                                     }`}
-                                    style={{ width: `${Math.min(subUsage, 100)}%` }}
+                                    style={{
+                                      width: `${Math.min(subUsage, 100)}%`,
+                                    }}
                                   />
                                 </div>
                                 <div className="flex justify-between text-xs text-gray-500">
                                   <span>사용: {formatCurrency(sub.spent)}</span>
-                                  <span>예산: {formatCurrency(sub.allocated)}</span>
+                                  <span>
+                                    예산: {formatCurrency(sub.allocated)}
+                                  </span>
                                 </div>
                               </div>
                             );
@@ -548,19 +640,38 @@ export default function BudgetExpensePage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold">날짜</th>
-                      <th className="text-left py-3 px-4 font-semibold">카테고리</th>
-                      <th className="text-left py-3 px-4 font-semibold">세부항목</th>
-                      <th className="text-left py-3 px-4 font-semibold">내용</th>
-                      <th className="text-right py-3 px-4 font-semibold">금액</th>
-                      <th className="text-center py-3 px-4 font-semibold">상태</th>
-                      <th className="text-center py-3 px-4 font-semibold">승인자</th>
-                      <th className="text-center py-3 px-4 font-semibold">액션</th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        날짜
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        카테고리
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        세부항목
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        내용
+                      </th>
+                      <th className="text-right py-3 px-4 font-semibold">
+                        금액
+                      </th>
+                      <th className="text-center py-3 px-4 font-semibold">
+                        상태
+                      </th>
+                      <th className="text-center py-3 px-4 font-semibold">
+                        승인자
+                      </th>
+                      <th className="text-center py-3 px-4 font-semibold">
+                        액션
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredExpenses.map((expense) => (
-                      <tr key={expense.id} className="border-b hover:bg-gray-50">
+                      <tr
+                        key={expense.id}
+                        className="border-b hover:bg-gray-50"
+                      >
                         <td className="py-3 px-4">{expense.date}</td>
                         <td className="py-3 px-4">{expense.category}</td>
                         <td className="py-3 px-4">{expense.subcategory}</td>
@@ -568,7 +679,9 @@ export default function BudgetExpensePage() {
                           <div>
                             <p className="font-medium">{expense.description}</p>
                             {expense.receipt && (
-                              <p className="text-xs text-gray-500">영수증: {expense.receipt}</p>
+                              <p className="text-xs text-gray-500">
+                                영수증: {expense.receipt}
+                              </p>
                             )}
                           </div>
                         </td>
@@ -578,7 +691,9 @@ export default function BudgetExpensePage() {
                         <td className="py-3 px-4 text-center">
                           {getStatusBadge(expense.status)}
                         </td>
-                        <td className="py-3 px-4 text-center">{expense.approver}</td>
+                        <td className="py-3 px-4 text-center">
+                          {expense.approver}
+                        </td>
                         <td className="py-3 px-4 text-center">
                           <div className="flex justify-center space-x-2">
                             <Button size="sm" variant="outline">
@@ -628,7 +743,8 @@ export default function BudgetExpensePage() {
               <TrendingUp className="w-12 h-12 mx-auto mb-4 text-purple-500" />
               <h3 className="font-semibold mb-2">예산 분석 리포트</h3>
               <p className="text-sm text-gray-600 mb-4">
-                예산 대비 실적 분석과 향후 예산 계획을 위한 인사이트를 제공합니다
+                예산 대비 실적 분석과 향후 예산 계획을 위한 인사이트를
+                제공합니다
               </p>
               <Button>PDF 다운로드</Button>
             </Card>
@@ -645,20 +761,30 @@ export default function BudgetExpensePage() {
               <CardContent>
                 <div className="space-y-4">
                   {filteredBudgets.map((budget) => {
-                    const usagePercentage = getUsagePercentage(budget.spent, budget.allocated);
+                    const usagePercentage = getUsagePercentage(
+                      budget.spent,
+                      budget.allocated,
+                    );
                     return (
                       <div key={budget.id} className="space-y-2">
                         <div className="flex justify-between">
                           <span className="font-medium">{budget.category}</span>
-                          <span className="text-sm text-gray-600">{usagePercentage.toFixed(1)}%</span>
+                          <span className="text-sm text-gray-600">
+                            {usagePercentage.toFixed(1)}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
                             className={`h-3 rounded-full ${
-                              usagePercentage >= 90 ? "bg-red-500" :
-                              usagePercentage >= 70 ? "bg-yellow-500" : "bg-green-500"
+                              usagePercentage >= 90
+                                ? "bg-red-500"
+                                : usagePercentage >= 70
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
                             }`}
-                            style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                            style={{
+                              width: `${Math.min(usagePercentage, 100)}%`,
+                            }}
                           />
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
@@ -680,7 +806,9 @@ export default function BudgetExpensePage() {
                 <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
                   <div className="text-center">
                     <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600">차트 데이터를 불러오는 중...</p>
+                    <p className="text-gray-600">
+                      차트 데이터를 불러오는 중...
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -694,18 +822,28 @@ export default function BudgetExpensePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                    <p className="font-semibold text-lg">{((totalSpent / totalBudget) * 100).toFixed(1)}%</p>
+                    <p className="font-semibold text-lg">
+                      {((totalSpent / totalBudget) * 100).toFixed(1)}%
+                    </p>
                     <p className="text-sm text-gray-600">예산 집행률</p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <DollarSign className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                    <p className="font-semibold text-lg">{formatCurrency(monthlyExpenses / filteredExpenses.length || 0)}</p>
+                    <p className="font-semibold text-lg">
+                      {formatCurrency(
+                        monthlyExpenses / filteredExpenses.length || 0,
+                      )}
+                    </p>
                     <p className="text-sm text-gray-600">평균 지출</p>
                   </div>
                   <div className="text-center p-4 bg-yellow-50 rounded-lg">
                     <AlertTriangle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
                     <p className="font-semibold text-lg">
-                      {filteredBudgets.filter(b => getUsagePercentage(b.spent, b.allocated) >= 90).length}
+                      {
+                        filteredBudgets.filter(
+                          (b) => getUsagePercentage(b.spent, b.allocated) >= 90,
+                        ).length
+                      }
                     </p>
                     <p className="text-sm text-gray-600">위험 카테고리</p>
                   </div>
@@ -725,24 +863,42 @@ export default function BudgetExpensePage() {
               <CardContent>
                 <div className="space-y-3">
                   {filteredBudgets
-                    .filter(budget => getUsagePercentage(budget.spent, budget.allocated) >= 80)
+                    .filter(
+                      (budget) =>
+                        getUsagePercentage(budget.spent, budget.allocated) >=
+                        80,
+                    )
                     .map((budget) => {
-                      const usagePercentage = getUsagePercentage(budget.spent, budget.allocated);
+                      const usagePercentage = getUsagePercentage(
+                        budget.spent,
+                        budget.allocated,
+                      );
                       return (
-                        <div key={budget.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                          <AlertTriangle className={`w-5 h-5 ${
-                            usagePercentage >= 90 ? "text-red-500" : "text-yellow-500"
-                          }`} />
+                        <div
+                          key={budget.id}
+                          className="flex items-center space-x-3 p-3 border rounded-lg"
+                        >
+                          <AlertTriangle
+                            className={`w-5 h-5 ${
+                              usagePercentage >= 90
+                                ? "text-red-500"
+                                : "text-yellow-500"
+                            }`}
+                          />
                           <div className="flex-1">
                             <p className="font-medium">{budget.category}</p>
                             <p className="text-sm text-gray-600">
-                              예산의 {usagePercentage.toFixed(1)}%를 사용했습니다
+                              예산의 {usagePercentage.toFixed(1)}%를
+                              사용했습니다
                             </p>
                           </div>
                         </div>
                       );
                     })}
-                  {filteredBudgets.filter(budget => getUsagePercentage(budget.spent, budget.allocated) >= 80).length === 0 && (
+                  {filteredBudgets.filter(
+                    (budget) =>
+                      getUsagePercentage(budget.spent, budget.allocated) >= 80,
+                  ).length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                       현재 예산 위험 항목이 없습니다.
                     </div>
@@ -766,7 +922,12 @@ export default function BudgetExpensePage() {
                     <Label>카테고리</Label>
                     <Input
                       value={newBudget.category}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, category: e.target.value }))}
+                      onChange={(e) =>
+                        setNewBudget((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
                       placeholder="예: 콘텐츠 제작"
                     />
                   </div>
@@ -774,12 +935,19 @@ export default function BudgetExpensePage() {
                     <Label>기간</Label>
                     <select
                       value={newBudget.period}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, period: e.target.value }))}
+                      onChange={(e) =>
+                        setNewBudget((prev) => ({
+                          ...prev,
+                          period: e.target.value,
+                        }))
+                      }
                       className="w-full mt-1 p-2 border border-gray-300 rounded-md"
                     >
                       <option value="">기간 선택</option>
-                      {periods.map(period => (
-                        <option key={period} value={period}>{period}</option>
+                      {periods.map((period) => (
+                        <option key={period} value={period}>
+                          {period}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -788,7 +956,12 @@ export default function BudgetExpensePage() {
                     <Input
                       type="number"
                       value={newBudget.allocated}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, allocated: e.target.value }))}
+                      onChange={(e) =>
+                        setNewBudget((prev) => ({
+                          ...prev,
+                          allocated: e.target.value,
+                        }))
+                      }
                       placeholder="0"
                     />
                   </div>
@@ -798,7 +971,12 @@ export default function BudgetExpensePage() {
                   <Label>설명</Label>
                   <textarea
                     value={newBudget.description}
-                    onChange={(e) => setNewBudget(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewBudget((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     placeholder="예산 항목에 대한 설명을 입력하세요"
                     className="w-full mt-1 p-3 border border-gray-300 rounded-md h-24 resize-none"
                   />
@@ -807,19 +985,28 @@ export default function BudgetExpensePage() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label>세부 항목</Label>
-                    <Button size="sm" variant="outline" onClick={addSubcategory}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={addSubcategory}
+                    >
                       <Plus className="w-3 h-3 mr-1" />
                       항목 추가
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {newBudget.subcategories.map((sub, index) => (
-                      <div key={index} className="grid grid-cols-3 gap-2 items-end">
+                      <div
+                        key={index}
+                        className="grid grid-cols-3 gap-2 items-end"
+                      >
                         <div>
                           <Label className="text-xs">항목명</Label>
                           <Input
                             value={sub.name}
-                            onChange={(e) => updateSubcategory(index, "name", e.target.value)}
+                            onChange={(e) =>
+                              updateSubcategory(index, "name", e.target.value)
+                            }
                             placeholder="항목명"
                             className="text-sm"
                           />
@@ -829,7 +1016,13 @@ export default function BudgetExpensePage() {
                           <Input
                             type="number"
                             value={sub.allocated}
-                            onChange={(e) => updateSubcategory(index, "allocated", e.target.value)}
+                            onChange={(e) =>
+                              updateSubcategory(
+                                index,
+                                "allocated",
+                                e.target.value,
+                              )
+                            }
                             placeholder="0"
                             className="text-sm"
                           />
@@ -851,12 +1044,13 @@ export default function BudgetExpensePage() {
                 </div>
 
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowBudgetModal(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowBudgetModal(false)}
+                  >
                     취소
                   </Button>
-                  <Button onClick={handleSaveBudget}>
-                    예산 설정
-                  </Button>
+                  <Button onClick={handleSaveBudget}>예산 설정</Button>
                 </div>
               </CardContent>
             </Card>
@@ -877,7 +1071,12 @@ export default function BudgetExpensePage() {
                     <Input
                       type="date"
                       value={newExpense.date}
-                      onChange={(e) => setNewExpense(prev => ({ ...prev, date: e.target.value }))}
+                      onChange={(e) =>
+                        setNewExpense((prev) => ({
+                          ...prev,
+                          date: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -885,7 +1084,12 @@ export default function BudgetExpensePage() {
                     <Input
                       type="number"
                       value={newExpense.amount}
-                      onChange={(e) => setNewExpense(prev => ({ ...prev, amount: e.target.value }))}
+                      onChange={(e) =>
+                        setNewExpense((prev) => ({
+                          ...prev,
+                          amount: e.target.value,
+                        }))
+                      }
                       placeholder="0"
                     />
                   </div>
@@ -895,13 +1099,22 @@ export default function BudgetExpensePage() {
                   <Label>카테고리</Label>
                   <select
                     value={newExpense.category}
-                    onChange={(e) => setNewExpense(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) =>
+                      setNewExpense((prev) => ({
+                        ...prev,
+                        category: e.target.value,
+                      }))
+                    }
                     className="w-full mt-1 p-2 border border-gray-300 rounded-md"
                   >
                     <option value="">카테고리 선택</option>
-                    {categories.filter(cat => cat !== "all").map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
+                    {categories
+                      .filter((cat) => cat !== "all")
+                      .map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -909,7 +1122,12 @@ export default function BudgetExpensePage() {
                   <Label>세부 항목</Label>
                   <Input
                     value={newExpense.subcategory}
-                    onChange={(e) => setNewExpense(prev => ({ ...prev, subcategory: e.target.value }))}
+                    onChange={(e) =>
+                      setNewExpense((prev) => ({
+                        ...prev,
+                        subcategory: e.target.value,
+                      }))
+                    }
                     placeholder="세부 항목을 입력하세요"
                   />
                 </div>
@@ -918,7 +1136,12 @@ export default function BudgetExpensePage() {
                   <Label>내용</Label>
                   <textarea
                     value={newExpense.description}
-                    onChange={(e) => setNewExpense(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewExpense((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     placeholder="지출 내용을 입력하세요"
                     className="w-full mt-1 p-3 border border-gray-300 rounded-md h-24 resize-none"
                   />
@@ -936,8 +1159,12 @@ export default function BudgetExpensePage() {
                     />
                     <label htmlFor="receipt-upload" className="cursor-pointer">
                       <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-600">영수증을 업로드하세요</p>
-                      <p className="text-xs text-gray-400">PDF, JPG, PNG 지원</p>
+                      <p className="text-sm text-gray-600">
+                        영수증을 업로드하세요
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        PDF, JPG, PNG 지원
+                      </p>
                     </label>
                     {newExpense.receipt && (
                       <p className="text-sm text-green-600 mt-2">
@@ -948,12 +1175,13 @@ export default function BudgetExpensePage() {
                 </div>
 
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowExpenseModal(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowExpenseModal(false)}
+                  >
                     취소
                   </Button>
-                  <Button onClick={handleSaveExpense}>
-                    지출 등록
-                  </Button>
+                  <Button onClick={handleSaveExpense}>지출 등록</Button>
                 </div>
               </CardContent>
             </Card>

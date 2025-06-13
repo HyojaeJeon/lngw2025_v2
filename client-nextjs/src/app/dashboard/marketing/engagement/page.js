@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   MessageSquare,
   Bot,
@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 
 export default function MarketingEngagementPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedPlatform, setSelectedPlatform] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");

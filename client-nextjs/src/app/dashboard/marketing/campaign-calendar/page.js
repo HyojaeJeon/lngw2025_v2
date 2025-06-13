@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
-import { useLanguage } from "@/hooks/useLanguage.js";
+import { useTranslation } from "@/hooks/useLanguage.js";
 import {
   Calendar,
   Plus,
@@ -31,7 +30,7 @@ import {
 } from "lucide-react";
 
 export default function CampaignCalendarPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [viewMode, setViewMode] = useState("month"); // month, week, list
@@ -50,9 +49,9 @@ export default function CampaignCalendarPage() {
         reach: 125000,
         engagement: 8500,
         conversion: 2.3,
-        roi: 185
+        roi: 185,
       },
-      color: "blue"
+      color: "blue",
     },
     {
       id: 2,
@@ -68,9 +67,9 @@ export default function CampaignCalendarPage() {
         reach: 0,
         engagement: 0,
         conversion: 0,
-        roi: 0
+        roi: 0,
       },
-      color: "green"
+      color: "green",
     },
     {
       id: 3,
@@ -86,10 +85,10 @@ export default function CampaignCalendarPage() {
         reach: 95000,
         engagement: 12000,
         conversion: 1.8,
-        roi: 142
+        roi: 142,
       },
-      color: "purple"
-    }
+      color: "purple",
+    },
   ]);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -102,18 +101,45 @@ export default function CampaignCalendarPage() {
     platforms: [],
     description: "",
     goals: [""],
-    color: "blue"
+    color: "blue",
   });
 
   const statusConfig = {
-    scheduled: { label: "예정", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-    active: { label: "진행중", color: "bg-green-100 text-green-800", icon: PlayCircle },
-    paused: { label: "일시정지", color: "bg-orange-100 text-orange-800", icon: PauseCircle },
-    completed: { label: "완료", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-    cancelled: { label: "취소", color: "bg-red-100 text-red-800", icon: XCircle }
+    scheduled: {
+      label: "예정",
+      color: "bg-yellow-100 text-yellow-800",
+      icon: Clock,
+    },
+    active: {
+      label: "진행중",
+      color: "bg-green-100 text-green-800",
+      icon: PlayCircle,
+    },
+    paused: {
+      label: "일시정지",
+      color: "bg-orange-100 text-orange-800",
+      icon: PauseCircle,
+    },
+    completed: {
+      label: "완료",
+      color: "bg-blue-100 text-blue-800",
+      icon: CheckCircle,
+    },
+    cancelled: {
+      label: "취소",
+      color: "bg-red-100 text-red-800",
+      icon: XCircle,
+    },
   };
 
-  const platformOptions = ["Instagram", "Facebook", "TikTok", "YouTube", "LinkedIn", "Twitter"];
+  const platformOptions = [
+    "Instagram",
+    "Facebook",
+    "TikTok",
+    "YouTube",
+    "LinkedIn",
+    "Twitter",
+  ];
   const colorOptions = ["blue", "green", "purple", "red", "yellow", "indigo"];
 
   const generateCalendarDays = () => {
@@ -123,7 +149,7 @@ export default function CampaignCalendarPage() {
     const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
-    
+
     const days = [];
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
@@ -134,39 +160,39 @@ export default function CampaignCalendarPage() {
   };
 
   const getCampaignsForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return campaigns.filter(campaign => {
+    const dateStr = date.toISOString().split("T")[0];
+    return campaigns.filter((campaign) => {
       return dateStr >= campaign.startDate && dateStr <= campaign.endDate;
     });
   };
 
   const addGoal = () => {
-    setNewCampaign(prev => ({
+    setNewCampaign((prev) => ({
       ...prev,
-      goals: [...prev.goals, ""]
+      goals: [...prev.goals, ""],
     }));
   };
 
   const updateGoal = (index, value) => {
-    setNewCampaign(prev => ({
+    setNewCampaign((prev) => ({
       ...prev,
-      goals: prev.goals.map((goal, i) => i === index ? value : goal)
+      goals: prev.goals.map((goal, i) => (i === index ? value : goal)),
     }));
   };
 
   const removeGoal = (index) => {
-    setNewCampaign(prev => ({
+    setNewCampaign((prev) => ({
       ...prev,
-      goals: prev.goals.filter((_, i) => i !== index)
+      goals: prev.goals.filter((_, i) => i !== index),
     }));
   };
 
   const handlePlatformToggle = (platform) => {
-    setNewCampaign(prev => ({
+    setNewCampaign((prev) => ({
       ...prev,
       platforms: prev.platforms.includes(platform)
-        ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform]
+        ? prev.platforms.filter((p) => p !== platform)
+        : [...prev.platforms, platform],
     }));
   };
 
@@ -177,9 +203,9 @@ export default function CampaignCalendarPage() {
         id: Date.now(),
         status: "scheduled",
         spent: 0,
-        kpis: { reach: 0, engagement: 0, conversion: 0, roi: 0 }
+        kpis: { reach: 0, engagement: 0, conversion: 0, roi: 0 },
       };
-      setCampaigns(prev => [...prev, campaign]);
+      setCampaigns((prev) => [...prev, campaign]);
       setNewCampaign({
         title: "",
         startDate: "",
@@ -189,7 +215,7 @@ export default function CampaignCalendarPage() {
         platforms: [],
         description: "",
         goals: [""],
-        color: "blue"
+        color: "blue",
       });
       setShowCampaignModal(false);
     }
@@ -267,27 +293,38 @@ export default function CampaignCalendarPage() {
             <CardContent className="p-0">
               <div className="grid grid-cols-7 border-b">
                 {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
-                  <div key={day} className="p-4 text-center font-medium bg-gray-50 dark:bg-gray-800">
+                  <div
+                    key={day}
+                    className="p-4 text-center font-medium bg-gray-50 dark:bg-gray-800"
+                  >
                     {day}
                   </div>
                 ))}
               </div>
               <div className="grid grid-cols-7">
                 {calendarDays.map((date, index) => {
-                  const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isCurrentMonth =
+                    date.getMonth() === currentDate.getMonth();
+                  const isToday =
+                    date.toDateString() === new Date().toDateString();
                   const dayCampaigns = getCampaignsForDate(date);
-                  
+
                   return (
                     <div
                       key={index}
                       className={`min-h-[120px] p-2 border-r border-b ${
-                        isCurrentMonth ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
+                        isCurrentMonth
+                          ? "bg-white dark:bg-gray-900"
+                          : "bg-gray-50 dark:bg-gray-800"
                       } ${isToday ? "ring-2 ring-blue-500" : ""}`}
                     >
-                      <div className={`text-sm mb-2 ${
-                        isCurrentMonth ? "text-gray-900 dark:text-white" : "text-gray-400"
-                      } ${isToday ? "font-bold text-blue-600" : ""}`}>
+                      <div
+                        className={`text-sm mb-2 ${
+                          isCurrentMonth
+                            ? "text-gray-900 dark:text-white"
+                            : "text-gray-400"
+                        } ${isToday ? "font-bold text-blue-600" : ""}`}
+                      >
                         {date.getDate()}
                       </div>
                       <div className="space-y-1">
@@ -295,12 +332,17 @@ export default function CampaignCalendarPage() {
                           <div
                             key={campaign.id}
                             className={`text-xs p-1 rounded truncate cursor-pointer ${
-                              campaign.color === "blue" ? "bg-blue-100 text-blue-800" :
-                              campaign.color === "green" ? "bg-green-100 text-green-800" :
-                              campaign.color === "purple" ? "bg-purple-100 text-purple-800" :
-                              campaign.color === "red" ? "bg-red-100 text-red-800" :
-                              campaign.color === "yellow" ? "bg-yellow-100 text-yellow-800" :
-                              "bg-indigo-100 text-indigo-800"
+                              campaign.color === "blue"
+                                ? "bg-blue-100 text-blue-800"
+                                : campaign.color === "green"
+                                  ? "bg-green-100 text-green-800"
+                                  : campaign.color === "purple"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : campaign.color === "red"
+                                      ? "bg-red-100 text-red-800"
+                                      : campaign.color === "yellow"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-indigo-100 text-indigo-800"
                             }`}
                             onClick={() => setSelectedCampaign(campaign)}
                           >
@@ -326,14 +368,24 @@ export default function CampaignCalendarPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {campaigns.map((campaign) => {
               const StatusIcon = statusConfig[campaign.status].icon;
-              const progressPercentage = campaign.budget > 0 ? (campaign.spent / campaign.budget) * 100 : 0;
-              
+              const progressPercentage =
+                campaign.budget > 0
+                  ? (campaign.spent / campaign.budget) * 100
+                  : 0;
+
               return (
-                <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={campaign.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{campaign.title}</CardTitle>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[campaign.status].color}`}>
+                      <CardTitle className="text-lg">
+                        {campaign.title}
+                      </CardTitle>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[campaign.status].color}`}
+                      >
                         <StatusIcon className="w-3 h-3 inline mr-1" />
                         {statusConfig[campaign.status].label}
                       </span>
@@ -353,15 +405,22 @@ export default function CampaignCalendarPage() {
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${
-                              progressPercentage > 90 ? "bg-red-500" :
-                              progressPercentage > 70 ? "bg-yellow-500" : "bg-green-500"
+                              progressPercentage > 90
+                                ? "bg-red-500"
+                                : progressPercentage > 70
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
                             }`}
-                            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                            style={{
+                              width: `${Math.min(progressPercentage, 100)}%`,
+                            }}
                           />
                         </div>
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
                           <span>사용: ${campaign.spent?.toLocaleString()}</span>
-                          <span>총예산: ${campaign.budget?.toLocaleString()}</span>
+                          <span>
+                            총예산: ${campaign.budget?.toLocaleString()}
+                          </span>
                         </div>
                       </div>
 
@@ -369,11 +428,15 @@ export default function CampaignCalendarPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="text-center p-2 bg-blue-50 rounded">
                           <p className="text-xs text-gray-600">도달률</p>
-                          <p className="font-semibold">{campaign.kpis.reach?.toLocaleString()}</p>
+                          <p className="font-semibold">
+                            {campaign.kpis.reach?.toLocaleString()}
+                          </p>
                         </div>
                         <div className="text-center p-2 bg-green-50 rounded">
                           <p className="text-xs text-gray-600">참여율</p>
-                          <p className="font-semibold">{campaign.kpis.engagement?.toLocaleString()}</p>
+                          <p className="font-semibold">
+                            {campaign.kpis.engagement?.toLocaleString()}
+                          </p>
                         </div>
                       </div>
 
@@ -421,7 +484,10 @@ export default function CampaignCalendarPage() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>{selectedCampaign.title}</CardTitle>
-                  <Button variant="outline" onClick={() => setSelectedCampaign(null)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedCampaign(null)}
+                  >
                     ✕
                   </Button>
                 </div>
@@ -433,28 +499,48 @@ export default function CampaignCalendarPage() {
                     <div>
                       <h3 className="font-semibold mb-2">캠페인 정보</h3>
                       <div className="space-y-2 text-sm">
-                        <p><strong>기간:</strong> {selectedCampaign.startDate} ~ {selectedCampaign.endDate}</p>
-                        <p><strong>상태:</strong> {statusConfig[selectedCampaign.status].label}</p>
-                        <p><strong>담당자:</strong> {selectedCampaign.manager}</p>
-                        <p><strong>플랫폼:</strong> {selectedCampaign.platforms.join(", ")}</p>
+                        <p>
+                          <strong>기간:</strong> {selectedCampaign.startDate} ~{" "}
+                          {selectedCampaign.endDate}
+                        </p>
+                        <p>
+                          <strong>상태:</strong>{" "}
+                          {statusConfig[selectedCampaign.status].label}
+                        </p>
+                        <p>
+                          <strong>담당자:</strong> {selectedCampaign.manager}
+                        </p>
+                        <p>
+                          <strong>플랫폼:</strong>{" "}
+                          {selectedCampaign.platforms.join(", ")}
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Budget */}
                     <div>
                       <h3 className="font-semibold mb-2">예산 현황</h3>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span>총 예산</span>
-                          <span>${selectedCampaign.budget?.toLocaleString()}</span>
+                          <span>
+                            ${selectedCampaign.budget?.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>사용 금액</span>
-                          <span>${selectedCampaign.spent?.toLocaleString()}</span>
+                          <span>
+                            ${selectedCampaign.spent?.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between font-semibold">
                           <span>잔여 예산</span>
-                          <span>${(selectedCampaign.budget - selectedCampaign.spent)?.toLocaleString()}</span>
+                          <span>
+                            $
+                            {(
+                              selectedCampaign.budget - selectedCampaign.spent
+                            )?.toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -467,22 +553,30 @@ export default function CampaignCalendarPage() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                         <p className="text-sm text-gray-600">도달률</p>
-                        <p className="text-2xl font-bold">{selectedCampaign.kpis.reach?.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">
+                          {selectedCampaign.kpis.reach?.toLocaleString()}
+                        </p>
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <Users className="w-8 h-8 text-green-500 mx-auto mb-2" />
                         <p className="text-sm text-gray-600">참여율</p>
-                        <p className="text-2xl font-bold">{selectedCampaign.kpis.engagement?.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">
+                          {selectedCampaign.kpis.engagement?.toLocaleString()}
+                        </p>
                       </div>
                       <div className="text-center p-4 bg-purple-50 rounded-lg">
                         <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                         <p className="text-sm text-gray-600">전환율</p>
-                        <p className="text-2xl font-bold">{selectedCampaign.kpis.conversion}%</p>
+                        <p className="text-2xl font-bold">
+                          {selectedCampaign.kpis.conversion}%
+                        </p>
                       </div>
                       <div className="text-center p-4 bg-orange-50 rounded-lg">
                         <DollarSign className="w-8 h-8 text-orange-500 mx-auto mb-2" />
                         <p className="text-sm text-gray-600">ROI</p>
-                        <p className="text-2xl font-bold">{selectedCampaign.kpis.roi}%</p>
+                        <p className="text-2xl font-bold">
+                          {selectedCampaign.kpis.roi}%
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -505,7 +599,12 @@ export default function CampaignCalendarPage() {
                     <Label>캠페인명</Label>
                     <Input
                       value={newCampaign.title}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, title: e.target.value }))}
+                      onChange={(e) =>
+                        setNewCampaign((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
                       placeholder="캠페인명을 입력하세요"
                     />
                   </div>
@@ -513,7 +612,12 @@ export default function CampaignCalendarPage() {
                     <Label>담당자</Label>
                     <Input
                       value={newCampaign.manager}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, manager: e.target.value }))}
+                      onChange={(e) =>
+                        setNewCampaign((prev) => ({
+                          ...prev,
+                          manager: e.target.value,
+                        }))
+                      }
                       placeholder="담당자명을 입력하세요"
                     />
                   </div>
@@ -522,7 +626,12 @@ export default function CampaignCalendarPage() {
                     <Input
                       type="date"
                       value={newCampaign.startDate}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, startDate: e.target.value }))}
+                      onChange={(e) =>
+                        setNewCampaign((prev) => ({
+                          ...prev,
+                          startDate: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -530,7 +639,12 @@ export default function CampaignCalendarPage() {
                     <Input
                       type="date"
                       value={newCampaign.endDate}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, endDate: e.target.value }))}
+                      onChange={(e) =>
+                        setNewCampaign((prev) => ({
+                          ...prev,
+                          endDate: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -538,7 +652,12 @@ export default function CampaignCalendarPage() {
                     <Input
                       type="number"
                       value={newCampaign.budget}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, budget: e.target.value }))}
+                      onChange={(e) =>
+                        setNewCampaign((prev) => ({
+                          ...prev,
+                          budget: e.target.value,
+                        }))
+                      }
                       placeholder="0"
                     />
                   </div>
@@ -548,14 +667,21 @@ export default function CampaignCalendarPage() {
                       {colorOptions.map((color) => (
                         <button
                           key={color}
-                          onClick={() => setNewCampaign(prev => ({ ...prev, color }))}
+                          onClick={() =>
+                            setNewCampaign((prev) => ({ ...prev, color }))
+                          }
                           className={`w-6 h-6 rounded-full ${
-                            color === "blue" ? "bg-blue-500" :
-                            color === "green" ? "bg-green-500" :
-                            color === "purple" ? "bg-purple-500" :
-                            color === "red" ? "bg-red-500" :
-                            color === "yellow" ? "bg-yellow-500" :
-                            "bg-indigo-500"
+                            color === "blue"
+                              ? "bg-blue-500"
+                              : color === "green"
+                                ? "bg-green-500"
+                                : color === "purple"
+                                  ? "bg-purple-500"
+                                  : color === "red"
+                                    ? "bg-red-500"
+                                    : color === "yellow"
+                                      ? "bg-yellow-500"
+                                      : "bg-indigo-500"
                           } ${newCampaign.color === color ? "ring-2 ring-gray-400" : ""}`}
                         />
                       ))}
@@ -588,7 +714,12 @@ export default function CampaignCalendarPage() {
                   <Label>캠페인 설명</Label>
                   <textarea
                     value={newCampaign.description}
-                    onChange={(e) => setNewCampaign(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCampaign((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     placeholder="캠페인 목표와 설명을 입력하세요"
                     className="w-full mt-1 p-3 border border-gray-300 rounded-md h-24 resize-none"
                   />
@@ -627,12 +758,13 @@ export default function CampaignCalendarPage() {
                 </div>
 
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowCampaignModal(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCampaignModal(false)}
+                  >
                     취소
                   </Button>
-                  <Button onClick={handleSaveCampaign}>
-                    캠페인 추가
-                  </Button>
+                  <Button onClick={handleSaveCampaign}>캠페인 추가</Button>
                 </div>
               </CardContent>
             </Card>
