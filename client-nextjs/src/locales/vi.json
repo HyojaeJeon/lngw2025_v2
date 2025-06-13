@@ -360,5 +360,39 @@
     "server": "Đã xảy ra lỗi máy chủ",
     "unknown": "Đã xảy ra lỗi không xác định",
     "companyNameExists": "Tên công ty đã tồn tại"
+  },
+  "accessControl": {
+    "title": "Kiểm soát truy cập",
+    "description": "Quản lý quyền hạn và vai trò người dùng",
+    "roleManagement": "Quản lý vai trò",
+    "permissionMatrix": "Ma trận quyền hạn",
+    "userAssignment": "Phân quyền người dùng",
+    "changeHistory": "Lịch sử thay đổi",
+    "addNewRole": "Thêm vai trò mới",
+    "editRole": "Chỉnh sửa vai trò",
+    "deleteRole": "Xóa vai trò",
+    "addUser": "Thêm người dùng",
+    "editUser": "Chỉnh sửa người dùng",
+    "saveChanges": "Lưu thay đổi",
+    "roleName": "Tên vai trò",
+    "englishName": "Tên tiếng Anh",
+    "description": "Mô tả",
+    "color": "Màu sắc",
+    "permissions": "Quyền hạn",
+    "read": "Đọc",
+    "write": "Ghi",
+    "delete": "Xóa",
+    "approve": "Phê duyệt",
+    "systemConfig": "Cấu hình hệ thống",
+    "modules": {
+      "customers": "Quản lý khách hàng",
+      "products": "Quản lý sản phẩm",
+      "employees": "Quản lý nhân viên",
+      "sales": "Quản lý bán hàng",
+      "marketing": "Quản lý marketing",
+      "revenue": "Quản lý doanh thu",
+      "accounting": "Quản lý kế toán",
+      "settings": "Cài đặt hệ thống"
+    }
   }
 }

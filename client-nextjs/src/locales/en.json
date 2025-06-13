@@ -148,7 +148,38 @@
       "title": "Profile Settings"
     },
     "accessControl": {
-      "title": "Access Control"
+      "title": "Access Control",
+      "description": "Manage user permissions and roles",
+      "roleManagement": "Role Management",
+      "permissionMatrix": "Permission Matrix",
+      "userAssignment": "User Assignment",
+      "changeHistory": "Change History",
+      "addNewRole": "Add New Role",
+      "editRole": "Edit Role",
+      "deleteRole": "Delete Role",
+      "addUser": "Add User",
+      "editUser": "Edit User",
+      "saveChanges": "Save Changes",
+      "roleName": "Role Name",
+      "englishName": "English Name",
+      "description": "Description",
+      "color": "Color",
+      "permissions": "Permissions",
+      "read": "Read",
+      "write": "Write",
+      "delete": "Delete",
+      "approve": "Approve",
+      "systemConfig": "System Config",
+      "modules": {
+        "customers": "Customer Management",
+        "products": "Product Management",
+        "employees": "Employee Management",
+        "sales": "Sales Management",
+        "marketing": "Marketing Management",
+        "revenue": "Revenue Management",
+        "accounting": "Accounting Management",
+        "settings": "System Settings"
+      }
     },
     "notifications": {
       "title": "Notification Settings"

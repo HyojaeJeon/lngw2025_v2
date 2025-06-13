@@ -25,6 +25,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("admin", "manager", "editor"),
         defaultValue: "editor",
       },
+      roleId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "roles",
+          key: "id",
+        },
+        comment: "새로운 역할 시스템 ID",
+      },
       department: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -140,6 +149,12 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.StockMovement, {
       foreignKey: "confirmedBy",
       as: "confirmedMovements",
+    });
+
+    // Role 관계
+    User.belongsTo(models.Role, {
+      foreignKey: "roleId",
+      as: "roleInfo",
     });
   };
 

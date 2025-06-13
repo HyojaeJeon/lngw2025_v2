@@ -28,6 +28,7 @@ const monitoringResolvers = require("./marketing/monitoring");
 const postsResolvers = require("./marketing/posts");
 const abtestResolvers = require("./marketing/abtest");
 const engagementResolvers = require("./marketing/engagement");
+const roleResolvers = require("./role/index");
 
 // ====================
 // SCALAR RESOLVERS
@@ -67,7 +68,8 @@ const resolvers = merge(
   monitoringResolvers,
   postsResolvers,
   abtestResolvers,
-  engagementResolvers
+  engagementResolvers,
+  roleResolvers
 );
 
 module.exports = resolvers;

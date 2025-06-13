@@ -119,6 +119,14 @@ const CustomerActivity = require("./CustomerActivity")(
   sequelize,
   Sequelize.DataTypes,
 );
+const Role = require("./Role")(
+  sequelize,
+  Sequelize.DataTypes,
+);
+const RolePermission = require("./RolePermission")(
+  sequelize,
+  Sequelize.DataTypes,
+);
 
 // 모든 모델이 로드된 후 관계 설정
 const models = {
@@ -157,6 +165,8 @@ const models = {
   InventoryRecord,
   StockMovement,
   CustomerActivity,
+  Role,
+  RolePermission,
 };
 
 // Associate 함수 호출 - 모든 모델이 준비된 후
@@ -201,6 +211,8 @@ const syncOrder = [
   "EmergencyContact",
   "Experience",
   "CustomerActivity",
+  "Role",
+  "RolePermission",
 ];
 
 // 데이터베이스 동기화 함수

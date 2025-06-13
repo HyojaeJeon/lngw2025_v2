@@ -1,7 +1,9 @@
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "@/hooks/useLanguage.js";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Shield,
   Users,
@@ -18,492 +20,438 @@ import {
   Search,
   Filter,
   Download,
+  AlertCircle,
 } from "lucide-react";
+import {
+  GET_ROLES,
+  GET_PERMISSION_MATRIX,
+  GET_USERS_WITH_ROLES,
+  CREATE_ROLE,
+  UPDATE_ROLE,
+  DELETE_ROLE,
+  UPDATE_USER_ROLE,
+  UPDATE_PERMISSION_MATRIX,
+} from "@/lib/graphql/roleOperations.js";
 
 export default function AccessControlPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("roles");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddRoleModal, setShowAddRoleModal] = useState(false);
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [permissionChanges, setPermissionChanges] = useState({});
 
-  // 권한 레벨 정의 (첨부 이미지 기준)
-  const roles = [
-    {
-      id: 1,
-      name: "슈퍼어드민",
-      englishName: "Super Admin",
-      description: "모든 기능 허용",
-      userCount: 2,
-      permissions: {
-        read: true,
-        write: true,
-        delete: true,
-        approve: true,
-        systemConfig: true,
-      },
-      color: "bg-red-500",
-    },
-    {
-      id: 2,
-      name: "어드민",
-      englishName: "Admin",
-      description: "대부분 기능 허용",
-      userCount: 5,
-      permissions: {
-        read: true,
-        write: true,
-        delete: true,
-        approve: true,
-        systemConfig: false,
-      },
-      color: "bg-orange-500",
-    },
-    {
-      id: 3,
-      name: "매니저",
-      englishName: "Manager",
-      description: "팀 단위 기능",
-      userCount: 12,
-      permissions: {
-        read: true,
-        write: true,
-        delete: false,
-        approve: false,
-        systemConfig: false,
-      },
-      color: "bg-blue-500",
-    },
-    {
-      id: 4,
-      name: "에디터",
-      englishName: "Editor",
-      description: "CRUD (비즈니스 데이터)",
-      userCount: 25,
-      permissions: {
-        read: true,
-        write: true,
-        delete: false,
-        approve: false,
-        systemConfig: false,
-      },
-      color: "bg-green-500",
-    },
-    {
-      id: 5,
-      name: "게스트",
-      englishName: "Guest",
-      description: "조회 전용 (비민감)",
-      userCount: 8,
-      permissions: {
-        read: true,
-        write: false,
-        delete: false,
-        approve: false,
-        systemConfig: false,
-      },
-      color: "bg-gray-500",
-    },
-  ];
+  // GraphQL queries
+  const { data: rolesData, loading: rolesLoading, refetch: refetchRoles } = useQuery(GET_ROLES);
+  const { data: matrixData, loading: matrixLoading, refetch: refetchMatrix } = useQuery(GET_PERMISSION_MATRIX);
+  const { data: usersData, loading: usersLoading, refetch: refetchUsers } = useQuery(GET_USERS_WITH_ROLES);
 
-  // 모듈별 권한 매트릭스
+  // GraphQL mutations
+  const [createRole] = useMutation(CREATE_ROLE);
+  const [updateRole] = useMutation(UPDATE_ROLE);
+  const [deleteRole] = useMutation(DELETE_ROLE);
+  const [updateUserRole] = useMutation(UPDATE_USER_ROLE);
+  const [updatePermissionMatrix] = useMutation(UPDATE_PERMISSION_MATRIX);
+
   const modules = [
-    "고객 관리",
-    "제품 관리",
-    "영업 관리",
-    "매출 관리",
-    "마케팅 관리",
-    "회계 관리",
-    "직원 관리",
-    "시스템 설정",
+    { key: "customers", name: t("accessControl.modules.customers") },
+    { key: "products", name: t("accessControl.modules.products") },
+    { key: "employees", name: t("accessControl.modules.employees") },
+    { key: "sales", name: t("accessControl.modules.sales") },
+    { key: "marketing", name: t("accessControl.modules.marketing") },
+    { key: "revenue", name: t("accessControl.modules.revenue") },
+    { key: "accounting", name: t("accessControl.modules.accounting") },
+    { key: "settings", name: t("accessControl.modules.settings") },
   ];
 
-  const permissionMatrix = {
-    "고객 관리": {
-      슈퍼어드민: { read: true, write: true, delete: true },
-      어드민: { read: true, write: true, delete: true },
-      매니저: { read: true, write: true, delete: false },
-      에디터: { read: true, write: true, delete: false },
-      게스트: { read: true, write: false, delete: false },
-    },
-    "제품 관리": {
-      슈퍼어드민: { read: true, write: true, delete: true },
-      어드민: { read: true, write: true, delete: true },
-      매니저: { read: true, write: true, delete: false },
-      에디터: { read: true, write: true, delete: false },
-      게스트: { read: true, write: false, delete: false },
-    },
-    "시스템 설정": {
-      슈퍼어드민: { read: true, write: true, delete: true },
-      어드민: { read: true, write: true, delete: false },
-      매니저: { read: false, write: false, delete: false },
-      에디터: { read: false, write: false, delete: false },
-      게스트: { read: false, write: false, delete: false },
-    },
-  };
-
-  // 사용자 목록
-  const users = [
-    {
-      id: 1,
-      name: "김관리자",
-      email: "admin@company.com",
-      role: "슈퍼어드민",
-      department: "IT팀",
-      lastLogin: "2024-12-07 14:30",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "박매니저",
-      email: "manager@company.com",
-      role: "매니저",
-      department: "영업팀",
-      lastLogin: "2024-12-07 13:45",
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "이에디터",
-      email: "editor@company.com",
-      role: "에디터",
-      department: "마케팅팀",
-      lastLogin: "2024-12-06 16:20",
-      status: "inactive",
-    },
-  ];
-
-  // 권한 변경 이력
-  const changeHistory = [
-    {
-      id: 1,
-      user: "김관리자",
-      action: "권한 변경",
-      details: "박매니저 역할을 매니저에서 어드민으로 변경",
-      timestamp: "2024-12-07 10:30:00",
-      ipAddress: "192.168.1.100",
-    },
-    {
-      id: 2,
-      user: "시스템",
-      action: "자동 권한 해제",
-      details: "이에디터 90일 미접속으로 권한 일시정지",
-      timestamp: "2024-12-06 09:00:00",
-      ipAddress: "System",
-    },
+  const colorOptions = [
+    { value: "bg-red-500", name: "빨간색" },
+    { value: "bg-orange-500", name: "주황색" },
+    { value: "bg-yellow-500", name: "노란색" },
+    { value: "bg-green-500", name: "초록색" },
+    { value: "bg-blue-500", name: "파란색" },
+    { value: "bg-indigo-500", name: "남색" },
+    { value: "bg-purple-500", name: "보라색" },
+    { value: "bg-gray-500", name: "회색" },
   ];
 
   const tabs = [
-    { id: "roles", name: "역할 관리", icon: Shield },
-    { id: "matrix", name: "권한 매트릭스", icon: Settings },
-    { id: "users", name: "사용자 할당", icon: Users },
-    { id: "history", name: "변경 이력", icon: History },
+    { id: "roles", name: t("accessControl.roleManagement"), icon: Shield },
+    { id: "matrix", name: t("accessControl.permissionMatrix"), icon: Settings },
+    { id: "users", name: t("accessControl.userAssignment"), icon: Users },
+    { id: "history", name: t("accessControl.changeHistory"), icon: History },
   ];
 
+  // 새 역할 추가
+  const handleCreateRole = async (roleData) => {
+    try {
+      await createRole({
+        variables: { input: roleData }
+      });
+      await refetchRoles();
+      setShowAddRoleModal(false);
+    } catch (error) {
+      console.error("Error creating role:", error);
+      alert("역할 생성에 실패했습니다.");
+    }
+  };
+
+  // 역할 수정
+  const handleUpdateRole = async (id, roleData) => {
+    try {
+      await updateRole({
+        variables: { id, input: roleData }
+      });
+      await refetchRoles();
+      setShowEditRoleModal(false);
+      setSelectedRole(null);
+    } catch (error) {
+      console.error("Error updating role:", error);
+      alert("역할 수정에 실패했습니다.");
+    }
+  };
+
+  // 역할 삭제
+  const handleDeleteRole = async (id) => {
+    if (!confirm("정말로 이 역할을 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteRole({
+        variables: { id }
+      });
+      await refetchRoles();
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      alert("역할 삭제에 실패했습니다.");
+    }
+  };
+
+  // 사용자 역할 변경
+  const handleUpdateUserRole = async (userId, roleId) => {
+    try {
+      await updateUserRole({
+        variables: { 
+          input: { userId, roleId } 
+        }
+      });
+      await refetchUsers();
+      setShowEditUserModal(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      alert("사용자 역할 변경에 실패했습니다.");
+    }
+  };
+
+  // 권한 매트릭스 저장
+  const handleSavePermissionMatrix = async () => {
+    try {
+      const input = Object.keys(permissionChanges).map(module => ({
+        module,
+        permissions: permissionChanges[module]
+      }));
+
+      await updatePermissionMatrix({
+        variables: { input }
+      });
+      
+      await refetchMatrix();
+      setPermissionChanges({});
+      alert("권한 매트릭스가 저장되었습니다.");
+    } catch (error) {
+      console.error("Error updating permission matrix:", error);
+      alert("권한 매트릭스 저장에 실패했습니다.");
+    }
+  };
+
+  // 권한 변경 처리
+  const handlePermissionChange = (module, roleId, permission, value) => {
+    setPermissionChanges(prev => ({
+      ...prev,
+      [module]: {
+        ...prev[module],
+        [roleId]: {
+          ...prev[module]?.[roleId],
+          roleId,
+          [permission]: value
+        }
+      }
+    }));
+  };
+
+  // 역할 관리 렌더링
   const renderRoleManagement = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          역할별 권한 설정
+          {t("accessControl.roleManagement")}
         </h3>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
+        <button 
+          onClick={() => setShowAddRoleModal(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+        >
           <Plus className="w-4 h-4" />
-          <span>새 역할 추가</span>
+          <span>{t("accessControl.addNewRole")}</span>
         </button>
       </div>
 
-      <div className="grid gap-4">
-        {roles.map((role) => (
-          <div
-            key={role.id}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={`w-4 h-4 rounded ${role.color}`}></div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    {role.name}
-                  </h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {role.description} • {role.userCount}명
-                  </p>
+      {rolesLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {rolesData?.roles?.map((role) => (
+            <div
+              key={role.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-4 h-4 rounded ${role.color}`}></div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      {role.name}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {role.description} • {role.userCount}명
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-blue-500">
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button className="p-2 text-gray-500 hover:text-red-500">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-5 gap-4">
-              {Object.entries(role.permissions).map(([perm, allowed]) => (
-                <div key={perm} className="flex items-center space-x-2">
-                  {allowed ? (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-500" />
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      setSelectedRole(role);
+                      setShowEditRoleModal(true);
+                    }}
+                    className="p-2 text-gray-500 hover:text-blue-500"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  {!role.isSystem && (
+                    <button 
+                      onClick={() => handleDeleteRole(role.id)}
+                      className="p-2 text-gray-500 hover:text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   )}
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {perm === "read"
-                      ? "읽기"
-                      : perm === "write"
-                        ? "쓰기"
-                        : perm === "delete"
-                          ? "삭제"
-                          : perm === "approve"
-                            ? "승인"
-                            : "시스템설정"}
-                  </span>
                 </div>
-              ))}
+              </div>
+
+              <div className="mt-4 grid grid-cols-5 gap-4">
+                {["canRead", "canWrite", "canDelete", "canApprove", "canSystemConfig"].map((perm) => (
+                  <div key={perm} className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {perm === "canRead" ? t("accessControl.read")
+                        : perm === "canWrite" ? t("accessControl.write")
+                        : perm === "canDelete" ? t("accessControl.delete")
+                        : perm === "canApprove" ? t("accessControl.approve")
+                        : t("accessControl.systemConfig")}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
+  // 권한 매트릭스 렌더링
   const renderPermissionMatrix = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          모듈별 권한 매트릭스
+          {t("accessControl.permissionMatrix")}
         </h3>
-        <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>변경사항 저장</span>
-        </button>
+        {Object.keys(permissionChanges).length > 0 && (
+          <button 
+            onClick={handleSavePermissionMatrix}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center space-x-2"
+          >
+            <Save className="w-4 h-4" />
+            <span>{t("accessControl.saveChanges")}</span>
+          </button>
+        )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  모듈
-                </th>
-                {roles.map((role) => (
-                  <th
-                    key={role.id}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                  >
-                    <div className="flex items-center justify-center space-x-1">
-                      <div className={`w-2 h-2 rounded ${role.color}`}></div>
-                      <span>{role.name}</span>
-                    </div>
+      {matrixLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    모듈
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {Object.entries(permissionMatrix).map(([module, permissions]) => (
-                <tr key={module}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {module}
-                  </td>
-                  {roles.map((role) => (
-                    <td key={role.id} className="px-6 py-4 text-center">
-                      <div className="flex justify-center space-x-1">
-                        {permissions[role.name] ? (
-                          <>
-                            <div
-                              className={`w-3 h-3 rounded ${
-                                permissions[role.name].read
-                                  ? "bg-green-500"
-                                  : "bg-gray-300"
-                              }`}
-                              title="읽기"
-                            ></div>
-                            <div
-                              className={`w-3 h-3 rounded ${
-                                permissions[role.name].write
-                                  ? "bg-blue-500"
-                                  : "bg-gray-300"
-                              }`}
-                              title="쓰기"
-                            ></div>
-                            <div
-                              className={`w-3 h-3 rounded ${
-                                permissions[role.name].delete
-                                  ? "bg-red-500"
-                                  : "bg-gray-300"
-                              }`}
-                              title="삭제"
-                            ></div>
-                          </>
-                        ) : (
-                          <div className="text-gray-400">-</div>
-                        )}
+                  {rolesData?.roles?.map((role) => (
+                    <th
+                      key={role.id}
+                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
+                      <div className="flex items-center justify-center space-x-1">
+                        <div className={`w-2 h-2 rounded ${role.color}`}></div>
+                        <span>{role.name}</span>
                       </div>
-                    </td>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {matrixData?.permissionMatrix?.map((moduleMatrix) => (
+                  <tr key={moduleMatrix.module}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {modules.find(m => m.key === moduleMatrix.module)?.name || moduleMatrix.module}
+                    </td>
+                    {moduleMatrix.permissions.map((permission) => (
+                      <td key={permission.roleId} className="px-6 py-4 text-center">
+                        <div className="flex justify-center space-x-1">
+                          {["canRead", "canWrite", "canDelete"].map((perm) => {
+                            const currentValue = permissionChanges[moduleMatrix.module]?.[permission.roleId]?.[perm] 
+                              ?? permission[perm];
+                            
+                            return (
+                              <button
+                                key={perm}
+                                onClick={() => handlePermissionChange(
+                                  moduleMatrix.module, 
+                                  permission.roleId, 
+                                  perm, 
+                                  !currentValue
+                                )}
+                                className={`w-3 h-3 rounded transition-colors ${
+                                  currentValue
+                                    ? perm === "canRead" ? "bg-green-500" 
+                                      : perm === "canWrite" ? "bg-blue-500" 
+                                      : "bg-red-500"
+                                    : "bg-gray-300"
+                                }`}
+                                title={
+                                  perm === "canRead" ? t("accessControl.read")
+                                    : perm === "canWrite" ? t("accessControl.write")
+                                    : t("accessControl.delete")
+                                }
+                              />
+                            );
+                          })}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-green-500 rounded"></div>
-            <span>읽기</span>
+            <span>{t("accessControl.read")}</span>
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-blue-500 rounded"></div>
-            <span>쓰기</span>
+            <span>{t("accessControl.write")}</span>
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span>삭제</span>
+            <span>{t("accessControl.delete")}</span>
           </div>
         </div>
       </div>
     </div>
   );
 
+  // 사용자 할당 렌더링
   const renderUserAssignment = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          사용자별 역할 할당
+          {t("accessControl.userAssignment")}
         </h3>
-        <div className="flex space-x-2">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>사용자 추가</span>
-          </button>
-          <button className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center space-x-2">
-            <Download className="w-4 h-4" />
-            <span>내보내기</span>
-          </button>
-        </div>
       </div>
 
-      <div className="flex space-x-4 mb-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="사용자 검색..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-          </div>
+      {usersLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
-        <select className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-          <option>모든 역할</option>
-          {roles.map((role) => (
-            <option key={role.id}>{role.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                사용자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                현재 역할
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                부서
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                마지막 로그인
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                작업
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.name}
+      ) : (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  사용자
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  현재 역할
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  부서
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  작업
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {usersData?.usersWithRoles?.map((user) => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.name}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {user.email}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === "슈퍼어드민"
-                        ? "bg-red-100 text-red-800"
-                        : user.role === "어드민"
-                          ? "bg-orange-100 text-orange-800"
-                          : user.role === "매니저"
-                            ? "bg-blue-100 text-blue-800"
-                            : user.role === "에디터"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {user.department}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {user.lastLogin}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {user.status === "active" ? "활성" : "비활성"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.roleInfo ? (
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white ${user.roleInfo.color}`}>
+                        {user.roleInfo.name}
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                        미할당
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {user.department}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => {
                         setSelectedUser(user);
-                        setShowEditModal(true);
+                        setShowEditUserModal(true);
                       }}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-900">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 
+  // 변경 이력 렌더링 (기존 코드 유지)
   const renderChangeHistory = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -522,51 +470,10 @@ export default function AccessControlPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                시간
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                실행자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                작업
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                상세 내용
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                IP 주소
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {changeHistory.map((log) => (
-              <tr key={log.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {log.timestamp}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {log.user}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {log.action}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                  {log.details}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {log.ipAddress}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <p className="text-gray-500 dark:text-gray-400 text-center">
+          변경 이력 기능은 추후 구현 예정입니다.
+        </p>
       </div>
     </div>
   );
@@ -611,60 +518,307 @@ export default function AccessControlPage() {
         {activeTab === "history" && renderChangeHistory()}
       </div>
 
-      {/* 사용자 편집 모달 */}
-      {showEditModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                사용자 역할 편집
-              </h3>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      {/* 역할 추가 모달 */}
+      {showAddRoleModal && (
+        <RoleModal
+          title={t("accessControl.addNewRole")}
+          onClose={() => setShowAddRoleModal(false)}
+          onSave={handleCreateRole}
+          modules={modules}
+          colorOptions={colorOptions}
+          t={t}
+        />
+      )}
+
+      {/* 역할 편집 모달 */}
+      {showEditRoleModal && selectedRole && (
+        <RoleModal
+          title={t("accessControl.editRole")}
+          role={selectedRole}
+          onClose={() => {
+            setShowEditRoleModal(false);
+            setSelectedRole(null);
+          }}
+          onSave={(data) => handleUpdateRole(selectedRole.id, data)}
+          modules={modules}
+          colorOptions={colorOptions}
+          t={t}
+        />
+      )}
+
+      {/* 사용자 역할 편집 모달 */}
+      {showEditUserModal && selectedUser && (
+        <UserRoleModal
+          user={selectedUser}
+          roles={rolesData?.roles || []}
+          onClose={() => {
+            setShowEditUserModal(false);
+            setSelectedUser(null);
+          }}
+          onSave={(roleId) => handleUpdateUserRole(selectedUser.id, roleId)}
+          t={t}
+        />
+      )}
+    </div>
+  );
+}
+
+// 역할 모달 컴포넌트
+function RoleModal({ title, role, onClose, onSave, modules, colorOptions, t }) {
+  const [formData, setFormData] = useState({
+    name: role?.name || "",
+    englishName: role?.englishName || "",
+    description: role?.description || "",
+    color: role?.color || "bg-gray-500",
+    permissions: role?.permissions?.reduce((acc, perm) => {
+      acc[perm.module] = {
+        canRead: perm.canRead,
+        canWrite: perm.canWrite,
+        canDelete: perm.canDelete,
+        canApprove: perm.canApprove,
+        canSystemConfig: perm.canSystemConfig,
+      };
+      return acc;
+    }, {}) || {}
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const permissions = modules.map(module => ({
+      module: module.key,
+      ...(formData.permissions[module.key] || {
+        canRead: false,
+        canWrite: false,
+        canDelete: false,
+        canApprove: false,
+        canSystemConfig: false,
+      })
+    }));
+
+    onSave({
+      name: formData.name,
+      englishName: formData.englishName,
+      description: formData.description,
+      color: formData.color,
+      permissions
+    });
+  };
+
+  const handlePermissionChange = (moduleKey, permission, value) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [moduleKey]: {
+          ...prev.permissions[moduleKey],
+          [permission]: value
+        }
+      }
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t("accessControl.roleName")}
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                required
+              />
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  사용자
-                </label>
-                <div className="text-sm text-gray-900 dark:text-white">
-                  {selectedUser.name} ({selectedUser.email})
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  현재 역할
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  {roles.map((role) => (
-                    <option
-                      key={role.id}
-                      selected={role.name === selectedUser.role}
-                    >
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
-                >
-                  취소
-                </button>
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                  저장
-                </button>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t("accessControl.englishName")}
+              </label>
+              <input
+                type="text"
+                value={formData.englishName}
+                onChange={(e) => setFormData(prev => ({ ...prev, englishName: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                required
+              />
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("accessControl.description")}
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("accessControl.color")}
+            </label>
+            <div className="flex space-x-2">
+              {colorOptions.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                  className={`w-8 h-8 rounded ${color.value} ${
+                    formData.color === color.value ? "ring-2 ring-gray-400" : ""
+                  }`}
+                  title={color.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t("accessControl.permissions")}
+            </label>
+            <div className="space-y-4">
+              {modules.map((module) => (
+                <div key={module.key} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                    {module.name}
+                  </h4>
+                  <div className="grid grid-cols-5 gap-4">
+                    {["canRead", "canWrite", "canDelete", "canApprove", "canSystemConfig"].map((perm) => (
+                      <label key={perm} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions[module.key]?.[perm] || false}
+                          onChange={(e) => handlePermissionChange(module.key, perm, e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {perm === "canRead" ? t("accessControl.read")
+                            : perm === "canWrite" ? t("accessControl.write")
+                            : perm === "canDelete" ? t("accessControl.delete")
+                            : perm === "canApprove" ? t("accessControl.approve")
+                            : t("accessControl.systemConfig")}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// 사용자 역할 모달 컴포넌트
+function UserRoleModal({ user, roles, onClose, onSave, t }) {
+  const [selectedRoleId, setSelectedRoleId] = useState(user.roleInfo?.id || "");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (selectedRoleId) {
+      onSave(selectedRoleId);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t("accessControl.editUser")}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              사용자
+            </label>
+            <div className="text-sm text-gray-900 dark:text-white">
+              {user.name} ({user.email})
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              역할 선택
+            </label>
+            <select 
+              value={selectedRoleId}
+              onChange={(e) => setSelectedRoleId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              required
+            >
+              <option value="">역할을 선택하세요</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              저장
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
