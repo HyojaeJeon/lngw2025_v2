@@ -337,24 +337,8 @@ const customerResolvers = {
               },
               {
                 model: models.CustomerImage,
-                as: "images",
-              },
-              {
-                model: models.CustomerImage,
                 as: "facilityImages",
-                where: { imageType: "facility" },
-                required: false,
-              },
-              {
-                model: models.SalesOpportunity,
-                as: "opportunities",
-                include: [
-                  {
-                    model: models.User,
-                    as: "assignedUser",
-                    attributes: ["id", "name", "email"],
-                  },
-                ],
+                order: [["sortOrder", "ASC"]],
               },
             ],
           });
@@ -382,24 +366,8 @@ const customerResolvers = {
             },
             {
               model: models.CustomerImage,
-              as: "images",
-            },
-            {
-              model: models.CustomerImage,
               as: "facilityImages",
-              where: { imageType: "facility" },
-              required: false,
-            },
-            {
-              model: models.SalesOpportunity,
-              as: "opportunities",
-              include: [
-                {
-                  model: models.User,
-                  as: "assignedUser",
-                  attributes: ["id", "name", "email"],
-                },
-              ],
+              order: [["sortOrder", "ASC"]],
             },
           ],
         });
