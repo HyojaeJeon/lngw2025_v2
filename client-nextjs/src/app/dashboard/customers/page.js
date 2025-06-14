@@ -48,31 +48,16 @@ export default function CustomersPage() {
     }
   }, [router]);
 
-  const { 
-    data: customersData, 
-    loading: customersLoading, 
-    error: customersError,
-    refetch: refetchCustomers 
-  } = useQuery(GET_CUSTOMERS, {
-    variables: { limit: 50, offset: 0 },
-    errorPolicy: 'all',
-    onError: (error) => {
-      console.log('Customers query error:', error);
-      if (error.graphQLErrors?.some(e => e.extensions?.code === 'AUTHENTICATION_ERROR')) {
-        localStorage.removeItem('token');
-        router.push('/login');
-      }
-    }
+  const { data: customersData, loading: customersLoading, error: customersError } = useQuery(GET_CUSTOMERS, {
+    variables: { 
+      first: 50,
+      offset: 0
+    },
+    errorPolicy: 'ignore'
   });
 
-  const { 
-    data: usersData, 
-    loading: usersLoading 
-  } = useQuery(GET_USERS, {
-    errorPolicy: 'all',
-    onError: (error) => {
-      console.log('Users query error:', error);
-    }
+  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_USERS, {
+    errorPolicy: 'ignore'
   });
 
   const [createCustomer, { loading: createLoading }] = useMutation(CREATE_CUSTOMER, {

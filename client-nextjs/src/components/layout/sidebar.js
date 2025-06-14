@@ -587,7 +587,7 @@ const getMenuItems = (t) => [
   },
 ];
 
-// 간단한 리사이즈 가능한 사이드바
+// 간단한 리사이즈 가능한 사이바
 export function ResizableSidebar({ children }) {
     const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);

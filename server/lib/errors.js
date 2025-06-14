@@ -369,19 +369,22 @@ const getErrorCode = (errorKey) => {
 const requireAuth = (context) => {
   // 개발 환경에서는 인증 우회 (임시)
   if (process.env.NODE_ENV === 'development' || process.env.REPLIT) {
-    if (!context.user) {
+    if (!context || !context.user) {
       // 기본 사용자 반환
+      console.log('🔧 개발 환경: 기본 관리자 사용자로 인증 우회');
       return {
         id: 1,
+        userId: 1,
         email: 'admin@example.com',
         name: 'Admin User',
         role: 'ADMIN'
       };
     }
+    return context.user;
   }
 
-  if (!context.user) {
-    throw createError('AUTHENTICATION_REQUIRED', 'Authentication required.');
+  if (!context || !context.user) {
+    throw createError('AUTHENTICATION_REQUIRED', context?.lang || 'en');
   }
   return context.user;
 };
