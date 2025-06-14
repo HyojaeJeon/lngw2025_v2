@@ -33,6 +33,7 @@ const abtestResolvers = require("./marketing/abtest");
 const engagementResolvers = require("./marketing/engagement");
 const roleResolvers = require("./role/index");
 const vocResolvers = require("./voc/index");
+const employeeResolvers = require("./employee/index");
 
 // ====================
 // SCALAR RESOLVERS
@@ -75,7 +76,8 @@ const resolvers = merge(
   abtestResolvers,
   engagementResolvers,
   roleResolvers,
-  vocResolvers
+  vocResolvers,
+  employeeResolvers
 );
 
 module.exports = resolvers;

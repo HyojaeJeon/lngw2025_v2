@@ -31,9 +31,9 @@ const monitoringSchema = require("./marketing/monitoring");
 const postsSchema = require("./marketing/posts");
 const abtestSchema = require("./marketing/abtest");
 const engagementSchema = require("./marketing/engagement");
-const roleSchema = require("./role");
-const salesSchema = require("./sales");
-const vocSchema = require("./voc");
+const roleSchema = require("./role/index");
+const vocSchema = require("./voc/index");
+const employeeSchema = require("./employee/index");
 
 // ====================
 // MERGE ALL SCHEMAS
@@ -56,6 +56,7 @@ const typeDefs = mergeTypeDefs([
   engagementSchema,
   roleSchema,
   vocSchema,
+  employeeSchema,
 ]);
 
 module.exports = typeDefs;

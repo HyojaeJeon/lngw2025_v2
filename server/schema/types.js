@@ -900,6 +900,221 @@ const types = gql`
     success: Boolean!
     message: String
   }
+
+  # Employee Management Types
+  type Employee {
+    id: ID!
+    employeeId: String!
+    name: String!
+    email: String!
+    phone: String
+    department: String!
+    position: String!
+    hireDate: Date!
+    status: EmployeeStatus!
+    salary: Float
+    manager: Employee
+    managerId: ID
+    skills: [Skill!]!
+    emergencyContacts: [EmergencyContact!]!
+    experiences: [Experience!]!
+    attendanceRecords: [AttendanceRecord!]!
+    leaveRequests: [LeaveRequest!]!
+    evaluations: [PerformanceEvaluation!]!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  enum EmployeeStatus {
+    ACTIVE
+    INACTIVE
+    ON_LEAVE
+    TERMINATED
+  }
+
+  type AttendanceRecord {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    date: Date!
+    checkIn: DateTime
+    checkOut: DateTime
+    breakStart: DateTime
+    breakEnd: DateTime
+    workHours: Float
+    overtimeHours: Float
+    status: AttendanceStatus!
+    notes: String
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  enum AttendanceStatus {
+    PRESENT
+    ABSENT
+    LATE
+    HALF_DAY
+    SICK_LEAVE
+    VACATION
+  }
+
+  type LeaveRequest {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    type: LeaveType!
+    startDate: Date!
+    endDate: Date!
+    days: Int!
+    reason: String!
+    status: LeaveStatus!
+    approver: Employee
+    approverId: ID
+    approvedAt: DateTime
+    comments: String
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  enum LeaveType {
+    ANNUAL
+    SICK
+    PERSONAL
+    MATERNITY
+    PATERNITY
+    BEREAVEMENT
+    UNPAID
+  }
+
+  enum LeaveStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    CANCELLED
+  }
+
+  type PerformanceEvaluation {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    evaluator: Employee!
+    evaluatorId: ID!
+    period: String!
+    overallRating: Float!
+    goals: [EvaluationGoal!]!
+    strengths: String
+    improvements: String
+    comments: String
+    status: EvaluationStatus!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  type EvaluationGoal {
+    id: ID!
+    evaluationId: ID!
+    title: String!
+    description: String
+    targetValue: String
+    actualValue: String
+    rating: Float
+    weight: Float
+  }
+
+  enum EvaluationStatus {
+    DRAFT
+    SUBMITTED
+    REVIEWED
+    COMPLETED
+  }
+
+  type SalaryRecord {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    baseSalary: Float!
+    allowances: Float
+    deductions: Float
+    overtime: Float
+    bonus: Float
+    totalSalary: Float!
+    payPeriod: String!
+    payDate: Date!
+    status: PayrollStatus!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  enum PayrollStatus {
+    PENDING
+    PROCESSED
+    PAID
+    CANCELLED
+  }
+
+  # Employee Input Types
+  input EmployeeInput {
+    employeeId: String!
+    name: String!
+    email: String!
+    phone: String
+    department: String!
+    position: String!
+    hireDate: Date!
+    salary: Float
+    managerId: ID
+    status: EmployeeStatus
+  }
+
+  input AttendanceInput {
+    employeeId: ID!
+    date: Date!
+    checkIn: DateTime
+    checkOut: DateTime
+    breakStart: DateTime
+    breakEnd: DateTime
+    status: AttendanceStatus!
+    notes: String
+  }
+
+  input LeaveRequestInput {
+    employeeId: ID!
+    type: LeaveType!
+    startDate: Date!
+    endDate: Date!
+    reason: String!
+  }
+
+  input PerformanceEvaluationInput {
+    employeeId: ID!
+    evaluatorId: ID!
+    period: String!
+    overallRating: Float!
+    strengths: String
+    improvements: String
+    comments: String
+    goals: [EvaluationGoalInput!]!
+  }
+
+  input EvaluationGoalInput {
+    title: String!
+    description: String
+    targetValue: String
+    actualValue: String
+    rating: Float
+    weight: Float
+  }
+
+  input SalaryRecordInput {
+    employeeId: ID!
+    baseSalary: Float!
+    allowances: Float
+    deductions: Float
+    overtime: Float
+    bonus: Float
+    payPeriod: String!
+    payDate: Date!
+  }
 `;
 
 module.exports = types;

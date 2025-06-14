@@ -128,6 +128,11 @@ const RolePermission = require("./RolePermission")(
   sequelize,
   Sequelize.DataTypes,
 );
+const Employee = require("./Employee")(sequelize, Sequelize.DataTypes);
+const Attendance = require("./Attendance")(sequelize, Sequelize.DataTypes);
+const Leave = require("./Leave")(sequelize, Sequelize.DataTypes);
+const Salary = require("./Salary")(sequelize, Sequelize.DataTypes);
+const Evaluation = require("./Evaluation")(sequelize, Sequelize.DataTypes);
 
 // 모든 모델이 로드된 후 관계 설정
 const models = {
@@ -169,6 +174,11 @@ const models = {
   Voc,
   Role,
   RolePermission,
+  Employee,
+  Attendance,
+  Leave,
+  Salary,
+  Evaluation,
 };
 
 // Associate 함수 호출 - 모든 모델이 준비된 후
@@ -216,6 +226,11 @@ const syncOrder = [
   "Voc",
   "Role",
   "RolePermission",
+  "Employee",
+  "Attendance",
+  "Leave",
+  "Salary",
+  "Evaluation",
 ];
 
 // 데이터베이스 동기화 함수
