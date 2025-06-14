@@ -1,458 +1,482 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.js";
+import { Button } from "@/components/ui/button.js";
+import { Input } from "@/components/ui/input.js";
+import { Badge } from "@/components/ui/badge.js";
+import { useLanguage } from '@/hooks/useLanguage.js';
 import { useQuery, useMutation } from '@apollo/client';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { useTranslation } from '@/hooks/useLanguage';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  UserCheck,
-  UserX,
-  Clock,
+import { GET_EMPLOYEES, CREATE_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE } from '@/lib/graphql/employeeOperations.js';
+import {
+  Users,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
   Calendar,
-  TrendingUp,
-  AlertCircle,
-  Loader2,
-  UserPlus,
-  Eye,
+  MapPin,
   Building,
-  DollarSign,
-  Target
-} from 'lucide-react';
-
-// GraphQL Operations
-import { gql } from '@apollo/client';
-
-const GET_EMPLOYEES = gql`
-  query GetEmployees($department: String, $status: EmployeeStatus, $search: String, $first: Int, $skip: Int) {
-    employees(department: $department, status: $status, search: $search, first: $first, skip: $skip) {
-      id
-      employeeId
-      name
-      email
-      phone
-      department
-      position
-      status
-      hireDate
-      salary
-      avatar
-      isActive
-      createdAt
-    }
-  }
-`;
-
-const GET_EMPLOYEE_STATS = gql`
-  query GetEmployeeStats {
-    employeeStats {
-      totalEmployees
-      activeEmployees
-      onLeaveEmployees
-      newHiresThisMonth
-      pendingLeaveRequests
-      todayAttendance
-      averageWorkHours
-      departmentStats {
-        department
-        employeeCount
-        averageSalary
-        attendanceRate
-      }
-    }
-  }
-`;
-
-const CREATE_EMPLOYEE = gql`
-  mutation CreateEmployee($input: EmployeeInput!) {
-    createEmployee(input: $input) {
-      id
-      employeeId
-      name
-      email
-      department
-      position
-      status
-      hireDate
-    }
-  }
-`;
+  User,
+  Filter
+} from "lucide-react";
+import Link from "next/link";
 
 export default function EmployeesPage() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
-
-  // 인증 상태 확인
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-  }, [router]);
-
-  const { data: employeesData, loading: employeesLoading, error: employeesError, refetch: refetchEmployees } = useQuery(GET_EMPLOYEES, {
-    variables: { 
-      first: 50,
-      skip: 0,
-      search: searchTerm || undefined,
-      department: selectedDepartment || undefined,
-      status: selectedStatus || undefined
-    },
-    errorPolicy: 'ignore'
+  const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    department: "",
+    position: "",
+    hireDate: "",
+    salary: "",
+    status: "ACTIVE"
   });
 
-  const { data: statsData, loading: statsLoading } = useQuery(GET_EMPLOYEE_STATS, {
-    errorPolicy: 'ignore'
-  });
-
-  const [createEmployee, { loading: createLoading }] = useMutation(CREATE_EMPLOYEE, {
-    onCompleted: () => {
-      refetchEmployees();
-    },
-    onError: (error) => {
-      console.error('Create employee error:', error);
+  const { data: employeesData, loading, error, refetch } = useQuery(GET_EMPLOYEES, {
+    variables: {
+      filter: {
+        search: searchTerm,
+        department: departmentFilter
+      }
     }
   });
 
-  // 로딩 상태
-  if (employeesLoading || statsLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
-          <p className="text-gray-600 dark:text-gray-400">직원 데이터를 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  const [createEmployee] = useMutation(CREATE_EMPLOYEE);
+  const [updateEmployee] = useMutation(UPDATE_EMPLOYEE);
+  const [deleteEmployee] = useMutation(DELETE_EMPLOYEE);
 
-  // 에러 상태
-  if (employeesError && !employeesData) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (selectedEmployee) {
+        await updateEmployee({
+          variables: {
+            id: selectedEmployee.id,
+            input: formData
+          }
+        });
+      } else {
+        await createEmployee({
+          variables: {
+            input: formData
+          }
+        });
+      }
+      setShowAddForm(false);
+      setSelectedEmployee(null);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        department: "",
+        position: "",
+        hireDate: "",
+        salary: "",
+        status: "ACTIVE"
+      });
+      refetch();
+    } catch (error) {
+      console.error('Error saving employee:', error);
+    }
+  };
+
+  const handleEdit = (employee) => {
+    setSelectedEmployee(employee);
+    setFormData({
+      name: employee.name || "",
+      email: employee.email || "",
+      phone: employee.phone || "",
+      department: employee.department || "",
+      position: employee.position || "",
+      hireDate: employee.hireDate || "",
+      salary: employee.salary || "",
+      status: employee.status || "ACTIVE"
+    });
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('정말로 이 직원을 삭제하시겠습니까?')) {
+      try {
+        await deleteEmployee({
+          variables: {
+            id
+          }
+        });
+        refetch();
+      } catch (error) {
+        console.error('Error deleting employee:', error);
+      }
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      ACTIVE: { variant: "default", label: "재직", className: "bg-green-100 text-green-800" },
+      INACTIVE: { variant: "secondary", label: "휴직", className: "bg-yellow-100 text-yellow-800" },
+      TERMINATED: { variant: "destructive", label: "퇴사", className: "bg-red-100 text-red-800" }
+    };
+    
+    const config = statusConfig[status] || statusConfig.ACTIVE;
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            데이터 로딩 오류
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            직원 데이터를 불러오는 중 오류가 발생했습니다.
-          </p>
-          <Button onClick={() => refetchEmployees()} className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4" />
-            다시 시도
-          </Button>
-        </div>
-      </div>
+      <Badge className={config.className}>
+        {config.label}
+      </Badge>
     );
-  }
+  };
 
   const employees = employeesData?.employees || [];
-  const stats = statsData?.employeeStats || {};
-
-  // 필터링된 직원 목록
-  const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = !searchTerm || 
-      employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDepartment = !selectedDepartment || employee.department === selectedDepartment;
-    const matchesStatus = !selectedStatus || employee.status === selectedStatus;
-
-    return matchesSearch && matchesDepartment && matchesStatus;
-  });
-
-  // 상태별 배지 색상
-  const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800 border-green-200';
-      case 'ON_LEAVE': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'INACTIVE': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'TERMINATED': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  // 상태 한국어 변환
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'ACTIVE': return '재직중';
-      case 'ON_LEAVE': return '휴직중';
-      case 'INACTIVE': return '비활성';
-      case 'TERMINATED': return '퇴사';
-      default: return status;
-    }
-  };
-
-  // 고유 부서 목록
   const departments = [...new Set(employees.map(emp => emp.department).filter(Boolean))];
 
-  return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* 헤더 */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 
-                      rounded-xl p-6 transform transition-all duration-500 hover:scale-105">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
-                           bg-clip-text text-transparent">
-              직원 관리
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              직원 정보를 체계적으로 관리하고 조직을 효율적으로 운영하세요
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => router.push('/dashboard/employees/add')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                         text-white shadow-lg transform transition-all duration-200 hover:scale-105"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              신규 직원 등록
-            </Button>
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">직원 정보를 불러오는 중...</p>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
+    );
+  }
 
-      {/* 통계 카드들 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 직원</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.totalEmployees || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">재직 중</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.activeEmployees || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                <UserCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">휴직 중</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.onLeaveEmployees || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-                <UserX className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">이번 달 신규</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.newHiresThisMonth || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                <UserPlus className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 검색 및 필터 */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="직원명, 사번, 이메일로 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">전체 부서</option>
-              {departments.map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">전체 상태</option>
-              <option value="ACTIVE">재직중</option>
-              <option value="ON_LEAVE">휴직중</option>
-              <option value="INACTIVE">비활성</option>
-              <option value="TERMINATED">퇴사</option>
-            </select>
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              직원 관리
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              직원 정보를 관리하고 추적하세요
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            새 직원 추가
+          </Button>
+        </div>
 
-      {/* 직원 목록 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEmployees.map((employee) => (
-          <Card key={employee.id} className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                    {employee.avatar ? (
-                      <img 
-                        src={employee.avatar} 
-                        alt="Avatar" 
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      employee.name?.charAt(0).toUpperCase() || "U"
-                    )}
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {employee.name}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {employee.employeeId}
-                    </p>
-                  </div>
+        {/* 통계 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-blue-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">총 직원 수</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {employees.length}
+                  </p>
                 </div>
-                <Badge className={`${getStatusBadgeColor(employee.status)} text-xs`}>
-                  {getStatusText(employee.status)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Building className="w-4 h-4" />
-                <span>{employee.department} • {employee.position}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Calendar className="w-4 h-4" />
-                <span>입사: {new Date(employee.hireDate).toLocaleDateString('ko-KR')}</span>
-              </div>
-
-              {employee.salary && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <DollarSign className="w-4 h-4" />
-                  <span>연봉: {employee.salary.toLocaleString()}만원</span>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
-                <Link href={`/dashboard/employees/${employee.id}`} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Eye className="w-4 h-4 mr-1" />
-                    상세보기
-                  </Button>
-                </Link>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* 결과가 없는 경우 */}
-      {filteredEmployees.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            직원이 없습니다
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {searchTerm || selectedDepartment || selectedStatus
-              ? '검색 조건에 맞는 직원이 없습니다.' 
-              : '아직 등록된 직원이 없습니다.'}
-          </p>
-          {!searchTerm && !selectedDepartment && !selectedStatus && (
-            <Button onClick={() => router.push('/dashboard/employees/add')}>
-              <Plus className="w-4 h-4 mr-2" />
-              첫 번째 직원 등록하기
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* 부서별 통계 */}
-      {stats.departmentStats && stats.departmentStats.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="w-5 h-5" />
-              부서별 통계
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stats.departmentStats.map((dept, index) => (
-                <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    {dept.department}
-                  </h4>
-                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex justify-between">
-                      <span>직원 수:</span>
-                      <span className="font-medium">{dept.employeeCount}명</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>평균 연봉:</span>
-                      <span className="font-medium">{dept.averageSalary.toFixed(0)}만원</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>출석률:</span>
-                      <span className="font-medium">{dept.attendanceRate.toFixed(1)}%</span>
-                    </div>
-                  </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <User className="h-8 w-8 text-green-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">재직자</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {employees.filter(emp => emp.status === 'ACTIVE').length}
+                  </p>
                 </div>
-              ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Building className="h-8 w-8 text-purple-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">부서 수</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {departments.length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Calendar className="h-8 w-8 text-orange-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">신규 입사 (이번 달)</p>
+                  <p className="text-2xl font-bold text-gray-900">3</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 필터 및 검색 */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="직원 이름, 이메일로 검색..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="w-full md:w-48">
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">모든 부서</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
+
+        {/* 직원 목록 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {employees.map((employee) => (
+            <Card key={employee.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{employee.name}</h3>
+                      <p className="text-sm text-gray-600">{employee.position}</p>
+                    </div>
+                  </div>
+                  {getStatusBadge(employee.status)}
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Building className="w-4 h-4 mr-2" />
+                    {employee.department}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {employee.email}
+                  </div>
+                  {employee.phone && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Phone className="w-4 h-4 mr-2" />
+                      {employee.phone}
+                    </div>
+                  )}
+                  {employee.hireDate && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      입사일: {new Date(employee.hireDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(employee)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    편집
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(employee.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    삭제
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* 빠른 액세스 링크 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>빠른 액세스</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link href="/dashboard/employees/attendance">
+                <Button variant="outline" className="w-full h-20 flex-col">
+                  <Calendar className="w-6 h-6 mb-2" />
+                  출근 관리
+                </Button>
+              </Link>
+              <Link href="/dashboard/employees/salary">
+                <Button variant="outline" className="w-full h-20 flex-col">
+                  <Users className="w-6 h-6 mb-2" />
+                  급여 관리
+                </Button>
+              </Link>
+              <Link href="/dashboard/employees/evaluation">
+                <Button variant="outline" className="w-full h-20 flex-col">
+                  <User className="w-6 h-6 mb-2" />
+                  평가 관리
+                </Button>
+              </Link>
+              <Link href="/dashboard/employees/leave">
+                <Button variant="outline" className="w-full h-20 flex-col">
+                  <Calendar className="w-6 h-6 mb-2" />
+                  휴가 관리
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 직원 추가/편집 모달 */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold mb-4">
+                {selectedEmployee ? '직원 정보 수정' : '새 직원 추가'}
+              </h3>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">이름</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">이메일</label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">전화번호</label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">부서</label>
+                    <Input
+                      value={formData.department}
+                      onChange={(e) => setFormData({...formData, department: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">직책</label>
+                    <Input
+                      value={formData.position}
+                      onChange={(e) => setFormData({...formData, position: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">입사일</label>
+                    <Input
+                      type="date"
+                      value={formData.hireDate}
+                      onChange={(e) => setFormData({...formData, hireDate: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">급여</label>
+                    <Input
+                      type="number"
+                      value={formData.salary}
+                      onChange={(e) => setFormData({...formData, salary: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">상태</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="ACTIVE">재직</option>
+                      <option value="INACTIVE">휴직</option>
+                      <option value="TERMINATED">퇴사</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setSelectedEmployee(null);
+                      setFormData({
+                        name: "",
+                        email: "",
+                        phone: "",
+                        department: "",
+                        position: "",
+                        hireDate: "",
+                        salary: "",
+                        status: "ACTIVE"
+                      });
+                    }}
+                  >
+                    취소
+                  </Button>
+                  <Button type="submit">
+                    {selectedEmployee ? '수정' : '추가'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }
