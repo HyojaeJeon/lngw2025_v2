@@ -795,13 +795,7 @@ export function ResizableSidebar({ children }) {
 
 
       </div>
-
-        {/* 리사이즈 핸들 */}
-        <div
-          className="absolute top-0 right-0 w-1 h-full bg-gray-300 dark:bg-gray-600 hover:bg-blue-500 cursor-col-resize transition-colors duration-200"
-          onMouseDown={startResizing}
-        />
-      </aside>
+    </aside>
 
       {/* 메인 콘텐츠 */}
       <main className="flex-1">
@@ -885,7 +879,7 @@ export function Sidebar({ isOpen, onToggle }) {
               const isExpanded = expandedMenus[item.name] || submenuIsActive;
 
               return (
-                
+
                 <div key={`category-${categoryIndex}`}>
                   {/* Main Menu Item */}
                   <div className="flex items-center">
@@ -950,7 +944,7 @@ export function Sidebar({ isOpen, onToggle }) {
                         {item.submenu.map((subItem) => {
                           const subIsActive = isActive(subItem.href);
                           return (
-                            
+
                             <Link
                               key={subItem.name}
                               href={subItem.href}

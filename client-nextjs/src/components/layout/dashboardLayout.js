@@ -5,7 +5,7 @@ import Header from "./header.js";
 import { ResizableSidebar, Sidebar } from "./sidebar.js";
 import { useIsMobile } from "../../hooks/useIsMobile.js";
 
-export function DashboardLayout({ children }) {
+export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -45,6 +45,3 @@ export function DashboardLayout({ children }) {
     </div>
   );
 }
-
-// 기본 export로도 내보내기
-export default DashboardLayout;
