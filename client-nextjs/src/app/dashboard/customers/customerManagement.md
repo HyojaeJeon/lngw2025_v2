@@ -233,3 +233,8 @@ POST /api/quote/{id}/approve – 할인 승인: 할인율 초과 견적에 대�
 - ✅ 인증 에러 처리
 - ✅ Apollo Client 설정 개선
 - ✅ 로딩 및 에러 상태 처리
+
+### 2. 고객 추가 페이지 (`/dashboard/customers/add`) [작업완료]
+- 새 고객 정보 입력 폼
+- 회사 정보, 담당자 정보, SNS 정보 등 입력
+- 유효성 검사 및 중복 체크

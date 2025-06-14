@@ -20,8 +20,13 @@ const types = gql`
   }
 
   type MutationResponse {
-    success: Boolean
-    message: String
+    success: Boolean!
+    message: String!
+  }
+
+  type DeleteResult {
+    success: Boolean!
+    message: String!
   }
 
   # ====================

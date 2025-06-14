@@ -1543,3 +1543,548 @@ export default function AddCustomerPage() {
     </div>
   );
 }
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation, useQuery } from '@apollo/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useLanguage } from '@/hooks/useLanguage';
+import { CREATE_CUSTOMER, GET_USERS, CHECK_COMPANY_NAME_QUERY } from '@/lib/graphql/customerOperations';
+import { 
+  ArrowLeft, 
+  Save, 
+  Building2,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  Loader2,
+  AlertCircle,
+  Plus,
+  X
+} from 'lucide-react';
+
+export default function AddCustomerPage() {
+  const { t } = useLanguage();
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: '',
+    contactName: '',
+    email: '',
+    phone: '',
+    industry: '',
+    companyType: '',
+    grade: 'C',
+    address: '',
+    assignedUserId: '',
+    status: 'active',
+    facebook: '',
+    tiktok: '',
+    instagram: '',
+    contacts: []
+  });
+
+  const [errors, setErrors] = useState({});
+  const [companyNameCheck, setCompanyNameCheck] = useState(null);
+  const [checkingName, setCheckingName] = useState(false);
+
+  // 인증 상태 확인
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
+
+  const { data: usersData } = useQuery(GET_USERS, {
+    errorPolicy: 'all'
+  });
+
+  const [checkCompanyName] = useMutation(CHECK_COMPANY_NAME_QUERY);
+
+  const [createCustomer, { loading: createLoading }] = useMutation(CREATE_CUSTOMER, {
+    onCompleted: (data) => {
+      router.push('/dashboard/customers');
+    },
+    onError: (error) => {
+      console.error('고객 생성 오류:', error);
+      setErrors({ submit: '고객 생성 중 오류가 발생했습니다.' });
+    }
+  });
+
+  const users = usersData?.users || [];
+
+  // 회사명 중복 확인
+  const handleCompanyNameCheck = async (name) => {
+    if (!name.trim()) {
+      setCompanyNameCheck(null);
+      return;
+    }
+
+    setCheckingName(true);
+    try {
+      const { data } = await checkCompanyName({
+        variables: { name: name.trim() }
+      });
+      setCompanyNameCheck(data.checkCompanyName);
+    } catch (error) {
+      console.error('회사명 확인 오류:', error);
+    } finally {
+      setCheckingName(false);
+    }
+  };
+
+  // 폼 데이터 변경 핸들러
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // 회사명 변경 시 중복 확인
+    if (field === 'name') {
+      handleCompanyNameCheck(value);
+    }
+
+    // 에러 상태 초기화
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
+  };
+
+  // 담당자 추가
+  const addContact = () => {
+    setFormData(prev => ({
+      ...prev,
+      contacts: [...prev.contacts, {
+        name: '',
+        department: '',
+        position: '',
+        phone: '',
+        email: '',
+        birthDate: ''
+      }]
+    }));
+  };
+
+  // 담당자 제거
+  const removeContact = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      contacts: prev.contacts.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 담당자 정보 변경
+  const handleContactChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      contacts: prev.contacts.map((contact, i) => 
+        i === index ? { ...contact, [field]: value } : contact
+      )
+    }));
+  };
+
+  // 폼 유효성 검사
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = '회사명은 필수입니다.';
+    }
+
+    if (companyNameCheck?.exists) {
+      newErrors.name = '이미 등록된 회사명입니다.';
+    }
+
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = '올바른 이메일 형식이 아닙니다.';
+    }
+
+    if (formData.phone && !/^[\d-+().\s]+$/.test(formData.phone)) {
+      newErrors.phone = '올바른 전화번호 형식이 아닙니다.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 폼 제출
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await createCustomer({
+        variables: {
+          input: {
+            ...formData,
+            contacts: formData.contacts.filter(contact => contact.name.trim())
+          }
+        }
+      });
+    } catch (error) {
+      console.error('고객 생성 실패:', error);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            뒤로가기
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              신규 고객 등록
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              새로운 고객 정보를 등록합니다
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 기본 정보 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              회사 기본 정보
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">회사명 *</Label>
+                <div className="relative">
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    className={errors.name ? 'border-red-500' : ''}
+                    placeholder="회사명을 입력하세요"
+                  />
+                  {checkingName && (
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin" />
+                  )}
+                </div>
+                {errors.name && (
+                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                )}
+                {companyNameCheck && !companyNameCheck.exists && (
+                  <p className="text-sm text-green-500 mt-1">사용 가능한 회사명입니다.</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="industry">업종</Label>
+                <Input
+                  id="industry"
+                  value={formData.industry}
+                  onChange={(e) => handleChange('industry', e.target.value)}
+                  placeholder="업종을 입력하세요"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="companyType">회사 유형</Label>
+                <select
+                  id="companyType"
+                  value={formData.companyType}
+                  onChange={(e) => handleChange('companyType', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">선택하세요</option>
+                  <option value="corporation">법인</option>
+                  <option value="individual">개인사업자</option>
+                  <option value="partnership">합명회사</option>
+                  <option value="limited">유한회사</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="grade">고객 등급</Label>
+                <select
+                  id="grade"
+                  value={formData.grade}
+                  onChange={(e) => handleChange('grade', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="VIP">VIP</option>
+                  <option value="A">A등급</option>
+                  <option value="B">B등급</option>
+                  <option value="C">C등급</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="address">주소</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                placeholder="회사 주소를 입력하세요"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="assignedUserId">담당 직원</Label>
+              <select
+                id="assignedUserId"
+                value={formData.assignedUserId}
+                onChange={(e) => handleChange('assignedUserId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">담당자를 선택하세요</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name} ({user.department})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 연락처 정보 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              주 담당자 정보
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="contactName">담당자명</Label>
+                <Input
+                  id="contactName"
+                  value={formData.contactName}
+                  onChange={(e) => handleChange('contactName', e.target.value)}
+                  placeholder="담당자명을 입력하세요"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">전화번호</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  className={errors.phone ? 'border-red-500' : ''}
+                  placeholder="전화번호를 입력하세요"
+                />
+                {errors.phone && (
+                  <p className="text-sm text-red-500 mt-1">{errors.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email">이메일</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  className={errors.email ? 'border-red-500' : ''}
+                  placeholder="이메일을 입력하세요"
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SNS 정보 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>SNS 정보</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="facebook">Facebook</Label>
+                <Input
+                  id="facebook"
+                  value={formData.facebook}
+                  onChange={(e) => handleChange('facebook', e.target.value)}
+                  placeholder="Facebook URL"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input
+                  id="instagram"
+                  value={formData.instagram}
+                  onChange={(e) => handleChange('instagram', e.target.value)}
+                  placeholder="Instagram URL"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="tiktok">TikTok</Label>
+                <Input
+                  id="tiktok"
+                  value={formData.tiktok}
+                  onChange={(e) => handleChange('tiktok', e.target.value)}
+                  placeholder="TikTok URL"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 추가 담당자 */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>추가 담당자</CardTitle>
+              <Button type="button" onClick={addContact} size="sm" variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                담당자 추가
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {formData.contacts.length === 0 ? (
+              <p className="text-gray-500">추가 담당자가 없습니다.</p>
+            ) : (
+              <div className="space-y-4">
+                {formData.contacts.map((contact, index) => (
+                  <div key={index} className="border rounded-lg p-4 relative">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeContact(index)}
+                      className="absolute top-2 right-2"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>이름</Label>
+                        <Input
+                          value={contact.name}
+                          onChange={(e) => handleContactChange(index, 'name', e.target.value)}
+                          placeholder="이름"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>부서</Label>
+                        <Input
+                          value={contact.department}
+                          onChange={(e) => handleContactChange(index, 'department', e.target.value)}
+                          placeholder="부서"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>직책</Label>
+                        <Input
+                          value={contact.position}
+                          onChange={(e) => handleContactChange(index, 'position', e.target.value)}
+                          placeholder="직책"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>전화번호</Label>
+                        <Input
+                          value={contact.phone}
+                          onChange={(e) => handleContactChange(index, 'phone', e.target.value)}
+                          placeholder="전화번호"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>이메일</Label>
+                        <Input
+                          value={contact.email}
+                          onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                          placeholder="이메일"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>생년월일</Label>
+                        <Input
+                          type="date"
+                          value={contact.birthDate}
+                          onChange={(e) => handleContactChange(index, 'birthDate', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 제출 버튼 */}
+        <div className="flex justify-end gap-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => router.back()}
+          >
+            취소
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={createLoading || checkingName}
+            className="flex items-center gap-2"
+          >
+            {createLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                등록 중...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                고객 등록
+              </>
+            )}
+          </Button>
+        </div>
+
+        {errors.submit && (
+          <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            <p className="text-red-700">{errors.submit}</p>
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
