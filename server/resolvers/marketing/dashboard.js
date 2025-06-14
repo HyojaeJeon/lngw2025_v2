@@ -89,24 +89,6 @@ const dashboardResolvers = {
       }
     },
 
-    users: async (parent, { offset = 0, limit = 10 }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const users = await models.User.findAll({
-          offset,
-          limit,
-          attributes: ['id', 'name', 'email', 'position', 'avatar'],
-          order: [['name', 'ASC']]
-        });
-
-        return users;
-      } catch (error) {
-        console.error('사용자 목록 조회 오류:', error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
-      }
-    },
-
     usersCount: async (parent, args, { user, lang }) => {
       requireAuth(user, lang);
 

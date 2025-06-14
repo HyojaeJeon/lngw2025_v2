@@ -491,6 +491,8 @@ const types = gql`
   type PeakTimeData {
     hour: Int
     engagement: Int
+    hour: Int
+    engagement: Int
   }
 
   type CompetitorData {
@@ -884,6 +886,10 @@ const types = gql`
   enum SortDirection {
     ASC
     DESC
+  }
+  type DeleteResult {
+    success: Boolean!
+    message: String
   }
 `;
 

@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         comment: "고객 ID",
       },
       type: {
-        type: DataTypes.ENUM("미팅", "통화", "이메일", "방문", "기타"),
+        type: DataTypes.ENUM("meeting", "call", "email", "visit", "demo", "presentation", "negotiation", "followup", "support", "consultation"),
         allowNull: false,
         comment: "활동 유형",
       },
@@ -50,9 +50,8 @@ module.exports = (sequelize, DataTypes) => {
         comment: "참석자 목록",
       },
       result: {
-        type: DataTypes.ENUM("성공", "완료", "해결", "발송완료", "진행중", "실패", "취소"),
-        allowNull: false,
-        defaultValue: "진행중",
+        type: DataTypes.STRING,
+        allowNull: true,
         comment: "결과",
       },
       nextAction: {

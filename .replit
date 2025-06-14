@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Project"
+runButton = "정리된 개발 시작"
 
 [[workflows.workflow]]
 name = "Project"
@@ -40,18 +40,6 @@ waitForPort = 5000
 name = "정리된 개발 시작"
 author = 43113446
 mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"next\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 3"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
