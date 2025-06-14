@@ -349,6 +349,7 @@ const salesTypeDefs = gql`
 
     # 고객사 목록 (검색 지원)
     customers(search: String, limit: Int): [Customer!]!
+    customersForSales(limit: Int, offset: Int): [Customer!]!
 
     # 제품 목록 (카테고리별, 검색 지원)
     productsForSales(categoryId: Int, search: String, limit: Int): [Product!]!

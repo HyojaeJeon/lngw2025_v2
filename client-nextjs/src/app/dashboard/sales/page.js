@@ -1,3 +1,4 @@
+
 "use client";
 
 import SalesManagementPage from '@/components/sales/SalesManagementPage';

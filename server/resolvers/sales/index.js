@@ -186,20 +186,60 @@ const salesResolvers = {
       }
     },
 
-    productsForSales: async (_, { limit = 100, offset = 0 }, { user }) => {
+    productsForSales: async (_, { categoryId, search, limit = 100 }, { user }) => {
       try {
         requireAuth(user);
 
+        const where = { isActive: true };
+        
+        if (categoryId) {
+          where.categoryId = categoryId;
+        }
+        
+        if (search) {
+          where[Op.or] = [
+            { name: { [Op.like]: `%${search}%` } },
+            { sku: { [Op.like]: `%${search}%` } }
+          ];
+        }
+
         const products = await models.Product.findAll({
-          where: { isActive: true },
+          where,
           limit,
-          offset,
-          order: [['name', 'ASC']]
+          order: [['name', 'ASC']],
+          include: [
+            { model: models.Category, as: 'category' }
+          ]
         });
 
         return products;
       } catch (error) {
         throw createError(ERROR_CODES.DATABASE_ERROR, '제품 조회 실패', error);
+      }
+    },
+
+    productModelsForSales: async (_, { productId, search, limit = 100 }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const where = { productId, isActive: true };
+        
+        if (search) {
+          where[Op.or] = [
+            { name: { [Op.like]: `%${search}%` } },
+            { modelNumber: { [Op.like]: `%${search}%` } }
+          ];
+        }
+
+        const productModels = await models.ProductModel.findAll({
+          where,
+          limit,
+          order: [['name', 'ASC']]
+        });
+
+        return productModels;
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '제품 모델 조회 실패', error);
       }
     },
 
