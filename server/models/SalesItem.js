@@ -168,6 +168,19 @@ module.exports = (sequelize) => {
       defaultValue: 0,
       comment: '결제완료액'
     },
+    // 추가 비용 정보
+    shippingCost: {
+      type: DataTypes.DECIMAL(15, 2),
+      allowNull: false,
+      defaultValue: 0,
+      comment: '배송료'
+    },
+    otherCosts: {
+      type: DataTypes.DECIMAL(15, 2),
+      allowNull: false,
+      defaultValue: 0,
+      comment: '기타 비용'
+    },
     // 기타
     notes: {
       type: DataTypes.TEXT,
@@ -274,6 +287,18 @@ module.exports = (sequelize) => {
     SalesItem.hasMany(models.Payment, {
       foreignKey: 'salesItemId',
       as: 'payments'
+    });
+
+    // SalesItemHistory와의 관계
+    SalesItem.hasMany(models.SalesItemHistory, {
+      foreignKey: 'salesItemId',
+      as: 'histories'
+    });
+
+    // IncentivePayout과의 관계
+    SalesItem.hasMany(models.IncentivePayout, {
+      foreignKey: 'salesItemId',
+      as: 'incentivePayouts'
     });
   };
 

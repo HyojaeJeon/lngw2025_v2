@@ -56,6 +56,50 @@ const salesTypeDefs = gql`
     updatedAt: String!
   }
 
+  # SalesCategory 타입 정의
+  type SalesCategory {
+    id: ID!
+    name: String!
+    code: String!
+    description: String
+    sortOrder: Int!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  # SalesItemHistory 타입 정의
+  type SalesItemHistory {
+    id: ID!
+    salesItemId: Int!
+    salesItem: SalesItem
+    userId: Int!
+    user: User
+    action: String!
+    field: String
+    oldValue: String
+    newValue: String
+    metadata: String
+    createdAt: String!
+  }
+
+  # IncentivePayout 타입 정의
+  type IncentivePayout {
+    id: ID!
+    salesItemId: Int!
+    salesItem: SalesItem
+    recipientId: Int!
+    recipient: User
+    paymentDate: String!
+    amount: Float!
+    type: IncentiveType!
+    receiptImageUrl: String
+    note: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
   # Enum 타입들
   enum SalesType {
     SALE
@@ -75,6 +119,11 @@ const salesTypeDefs = gql`
     CARD
     BANK_TRANSFER
     OTHER
+  }
+
+  enum IncentiveType {
+    INCENTIVE_A
+    INCENTIVE_B
   }
 
   # 입력 타입들
@@ -131,6 +180,40 @@ const salesTypeDefs = gql`
     paymentMethod: PaymentMethod
     note: String
     receiptImageUrl: String
+  }
+
+  input SalesCategoryInput {
+    name: String!
+    code: String!
+    description: String
+    sortOrder: Int
+  }
+
+  input SalesCategoryUpdateInput {
+    name: String
+    code: String
+    description: String
+    sortOrder: Int
+    isActive: Boolean
+  }
+
+  input IncentivePayoutInput {
+    salesItemId: Int!
+    recipientId: Int!
+    paymentDate: String!
+    amount: Float!
+    type: IncentiveType!
+    receiptImageUrl: String
+    note: String
+  }
+
+  input IncentivePayoutUpdateInput {
+    recipientId: Int
+    paymentDate: String
+    amount: Float
+    type: IncentiveType
+    receiptImageUrl: String
+    note: String
   }
 
   input SalesFilterInput {
@@ -206,6 +289,42 @@ const salesTypeDefs = gql`
     averageMarginRate: Float!
   }
 
+  type SalesCategoryResponse {
+    success: Boolean!
+    message: String
+    salesCategory: SalesCategory
+    errors: [FieldError]
+  }
+
+  type SalesCategoryListResponse {
+    success: Boolean!
+    message: String
+    salesCategories: [SalesCategory]
+    pagination: PaginationInfo
+    errors: [FieldError]
+  }
+
+  type IncentivePayoutResponse {
+    success: Boolean!
+    message: String
+    incentivePayout: IncentivePayout
+    errors: [FieldError]
+  }
+
+  type IncentivePayoutListResponse {
+    success: Boolean!
+    message: String
+    incentivePayouts: [IncentivePayout]
+    errors: [FieldError]
+  }
+
+  type SalesItemHistoryListResponse {
+    success: Boolean!
+    message: String
+    histories: [SalesItemHistory]
+    errors: [FieldError]
+  }
+
   # 연관 데이터 조회를 위한 확장 Query
   extend type Query {
     # 매출 목록 조회 (필터링, 정렬, 페이지네이션 지원)
@@ -236,6 +355,17 @@ const salesTypeDefs = gql`
 
     # 모델 목록 (제품별, 검색 지원)
     productModelsForSales(productId: Int!, search: String, limit: Int): [ProductModel!]!
+
+    # 매출 카테고리 관련 쿼리
+    salesCategories(search: String, page: Int, limit: Int): SalesCategoryListResponse!
+    salesCategory(id: Int!): SalesCategoryResponse!
+
+    # 인센티브 지급 내역 쿼리
+    incentivePayouts(salesItemId: Int!, type: IncentiveType): IncentivePayoutListResponse!
+    incentivePayout(id: Int!): IncentivePayoutResponse!
+
+    # 매출 항목 변경 이력 쿼리
+    salesItemHistories(salesItemId: Int!): SalesItemHistoryListResponse!
   }
 
   # Mutation 확장
@@ -256,6 +386,16 @@ const salesTypeDefs = gql`
 
     # 대량 처리
     bulkUpdateSalesItems(updates: [SalesItemBulkUpdate!]!): SalesItemListResponse!
+
+    # 매출 카테고리 관리
+    createSalesCategory(input: SalesCategoryInput!): SalesCategoryResponse!
+    updateSalesCategory(id: Int!, input: SalesCategoryUpdateInput!): SalesCategoryResponse!
+    deleteSalesCategory(id: Int!): SalesCategoryResponse!
+
+    # 인센티브 지급 내역 관리
+    createIncentivePayout(input: IncentivePayoutInput!): IncentivePayoutResponse!
+    updateIncentivePayout(id: Int!, input: IncentivePayoutUpdateInput!): IncentivePayoutResponse!
+    deleteIncentivePayout(id: Int!): IncentivePayoutResponse!
   }
 
   input SalesItemBulkUpdate {
