@@ -56,8 +56,8 @@ const categorySchemaExtensions = gql`
   # CATEGORY QUERIES & MUTATIONS
   # ====================
   extend type Query {
-    categories(isActive: Boolean): [Category]
-    category(id: ID!): Category
+    categories(search: String, page: Int, limit: Int): CategoryListResponse!
+    category(id: Int!): Category
     categoryByCode(code: String!): Category
     checkCategoryCode(code: String!): CategoryCodeCheckResult!
   }
@@ -66,6 +66,21 @@ const categorySchemaExtensions = gql`
     createCategory(input: CategoryInput!): Category
     updateCategory(id: ID!, input: CategoryInput): Category
     deleteCategory(id: ID!): Boolean!
+  }
+
+  type CategoryResponse {
+    success: Boolean!
+    message: String
+    category: Category
+    errors: [FieldError]
+  }
+
+  type CategoryListResponse {
+    success: Boolean!
+    message: String
+    categories: [Category!]!
+    pagination: PaginationInfo
+    errors: [FieldError]
   }
 `;
 

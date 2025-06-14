@@ -1,10 +1,8 @@
 const models = require("../../models");
-const { Op } = require("sequelize");
+const { createError, requireAuth, handleDatabaseError } = require("../../lib/errors");
+const { Op } = require('sequelize');
 const {
-  createError,
-  requireAuth,
   requireRole,
-  handleDatabaseError,
 } = require("../../lib/errors");
 
 // ====================
@@ -40,29 +38,42 @@ const validateCategoryNames = (names) => {
 
 const categoryResolvers = {
   Query: {
-    categories: async (parent, args, context) => {
-      console.log("context : ", context);
-      // 카테고리 목록은 공개적으로 접근 가능
-      // requireAuth(user, lang);
-      const { user, lang } = context;
-      console.log("user : ", user);
-      console.log("lang : ", lang);
+    categories: async (_, { search, page = 1, limit = 20 }, { user }) => {
+      requireAuth(user);
+
       try {
-        const where = {};
+        const offset = (page - 1) * limit;
+        const where = { isActive: true };
 
-        const categories = await models.Category.findAll({
+        if (search) {
+          where[Op.or] = [
+            { name: { [Op.like]: `%${search}%` } },
+            { code: { [Op.like]: `%${search}%` } }
+          ];
+        }
+
+        const { count, rows } = await models.Category.findAndCountAll({
           where,
-
-          order: [
-            ["sortOrder", "ASC"],
-            ["createdAt", "ASC"],
-          ],
+          limit,
+          offset,
+          order: [['name', 'ASC']]
         });
 
-        return categories;
+        return {
+          success: true,
+          categories: rows,
+          pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            itemsPerPage: limit,
+            hasNextPage: page * limit < count,
+            hasPreviousPage: page > 1,
+            totalCount: count
+          }
+        };
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
+        handleDatabaseError(error, 'ko', "CATEGORIES_FETCH_FAILED");
       }
     },
 

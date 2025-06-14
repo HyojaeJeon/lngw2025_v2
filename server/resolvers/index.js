@@ -19,6 +19,9 @@ const categoryResolvers = require("./category/index");
 // Product resolvers
 const productResolvers = require("./product/index");
 
+// Sales resolvers
+const salesResolvers = require("./sales/index");
+
 // Marketing resolvers
 const contentResolvers = require("./marketing/content");
 const dashboardResolvers = require("./marketing/dashboard");
@@ -61,6 +64,7 @@ const resolvers = merge(
   customerActivityResolvers,
   categoryResolvers,
   productResolvers,
+  salesResolvers,
   contentResolvers,
   dashboardResolvers,
   insightsResolvers,

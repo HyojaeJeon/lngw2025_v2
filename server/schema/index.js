@@ -32,6 +32,7 @@ const postsSchema = require("./marketing/posts");
 const abtestSchema = require("./marketing/abtest");
 const engagementSchema = require("./marketing/engagement");
 const roleSchema = require("./role");
+const salesSchema = require("./sales");
 
 // ====================
 // MERGE ALL SCHEMAS
@@ -43,6 +44,7 @@ const typeDefs = mergeTypeDefs([
   customerActivitySchema,
   categorySchema,
   productSchema,
+  salesSchema,
   contentSchema,
   dashboardSchema,
   insightsSchema,
