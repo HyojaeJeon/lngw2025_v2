@@ -25,15 +25,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("admin", "manager", "editor"),
         defaultValue: "editor",
       },
-      roleId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: "roles",
-          key: "id",
-        },
-        comment: "새로운 역할 시스템 ID",
-      },
       department: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -88,7 +79,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "users",
       timestamps: true,
       underscored: false,
-    },
+    }
   );
 
   User.associate = (models) => {

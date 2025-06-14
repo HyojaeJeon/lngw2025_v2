@@ -1,12 +1,7 @@
 const models = require("../../models");
 const { Op } = require("sequelize");
 const { Customer, User, ContactPerson, CustomerImage } = require("../../models");
-const { 
-  createError, 
-  requireAuth, 
-  requireRole, 
-  handleDatabaseError 
-} = require("../../lib/errors");
+const { createError, requireAuth, requireRole, handleDatabaseError } = require("../../lib/errors");
 
 const customerResolvers = {
   Query: {
@@ -15,12 +10,7 @@ const customerResolvers = {
 
       const whereCondition = search
         ? {
-            [Op.or]: [
-              { name: { [Op.like]: `%${search}%` } }, 
-              { email: { [Op.like]: `%${search}%` } }, 
-              { department: { [Op.like]: `%${search}%` } }, 
-              { position: { [Op.like]: `%${search}%` } }
-            ],
+            [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }, { department: { [Op.like]: `%${search}%` } }, { position: { [Op.like]: `%${search}%` } }],
           }
         : {};
 
@@ -42,7 +32,7 @@ const customerResolvers = {
 
     checkCompanyName: async (_, { name }, { user, lang }) => {
       requireAuth(user, lang);
-      
+
       try {
         const existingCustomer = await Customer.findOne({
           where: { name },
@@ -63,15 +53,11 @@ const customerResolvers = {
       requireAuth(user, lang);
 
       const whereCondition = {};
-      
+
       // search와 filter.search 모두 처리
       const searchTerm = search || filter?.search;
       if (searchTerm) {
-        whereCondition[Op.or] = [
-          { name: { [Op.like]: `%${searchTerm}%` } }, 
-          { email: { [Op.like]: `%${searchTerm}%` } }, 
-          { industry: { [Op.like]: `%${searchTerm}%` } }
-        ];
+        whereCondition[Op.or] = [{ name: { [Op.like]: `%${searchTerm}%` } }, { email: { [Op.like]: `%${searchTerm}%` } }, { industry: { [Op.like]: `%${searchTerm}%` } }];
       }
 
       // 추가 필터 조건들
@@ -198,9 +184,12 @@ const customerResolvers = {
         const { contacts, facilityImages, city, district, province, detailAddress, ...customerData } = input;
 
         // 회사명 중복 확인
-        const existingCustomer = await Customer.findOne({
-          where: { name: customerData.name },
-        }, { transaction });
+        const existingCustomer = await Customer.findOne(
+          {
+            where: { name: customerData.name },
+          },
+          { transaction }
+        );
 
         if (existingCustomer) {
           throw createError("COMPANY_NAME_EXISTS", lang);
@@ -282,7 +271,7 @@ const customerResolvers = {
         } catch (rollbackError) {
           console.error("Rollback error:", rollbackError);
         }
-        
+
         if (error.extensions?.errorKey) {
           throw error;
         }
@@ -303,9 +292,9 @@ const customerResolvers = {
         // 회사명 중복 확인 (다른 고객과 중복되는지)
         if (input.name && input.name !== currentCustomer.name) {
           const existingCustomer = await Customer.findOne({
-            where: { 
+            where: {
               name: input.name,
-              id: { [Op.ne]: id }
+              id: { [Op.ne]: id },
             },
           });
 
@@ -544,8 +533,14 @@ const customerResolvers = {
       return contact.birthDate instanceof Date ? contact.birthDate : new Date(contact.birthDate);
     },
   },
-
   Customer: {
+    // Virtual 필드들
+    companyName: (customer) => {
+      return customer.name; // companyName은 name의 별칭
+    },
+    contactPerson: (customer) => {
+      return customer.contactName; // contactPerson은 contactName의 별칭
+    },
     contacts: async (customer) => {
       return await models.ContactPerson.findAll({
         where: { customerId: customer.id },

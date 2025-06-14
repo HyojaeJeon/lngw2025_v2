@@ -1,21 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
-const CustomAsyncSelectCell = ({ 
-  value, 
-  onChange, 
-  options = [], 
-  loading = false,
-  placeholder = "선택하세요",
-  displayKey = 'name',
-  onSearch,
-  renderOption,
-  renderSelected
-}) => {
+const CustomAsyncSelectCell = ({ value, onChange = () => {}, options = [], loading = false, placeholder = "선택하세요", displayKey = "name", onSearch = () => {}, renderOption, renderSelected }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -23,12 +13,12 @@ const CustomAsyncSelectCell = ({
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
-        setSearchTerm('');
+        setSearchTerm("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -49,10 +39,10 @@ const CustomAsyncSelectCell = ({
   const handleSelect = (selectedValue) => {
     onChange(selectedValue);
     setIsOpen(false);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
-  const selectedOption = options.find(option => option.id === value) || null;
+  const selectedOption = options.find((option) => option.id === value) || null;
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -62,13 +52,8 @@ const CustomAsyncSelectCell = ({
         className="w-full min-w-[200px] px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-50"
       >
         <div className="flex items-center justify-between">
-          <span className="block truncate">
-            {selectedOption 
-              ? (renderSelected ? renderSelected(selectedOption) : selectedOption[displayKey])
-              : placeholder
-            }
-          </span>
-          <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <span className="block truncate">{selectedOption ? (renderSelected ? renderSelected(selectedOption) : selectedOption[displayKey]) : placeholder}</span>
+          <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </div>
       </button>
 
@@ -86,7 +71,7 @@ const CustomAsyncSelectCell = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           {/* Options container */}
           <div className="flex-1 overflow-auto">
             {/* Loading state */}
@@ -101,31 +86,26 @@ const CustomAsyncSelectCell = ({
             )}
 
             {/* No results */}
-            {!loading && options.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-500">
-                {searchTerm ? '검색 결과가 없습니다.' : '옵션이 없습니다.'}
-              </div>
-            )}
+            {!loading && options.length === 0 && <div className="px-3 py-2 text-sm text-gray-500">{searchTerm ? "검색 결과가 없습니다." : "옵션이 없습니다."}</div>}
 
             {/* Options */}
-            {!loading && options.map((option, index) => (
-              <div
-                key={option.id || index}
-                onClick={() => handleSelect(option.id)}
-                className={`px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm ${
-                  value === option.id ? 'bg-blue-50 text-blue-900' : 'text-gray-900'
-                }`}
-              >
-                {renderOption ? renderOption(option) : (
-                  <div>
-                    <div className="font-medium">{option[displayKey] || option.name || option.label}</div>
-                    {option.subtitle && (
-                      <div className="text-xs text-gray-500">{option.subtitle}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
+            {!loading &&
+              options.map((option, index) => (
+                <div
+                  key={option.id || index}
+                  onClick={() => handleSelect(option.id)}
+                  className={`px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm ${value === option.id ? "bg-blue-50 text-blue-900" : "text-gray-900"}`}
+                >
+                  {renderOption ? (
+                    renderOption(option)
+                  ) : (
+                    <div>
+                      <div className="font-medium">{option[displayKey] || option.name || option.label}</div>
+                      {option.subtitle && <div className="text-xs text-gray-500">{option.subtitle}</div>}
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         </div>
       )}
@@ -133,4 +113,4 @@ const CustomAsyncSelectCell = ({
   );
 };
 
-export default CustomAsyncSelectCell; 
+export default CustomAsyncSelectCell;

@@ -10,8 +10,9 @@ const models = require("./models");
 const seedData = require("./seeders");
 
 // JWT Secret 설정 - 프로덕션에서는 환경변수로 관리
-const JWT_SECRET =
-  process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+// const JWT_SECRET =
+//   process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+const JWT_SECRET = "lngw2025_super_secret_key_for_jwt_tokens_2024_strict"; // 디버깅을 위한 고정 값
 
 // ====================
 // 언어 파싱 헬퍼 함수
@@ -32,14 +33,7 @@ const getLanguageFromHeaders = (headers) => {
 };
 
 // Replit 환경 감지 - 더 확실한 감지
-const isReplit = !!(
-  process.env.REPLIT ||
-  process.env.REPLIT_DB_URL ||
-  process.env.REPL_ID ||
-  process.env.REPL_SLUG ||
-  process.cwd().includes("/home/runner") ||
-  process.env.DB_DIALECT === "sqlite"
-);
+const isReplit = !!(process.env.REPLIT || process.env.REPLIT_DB_URL || process.env.REPL_ID || process.env.REPL_SLUG || process.cwd().includes("/home/runner") || process.env.DB_DIALECT === "sqlite");
 
 console.log("🌍 서버 환경:", isReplit ? "Replit (SQLite)" : "Local (MySQL)");
 console.log("🔧 현재 디렉토리:", process.cwd());
@@ -61,9 +55,7 @@ async function killPortProcesses(port) {
       for (const pid of pids) {
         try {
           await execPromise(`kill -9 ${pid}`);
-          console.log(
-            `포트 ${port}에서 실행 중인 프로세스 ${pid}를 종료했습니다.`,
-          );
+          console.log(`포트 ${port}에서 실행 중인 프로세스 ${pid}를 종료했습니다.`);
         } catch (error) {
           console.log(`프로세스 ${pid} 종료 실패:`, error.message);
         }
@@ -89,13 +81,7 @@ async function initializeDatabase() {
     // 로컬 환경에서만 MySQL 서비스 시작 시도
     console.log("MySQL/MariaDB 서비스를 시작합니다...");
 
-    const commands = [
-      "sudo service mysql start",
-      "sudo service mariadb start",
-      "sudo systemctl start mysql",
-      "sudo systemctl start mariadb",
-      "mysql.server start",
-    ];
+    const commands = ["sudo service mysql start", "sudo service mariadb start", "sudo systemctl start mysql", "sudo systemctl start mariadb", "mysql.server start"];
 
     let serviceStarted = false;
     for (const cmd of commands) {
@@ -110,30 +96,19 @@ async function initializeDatabase() {
     }
 
     if (!serviceStarted) {
-      console.log(
-        "⚠️  MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.",
-      );
+      console.log("⚠️  MySQL 서비스 시작 시도가 모두 실패했습니다. SQLite를 사용합니다.");
       return;
     }
 
     // 데이터베이스와 사용자 생성
     try {
-      await execPromise(
-        'mysql -u root -e "CREATE DATABASE IF NOT EXISTS lngw2025_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"',
-      );
-      await execPromise(
-        "mysql -u root -e \"CREATE USER IF NOT EXISTS 'appuser'@'localhost' IDENTIFIED BY 'gywo9988!@';\"",
-      );
-      await execPromise(
-        "mysql -u root -e \"GRANT ALL PRIVILEGES ON lngw2025_db.* TO 'appuser'@'localhost';\"",
-      );
+      await execPromise('mysql -u root -e "CREATE DATABASE IF NOT EXISTS lngw2025_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"');
+      await execPromise("mysql -u root -e \"CREATE USER IF NOT EXISTS 'appuser'@'localhost' IDENTIFIED BY 'gywo9988!@';\"");
+      await execPromise("mysql -u root -e \"GRANT ALL PRIVILEGES ON lngw2025_db.* TO 'appuser'@'localhost';\"");
       await execPromise('mysql -u root -e "FLUSH PRIVILEGES;"');
       console.log("✅ 데이터베이스 설정이 완료되었습니다.");
     } catch (dbError) {
-      console.log(
-        "⚠️  데이터베이스 설정 중 오류 (이미 존재할 수 있음):",
-        dbError.message,
-      );
+      console.log("⚠️  데이터베이스 설정 중 오류 (이미 존재할 수 있음):", dbError.message);
     }
 
     // MySQL 연결 대기
@@ -162,7 +137,7 @@ async function startServer() {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         }
       },
-    }),
+    })
   );
 
   // Serve public assets
@@ -181,8 +156,7 @@ async function startServer() {
       const response = await fetch(`http://localhost:3000${req.url}`, {
         method: req.method,
         headers: req.headers,
-        body:
-          req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
+        body: req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
       });
 
       // Copy headers
@@ -220,14 +194,7 @@ async function startServer() {
         }
 
         // 프로덕션 도메인 허용
-        const allowedOrigins = [
-          "https://gw.lnpartners.biz",
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://localhost:3002",
-          "http://localhost:3003",
-          "http://127.0.0.1:3000",
-        ];
+        const allowedOrigins = ["https://gw.lnpartners.biz", "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://127.0.0.1:3000"];
 
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
@@ -238,16 +205,9 @@ async function startServer() {
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "Accept-Language",
-        "X-Requested-With",
-        "Origin",
-        "Accept",
-      ],
+      allowedHeaders: ["Content-Type", "Authorization", "Accept-Language", "X-Requested-With", "Origin", "Accept"],
       optionsSuccessStatus: 200,
-    }),
+    })
   );
 
   // Preflight 요청 처리
@@ -295,10 +255,7 @@ async function startServer() {
                 };
                 console.log("User authenticated successfully:", user?.email);
               } else {
-                console.log(
-                  "User not found in database for userId:",
-                  decoded.userId,
-                );
+                console.log("User not found in database for userId:", decoded.userId);
               }
             } catch (jwtError) {
               console.log("JWT verification failed:", jwtError.message);
@@ -352,10 +309,7 @@ async function startServer() {
       console.error("❌ Database connection failed:", dbError.message);
 
       // MySQL 연결 실패 시 SQLite로 전환
-      if (
-        dbError.message.includes("ECONNREFUSED") ||
-        dbError.message.includes("connect")
-      ) {
+      if (dbError.message.includes("ECONNREFUSED") || dbError.message.includes("connect")) {
         console.log("🔄 MySQL 연결 실패, SQLite로 전환합니다...");
 
         // 환경 변수 강제 설정
@@ -391,32 +345,24 @@ async function startServer() {
     // 서버 시작
     const server_instance = app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
-      console.log(
-        `🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-      );
+      console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${PORT}${server.graphqlPath}`);
       if (isReplit) {
         console.log(`🌍 Replit 환경에서 실행 중`);
       }
       if (process.env.APOLLO_PLAYGROUND === "true") {
-        console.log(
-          `🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`,
-        );
+        console.log(`🚀 GraphQL Playground: http://0.0.0.0:${PORT}${server.graphqlPath}`);
       }
     });
 
     // 오류 처리
     server_instance.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        console.log(
-          `포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`,
-        );
+        console.log(`포트 ${PORT}가 이미 사용 중입니다. 다른 포트를 시도합니다...`);
         const newPort = PORT + 1;
         console.log(`새 포트 ${newPort}에서 서버를 시작합니다...`);
         app.listen(newPort, "0.0.0.0", () => {
           console.log(`🚀 Server ready at http://0.0.0.0:${newPort}`);
-          console.log(
-            `🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`,
-          );
+          console.log(`🚀 GraphQL endpoint: http://0.0.0.0:${newPort}${server.graphqlPath}`);
         });
       } else {
         console.error("서버 시작 오류:", err);

@@ -1,15 +1,11 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const models = require("../../models");
-const { 
-  createError, 
-  requireAuth, 
-  requireRole, 
-  handleDatabaseError 
-} = require("../../lib/errors");
+const { createError, requireAuth, requireRole, handleDatabaseError } = require("../../lib/errors");
 
 // JWT Secret 설정 - index.js와 동일하게 설정
-const JWT_SECRET = process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+// const JWT_SECRET = process.env.JWT_SECRET || "lngw2025_super_secret_key_for_jwt_tokens_2024";
+const JWT_SECRET = "lngw2025_super_secret_key_for_jwt_tokens_2024_strict"; // 디버깅을 위한 고정 값
 
 // ====================
 // 유효성 검사 헬퍼 함수
@@ -52,10 +48,6 @@ const authResolvers = {
       try {
         const currentUser = await models.User.findByPk(user.id, {
           include: [
-            {
-              model: models.Role,
-              as: "userRole",
-            },
             {
               model: models.Skill,
               as: "skills",
@@ -100,8 +92,8 @@ const authResolvers = {
 
         if (filter?.role) {
           // SALES 역할 필터링 시 department가 'Sales'인 사용자 찾기
-          if (filter.role === 'SALES') {
-            where.department = 'Sales';
+          if (filter.role === "SALES") {
+            where.department = "Sales";
           } else {
             where.role = filter.role;
           }
@@ -133,16 +125,7 @@ const authResolvers = {
   Mutation: {
     register: async (_, { input }, { lang }) => {
       try {
-        const {
-          email,
-          password,
-          confirmPassword,
-          phoneCountry,
-          emergencyContact = [],
-          skills = [],
-          experiences: experienceData = [],
-          ...userData
-        } = input;
+        const { email, password, confirmPassword, phoneCountry, emergencyContact = [], skills = [], experiences: experienceData = [], ...userData } = input;
 
         // 이메일 유효성 검사
         if (!validateEmail(email)) {
@@ -174,10 +157,7 @@ const authResolvers = {
           email,
           password: hashedPassword,
           name: userData?.name,
-          department:
-            userData?.department === "other"
-              ? userData?.otherDepartment
-              : userData?.department,
+          department: userData?.department === "other" ? userData?.otherDepartment : userData?.department,
           position: userData?.position,
           employeeId: userData?.employeeId,
           joinDate: userData?.joinDate,
@@ -198,7 +178,7 @@ const authResolvers = {
             emergencyContact.map((contact) => ({
               ...contact,
               userId: user.id,
-            })),
+            }))
           );
         }
 
@@ -207,7 +187,7 @@ const authResolvers = {
             skills.map((skill) => ({
               ...skill,
               userId: user.id,
-            })),
+            }))
           );
         }
 
@@ -225,12 +205,8 @@ const authResolvers = {
         }
 
         // JWT 토큰 생성
-        const expiresIn = input.rememberMe ? '30d' : '7d';
-        const token = jwt.sign(
-          { userId: user.id, email: user.email, rememberMe: input.rememberMe },
-          JWT_SECRET,
-          { expiresIn }
-        );
+        const expiresIn = input.rememberMe ? "30d" : "7d";
+        const token = jwt.sign({ userId: user.id, email: user.email, rememberMe: input.rememberMe }, JWT_SECRET, { expiresIn });
 
         return {
           token,
@@ -276,11 +252,7 @@ const authResolvers = {
 
         // JWT 토큰 생성
         const expiresIn = rememberMe ? "30d" : "7d";
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          JWT_SECRET,
-          { expiresIn },
-        );
+        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn });
 
         return {
           token,
@@ -301,22 +273,10 @@ const authResolvers = {
         const { emergencyContact, skills, ...userData } = input;
 
         // 사용자 기본 데이터 업데이트
-        const allowedFields = [
-          "name",
-          "phoneNumber",
-          "address",
-          "nationality",
-          "department",
-          "position",
-          "employeeId",
-          "joinDate",
-          "birthDate",
-          "visaStatus",
-          "avatar",
-        ];
+        const allowedFields = ["name", "phoneNumber", "address", "nationality", "department", "position", "employeeId", "joinDate", "birthDate", "visaStatus", "avatar"];
 
         const updates = {};
-        allowedFields.forEach(field => {
+        allowedFields.forEach((field) => {
           if (userData.hasOwnProperty(field)) {
             updates[field] = userData[field];
           }
@@ -336,7 +296,7 @@ const authResolvers = {
               emergencyContact.map((contact) => ({
                 ...contact,
                 userId: user.userId,
-              })),
+              }))
             );
           }
         }
@@ -351,7 +311,7 @@ const authResolvers = {
               skills.map((skill) => ({
                 ...skill,
                 userId: user.userId,
-              })),
+              }))
             );
           }
         }
@@ -424,10 +384,7 @@ const authResolvers = {
         const saltRounds = 12;
         const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        await models.User.update(
-          { password: hashedNewPassword },
-          { where: { id: user.userId } }
-        );
+        await models.User.update({ password: hashedNewPassword }, { where: { id: user.userId } });
 
         return true;
       } catch (error) {

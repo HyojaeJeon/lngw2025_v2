@@ -537,10 +537,13 @@ const types = gql`
   # ====================
   # CUSTOMER TYPES
   # ====================
+
   type Customer {
     id: ID
     name: String
+    companyName: String # 호환성을 위해 추가 (name의 별칭)
     contactName: String
+    contactPerson: String # 호환성을 위해 추가 (contactName의 별칭)
     email: String
     phone: String
     industry: String
@@ -614,11 +617,14 @@ const types = gql`
   # ====================
   # CATEGORY TYPES
   # ====================
+
   type Category {
     id: ID
     code: String
     names: CategoryNames
+    name: String # 호환성을 위해 추가 (names.ko의 별칭)
     descriptions: CategoryDescriptions
+    description: String # 호환성을 위해 추가 (descriptions.ko의 별칭)
     sortOrder: Int
     isActive: Boolean
     createdAt: String
@@ -642,6 +648,7 @@ const types = gql`
     id: Int
     name: String
     code: String
+    sku: String # 호환성을 위해 추가 (code의 별칭)
     description: String
     specifications: String
     categoryId: Int
@@ -649,6 +656,9 @@ const types = gql`
     price: Float
     consumerPrice: Float
     cost: Float
+    # salesList.md 추가 필드들
+    incentiveA: Float
+    incentiveB: Float
     currentStock: Int
     minStock: Int
     maxStock: Int
@@ -814,12 +824,17 @@ const types = gql`
     productId: Int
     product: Product
     modelName: String
+    name: String # 호환성을 위해 추가 (modelName의 별칭)
     modelCode: String
+    modelNumber: String # 호환성을 위해 추가 (modelCode의 별칭)
     description: String
     specifications: String
     price: Float
     consumerPrice: Float
     cost: Float
+    # salesList.md 추가 필드들
+    incentiveA: Float
+    incentiveB: Float
     currentStock: Int
     minStock: Int
     maxStock: Int
@@ -850,14 +865,16 @@ const types = gql`
     field: String
     message: String
   }
-
   type PaginationInfo {
     page: Int
     limit: Int
     total: Int
+    totalCount: Int # 호환성을 위해 추가
     totalPages: Int
     hasNextPage: Boolean
     hasPrevPage: Boolean
+    hasPreviousPage: Boolean # 호환성을 위해 추가
+    currentPage: Int # 호환성을 위해 추가
   }
 
   enum SortDirection {

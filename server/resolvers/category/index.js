@@ -1,9 +1,7 @@
 const models = require("../../models");
 const { createError, requireAuth, handleDatabaseError } = require("../../lib/errors");
-const { Op } = require('sequelize');
-const {
-  requireRole,
-} = require("../../lib/errors");
+const { Op } = require("sequelize");
+const { requireRole } = require("../../lib/errors");
 
 // ====================
 // 유효성 검사 헬퍼 함수
@@ -37,6 +35,20 @@ const validateCategoryNames = (names) => {
 };
 
 const categoryResolvers = {
+  // Virtual 필드들을 위한 Category 리졸버 추가
+  Category: {
+    // name은 names.ko의 별칭
+    name: (category) => {
+      const names = category.names;
+      return names?.ko || names?.en || "";
+    },
+    // description은 descriptions.ko의 별칭
+    description: (category) => {
+      const descriptions = category.descriptions;
+      return descriptions?.ko || descriptions?.en || "";
+    },
+  },
+
   Query: {
     categories: async (_, { search, page = 1, limit = 20 }, { user }) => {
       requireAuth(user);
@@ -44,19 +56,15 @@ const categoryResolvers = {
       try {
         const offset = (page - 1) * limit;
         const where = { isActive: true };
-
         if (search) {
-          where[Op.or] = [
-            { name: { [Op.like]: `%${search}%` } },
-            { code: { [Op.like]: `%${search}%` } }
-          ];
+          where[Op.or] = [{ code: { [Op.like]: `%${search}%` } }];
         }
 
         const { count, rows } = await models.Category.findAndCountAll({
           where,
           limit,
           offset,
-          order: [['name', 'ASC']]
+          order: [["code", "ASC"]],
         });
 
         return {
@@ -69,11 +77,14 @@ const categoryResolvers = {
             itemsPerPage: limit,
             hasNextPage: page * limit < count,
             hasPreviousPage: page > 1,
-            totalCount: count
-          }
+            totalCount: count,
+          },
         };
       } catch (error) {
-        handleDatabaseError(error, 'ko', "CATEGORIES_FETCH_FAILED");
+        console.error("Categories resolver error:", error);
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+        handleDatabaseError(error, lang, "CATEGORIES_FETCH_FAILED");
       }
     },
 

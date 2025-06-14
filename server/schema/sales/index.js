@@ -1,4 +1,4 @@
-const { gql } = require('apollo-server-express');
+const { gql } = require("apollo-server-express");
 
 const salesTypeDefs = gql`
   # SalesItem 타입 정의
@@ -34,6 +34,14 @@ const salesTypeDefs = gql`
     marginRate: Float!
     paymentStatus: PaymentStatus!
     paidAmount: Float!
+    # salesList.md 추가 필드들
+    salesItemCode: String
+    productIncentiveA: Float!
+    productIncentiveB: Float!
+    originalUnitCost: Float
+    adjustedUnitCost: Float
+    shippingCost: Float!
+    otherCosts: Float!
     notes: String
     isActive: Boolean!
     payments: [Payment!]
@@ -57,8 +65,6 @@ const salesTypeDefs = gql`
     createdAt: String!
     updatedAt: String!
   }
-
-  
 
   # SalesItemHistory 타입 정의
   type SalesItemHistory {
@@ -117,7 +123,6 @@ const salesTypeDefs = gql`
     INCENTIVE_A
     INCENTIVE_B
   }
-
   # 입력 타입들
   input SalesItemInput {
     salesRepId: Int!
@@ -135,6 +140,14 @@ const salesTypeDefs = gql`
     incentiveA: Float
     incentiveB: Float
     incentivePaid: Boolean
+    # salesList.md 추가 필드들
+    salesItemCode: String
+    productIncentiveA: Float
+    productIncentiveB: Float
+    originalUnitCost: Float
+    adjustedUnitCost: Float
+    shippingCost: Float
+    otherCosts: Float
     notes: String
   }
 
@@ -154,6 +167,14 @@ const salesTypeDefs = gql`
     incentiveA: Float
     incentiveB: Float
     incentivePaid: Boolean
+    # salesList.md 추가 필드들
+    salesItemCode: String
+    productIncentiveA: Float
+    productIncentiveB: Float
+    originalUnitCost: Float
+    adjustedUnitCost: Float
+    shippingCost: Float
+    otherCosts: Float
     notes: String
   }
 
@@ -173,8 +194,6 @@ const salesTypeDefs = gql`
     note: String
     receiptImageUrl: String
   }
-
-  
 
   input IncentivePayoutInput {
     salesItemId: Int!
@@ -268,8 +287,6 @@ const salesTypeDefs = gql`
     averageMarginRate: Float!
   }
 
-  
-
   type IncentivePayoutResponse {
     success: Boolean!
     message: String
@@ -294,12 +311,7 @@ const salesTypeDefs = gql`
   # 연관 데이터 조회를 위한 확장 Query
   extend type Query {
     # 매출 목록 조회 (필터링, 정렬, 페이지네이션 지원)
-    salesItems(
-      filter: SalesFilterInput
-      sort: SalesSortInput
-      page: Int
-      limit: Int
-    ): SalesItemListResponse!
+    salesItems(filter: SalesFilterInput, sort: SalesSortInput, page: Int, limit: Int): SalesItemListResponse!
 
     # 매출 상세 조회
     salesItem(id: Int!): SalesItemResponse!
@@ -349,8 +361,6 @@ const salesTypeDefs = gql`
 
     # 대량 처리
     bulkUpdateSalesItems(updates: [SalesItemBulkUpdate!]!): SalesItemListResponse!
-
-    
 
     # 인센티브 지급 내역 관리
     createIncentivePayout(input: IncentivePayoutInput!): IncentivePayoutResponse!

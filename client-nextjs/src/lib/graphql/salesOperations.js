@@ -1,14 +1,8 @@
-
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // 매출 목록 조회
 export const GET_SALES_ITEMS = gql`
-  query GetSalesItems(
-    $filter: SalesFilterInput
-    $sort: SalesSortInput
-    $page: Int
-    $limit: Int
-  ) {
+  query GetSalesItems($filter: SalesFilterInput, $sort: SalesSortInput, $page: Int, $limit: Int) {
     salesItems(filter: $filter, sort: $sort, page: $page, limit: $limit) {
       success
       message
@@ -28,6 +22,14 @@ export const GET_SALES_ITEMS = gql`
         marginRate
         paymentStatus
         paidAmount
+        # salesList.md 추가 필드들
+        salesItemCode
+        productIncentiveA
+        productIncentiveB
+        originalUnitCost
+        adjustedUnitCost
+        shippingCost
+        otherCosts
         notes
         salesRep {
           id
@@ -60,22 +62,23 @@ export const GET_SALES_ITEMS = gql`
         totalCount
         hasNextPage
         hasPreviousPage
-        currentPage
+        page
         totalPages
       }
     }
   }
 `;
 
-// 영업사원 목록 조회 (검색 지원)
+// 영업사원 목록 조회 (검색 지원) - User 모델 사용
 export const GET_SALES_REPS = gql`
   query GetSalesReps($search: String, $limit: Int) {
-    salesReps(search: $search, limit: $limit) {
+    users(search: $search, limit: $limit) {
       id
       name
       email
       department
-      position
+      role
+      phone
     }
   }
 `;
@@ -101,6 +104,10 @@ export const GET_PRODUCTS_FOR_SALES = gql`
       name
       sku
       price
+      consumerPrice
+      cost
+      incentiveA
+      incentiveB
       category {
         id
         name
@@ -118,6 +125,9 @@ export const GET_PRODUCT_MODELS_FOR_SALES = gql`
       modelNumber
       price
       consumerPrice
+      cost
+      incentiveA
+      incentiveB
     }
   }
 `;
@@ -131,7 +141,7 @@ export const GET_SALES_CATEGORIES = gql`
         id
         name
         code
-        description
+        descriptions
         sortOrder
         isActive
       }
@@ -139,8 +149,8 @@ export const GET_SALES_CATEGORIES = gql`
         totalCount
         hasNextPage
         hasPreviousPage
-        currentPage
-        totalPages
+        page
+        pages
       }
     }
   }

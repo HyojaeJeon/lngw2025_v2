@@ -6,8 +6,8 @@ import { useQuery } from "@apollo/client";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { useTranslation } from "@/hooks/useLanguage.js";
-import { 
-  GET_SALES_REPS, 
+import {
+  GET_SALES_REPS,
   GET_CUSTOMERS_FOR_SALES,
   GET_PRODUCTS_FOR_SALES,
   GET_SALES_CATEGORIES
@@ -24,7 +24,7 @@ export default function SalesAddModal({
   categories = []
 }) {
   const { t } = useTranslation();
-  
+
   const [formData, setFormData] = useState({
     salesDate: new Date().toISOString().split('T')[0],
     salesRepId: '',
@@ -69,7 +69,7 @@ export default function SalesAddModal({
       ...prev,
       [field]: value
     }));
-    
+
     // 에러 클리어
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
@@ -92,7 +92,7 @@ export default function SalesAddModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     onSubmit({
@@ -114,7 +114,7 @@ export default function SalesAddModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">매출 추가</h2>
@@ -124,10 +124,10 @@ export default function SalesAddModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* 매출 일시 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 매출 일시 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -137,13 +137,13 @@ export default function SalesAddModal({
                 className={errors.salesDate ? 'border-red-500' : ''}
               />
               {errors.salesDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.salesDate}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.salesDate}</p>
               )}
             </div>
 
             {/* 영업사원 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 영업사원 <span className="text-red-500">*</span>
               </label>
               <select
@@ -159,13 +159,13 @@ export default function SalesAddModal({
                 ))}
               </select>
               {errors.salesRepId && (
-                <p className="text-red-500 text-sm mt-1">{errors.salesRepId}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.salesRepId}</p>
               )}
             </div>
 
             {/* 고객사 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 고객사 <span className="text-red-500">*</span>
               </label>
               <select
@@ -181,13 +181,13 @@ export default function SalesAddModal({
                 ))}
               </select>
               {errors.customerId && (
-                <p className="text-red-500 text-sm mt-1">{errors.customerId}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.customerId}</p>
               )}
             </div>
 
             {/* 카테고리 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 카테고리 <span className="text-red-500">*</span>
               </label>
               <select
@@ -203,13 +203,13 @@ export default function SalesAddModal({
                 ))}
               </select>
               {errors.categoryId && (
-                <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.categoryId}</p>
               )}
             </div>
 
             {/* 구분 */}
             <div>
-              <label className="block text-sm font-medium mb-2">구분</label>
+              <label className="block mb-2 text-sm font-medium">구분</label>
               <select
                 value={formData.type}
                 onChange={(e) => handleChange('type', e.target.value)}
@@ -224,7 +224,7 @@ export default function SalesAddModal({
 
             {/* 제품 */}
             <div>
-              <label className="block text-sm font-medium mb-2">제품</label>
+              <label className="block mb-2 text-sm font-medium">제품</label>
               <select
                 value={formData.productId}
                 onChange={(e) => handleChange('productId', e.target.value)}
@@ -241,7 +241,7 @@ export default function SalesAddModal({
 
             {/* 수량 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 수량 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -252,13 +252,13 @@ export default function SalesAddModal({
                 className={errors.quantity ? 'border-red-500' : ''}
               />
               {errors.quantity && (
-                <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.quantity}</p>
               )}
             </div>
 
             {/* 단가 */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2 text-sm font-medium">
                 단가 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -270,13 +270,13 @@ export default function SalesAddModal({
                 className={errors.unitPrice ? 'border-red-500' : ''}
               />
               {errors.unitPrice && (
-                <p className="text-red-500 text-sm mt-1">{errors.unitPrice}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.unitPrice}</p>
               )}
             </div>
 
             {/* 원가 */}
             <div>
-              <label className="block text-sm font-medium mb-2">원가</label>
+              <label className="block mb-2 text-sm font-medium">원가</label>
               <Input
                 type="number"
                 min="0"
@@ -288,7 +288,7 @@ export default function SalesAddModal({
 
             {/* 결제 상태 */}
             <div>
-              <label className="block text-sm font-medium mb-2">결제 상태</label>
+              <label className="block mb-2 text-sm font-medium">결제 상태</label>
               <select
                 value={formData.paymentStatus}
                 onChange={(e) => handleChange('paymentStatus', e.target.value)}
@@ -302,7 +302,7 @@ export default function SalesAddModal({
 
             {/* 지급액 */}
             <div>
-              <label className="block text-sm font-medium mb-2">지급액</label>
+              <label className="block mb-2 text-sm font-medium">지급액</label>
               <Input
                 type="number"
                 min="0"
@@ -314,9 +314,9 @@ export default function SalesAddModal({
           </div>
 
           {/* 계산 결과 표시 */}
-          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">계산 결과</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
+            <h3 className="mb-2 font-medium">계산 결과</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
               <div>
                 <span className="text-gray-600 dark:text-gray-400">총액:</span>
                 <div className="font-medium">₩{(formData.quantity * formData.unitPrice).toLocaleString()}</div>
@@ -332,7 +332,7 @@ export default function SalesAddModal({
               <div>
                 <span className="text-gray-600 dark:text-gray-400">마진율:</span>
                 <div className="font-medium">
-                  {formData.unitPrice > 0 ? 
+                  {formData.unitPrice > 0 ?
                     (((formData.unitPrice - formData.cost) / formData.unitPrice) * 100).toFixed(1) : 0
                   }%
                 </div>
@@ -342,7 +342,7 @@ export default function SalesAddModal({
 
           {/* 메모 */}
           <div>
-            <label className="block text-sm font-medium mb-2">메모</label>
+            <label className="block mb-2 text-sm font-medium">메모</label>
             <textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
@@ -353,7 +353,7 @@ export default function SalesAddModal({
           </div>
 
           {/* 버튼 */}
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end pt-4 space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               취소
             </Button>

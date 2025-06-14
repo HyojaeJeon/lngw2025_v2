@@ -120,12 +120,16 @@ const errorMessages = {
     en: "Company name already exists.",
     vi: "Tên công ty đã tồn tại.",
   },
-
   // 카테고리 관련
   CATEGORY_NOT_FOUND: {
     ko: "카테고리를 찾을 수 없습니다.",
     en: "Category not found.",
     vi: "Không tìm thấy danh mục.",
+  },
+  CATEGORIES_FETCH_FAILED: {
+    ko: "카테고리 목록을 가져오는데 실패했습니다.",
+    en: "Failed to fetch categories.",
+    vi: "Không thể tải danh sách danh mục.",
   },
   CATEGORY_CODE_EXISTS: {
     ko: "이미 존재하는 카테고리 코드입니다.",
@@ -173,6 +177,72 @@ const errorMessages = {
     ko: "AI 컨텐츠 생성에 실패했습니다.",
     en: "Failed to generate AI content.",
     vi: "Tạo nội dung AI thất bại.",
+  },
+  // 영업 관련
+  SALES_ITEMS_FETCH_FAILED: {
+    ko: "영업 항목 조회에 실패했습니다.",
+    en: "Failed to fetch sales items.",
+    vi: "Không thể tải danh sách bán hàng.",
+  },
+  SALES_ITEM_FETCH_FAILED: {
+    ko: "영업 항목 조회에 실패했습니다.",
+    en: "Failed to fetch sales item.",
+    vi: "Không thể tải thông tin bán hàng.",
+  },
+  SALES_ITEM_CREATE_FAILED: {
+    ko: "영업 항목 생성에 실패했습니다.",
+    en: "Failed to create sales item.",
+    vi: "Tạo mục bán hàng thất bại.",
+  },
+  SALES_ITEM_UPDATE_FAILED: {
+    ko: "영업 항목 수정에 실패했습니다.",
+    en: "Failed to update sales item.",
+    vi: "Cập nhật mục bán hàng thất bại.",
+  },
+  SALES_ITEM_DELETE_FAILED: {
+    ko: "영업 항목 삭제에 실패했습니다.",
+    en: "Failed to delete sales item.",
+    vi: "Xóa mục bán hàng thất bại.",
+  },
+  BULK_UPDATE_SALES_ITEMS_FAILED: {
+    ko: "영업 항목 일괄 업데이트에 실패했습니다.",
+    en: "Failed to bulk update sales items.",
+    vi: "Cập nhật hàng loạt mục bán hàng thất bại.",
+  },
+  SALES_REPS_FETCH_FAILED: {
+    ko: "영업사원 조회에 실패했습니다.",
+    en: "Failed to fetch sales representatives.",
+    vi: "Không thể tải danh sách nhân viên bán hàng.",
+  },
+  CUSTOMERS_FOR_SALES_FETCH_FAILED: {
+    ko: "고객사 조회에 실패했습니다.",
+    en: "Failed to fetch customers for sales.",
+    vi: "Không thể tải danh sách khách hàng.",
+  },
+  PRODUCTS_FOR_SALES_FETCH_FAILED: {
+    ko: "제품 조회에 실패했습니다.",
+    en: "Failed to fetch products for sales.",
+    vi: "Không thể tải danh sách sản phẩm.",
+  },
+  PRODUCT_MODELS_FOR_SALES_FETCH_FAILED: {
+    ko: "제품 모델 조회에 실패했습니다.",
+    en: "Failed to fetch product models for sales.",
+    vi: "Không thể tải danh sách mẫu sản phẩm.",
+  },
+  INCENTIVE_PAYOUTS_FETCH_FAILED: {
+    ko: "인센티브 지급 내역 조회에 실패했습니다.",
+    en: "Failed to fetch incentive payouts.",
+    vi: "Không thể tải danh sách chi trả khuyến khích.",
+  },
+  INCENTIVE_PAYOUT_CREATE_FAILED: {
+    ko: "인센티브 지급 내역 생성에 실패했습니다.",
+    en: "Failed to create incentive payout.",
+    vi: "Tạo chi trả khuyến khích thất bại.",
+  },
+  SALES_ITEM_HISTORIES_FETCH_FAILED: {
+    ko: "영업 항목 히스토리 조회에 실패했습니다.",
+    en: "Failed to fetch sales item histories.",
+    vi: "Không thể tải lịch sử mục bán hàng.",
   },
 
   // 마케팅 관련
@@ -232,7 +302,7 @@ const errorMessages = {
 // ====================
 const ErrorCodes = {
   AUTHENTICATION_ERROR: "AUTHENTICATION_ERROR",
-  AUTHORIZATION_ERROR: "AUTHORIZATION_ERROR", 
+  AUTHORIZATION_ERROR: "AUTHORIZATION_ERROR",
   VALIDATION_ERROR: "VALIDATION_ERROR",
   NOT_FOUND_ERROR: "NOT_FOUND_ERROR",
   DUPLICATE_ERROR: "DUPLICATE_ERROR",
@@ -247,16 +317,13 @@ const createError = (errorKey, lang = "en", extensions = {}) => {
   const message = errorMessages[errorKey];
   if (!message) {
     console.error(`Unknown error key: ${errorKey}`);
-    return new GraphQLError(
-      errorMessages.UNKNOWN_ERROR[lang] || errorMessages.UNKNOWN_ERROR.en,
-      {
-        extensions: {
-          code: ErrorCodes.INTERNAL_ERROR,
-          errorKey: "UNKNOWN_ERROR",
-          ...extensions,
-        },
-      }
-    );
+    return new GraphQLError(errorMessages.UNKNOWN_ERROR[lang] || errorMessages.UNKNOWN_ERROR.en, {
+      extensions: {
+        code: ErrorCodes.INTERNAL_ERROR,
+        errorKey: "UNKNOWN_ERROR",
+        ...extensions,
+      },
+    });
   }
 
   return new GraphQLError(message[lang] || message.en, {
@@ -272,37 +339,13 @@ const createError = (errorKey, lang = "en", extensions = {}) => {
 // 에러 키에 따른 GraphQL 에러 코드 매핑
 // ====================
 const getErrorCode = (errorKey) => {
-  const authErrors = [
-    "AUTHENTICATION_REQUIRED",
-    "AUTHORIZATION_FAILED", 
-    "INVALID_CREDENTIALS",
-    "LOGIN_FAILED",
-    "INCORRECT_CURRENT_PASSWORD",
-  ];
-  
-  const validationErrors = [
-    "PASSWORD_MISMATCH",
-    "WEAK_PASSWORD",
-    "INVALID_EMAIL",
-    "VALIDATION_ERROR",
-  ];
+  const authErrors = ["AUTHENTICATION_REQUIRED", "AUTHORIZATION_FAILED", "INVALID_CREDENTIALS", "LOGIN_FAILED", "INCORRECT_CURRENT_PASSWORD"];
 
-  const notFoundErrors = [
-    "NOT_FOUND",
-    "USER_NOT_FOUND",
-    "CUSTOMER_NOT_FOUND",
-    "CATEGORY_NOT_FOUND", 
-    "CONTENT_NOT_FOUND",
-    "MARKETING_PLAN_NOT_FOUND",
-    "AB_TEST_NOT_FOUND",
-  ];
+  const validationErrors = ["PASSWORD_MISMATCH", "WEAK_PASSWORD", "INVALID_EMAIL", "VALIDATION_ERROR"];
 
-  const duplicateErrors = [
-    "USER_ALREADY_EXISTS",
-    "COMPANY_NAME_EXISTS",
-    "CATEGORY_CODE_EXISTS",
-    "DUPLICATE_ENTRY",
-  ];
+  const notFoundErrors = ["NOT_FOUND", "USER_NOT_FOUND", "CUSTOMER_NOT_FOUND", "CATEGORY_NOT_FOUND", "CONTENT_NOT_FOUND", "MARKETING_PLAN_NOT_FOUND", "AB_TEST_NOT_FOUND"];
+
+  const duplicateErrors = ["USER_ALREADY_EXISTS", "COMPANY_NAME_EXISTS", "CATEGORY_CODE_EXISTS", "DUPLICATE_ENTRY"];
 
   if (authErrors.includes(errorKey)) {
     return ErrorCodes.AUTHENTICATION_ERROR;
@@ -332,12 +375,12 @@ const requireAuth = (user, lang = "en") => {
 
 const requireRole = (user, requiredRoles, lang = "en") => {
   requireAuth(user, lang);
-  
+
   const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
   if (!roles.includes(user.role)) {
     throw createError("AUTHORIZATION_FAILED", lang);
   }
-  
+
   return user;
 };
 
@@ -346,17 +389,17 @@ const requireRole = (user, requiredRoles, lang = "en") => {
 // ====================
 const handleDatabaseError = (error, lang = "en", defaultErrorKey = "DATABASE_ERROR") => {
   console.error("Database Error:", error);
-  
+
   // Sequelize 유니크 제약조건 에러 처리
   if (error.name === "SequelizeUniqueConstraintError") {
     throw createError("DUPLICATE_ENTRY", lang);
   }
-  
+
   // Sequelize 유효성 검사 에러 처리
   if (error.name === "SequelizeValidationError") {
     throw createError("VALIDATION_ERROR", lang);
   }
-  
+
   // 기본 에러 처리
   throw createError(defaultErrorKey, lang);
 };
@@ -368,4 +411,4 @@ module.exports = {
   requireAuth,
   requireRole,
   handleDatabaseError,
-}; 
+};
