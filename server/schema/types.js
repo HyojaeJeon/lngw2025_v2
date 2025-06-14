@@ -890,10 +890,6 @@ const types = gql`
     ASC
     DESC
   }
-  type DeleteResult {
-    success: Boolean!
-    message: String
-  }
 `;
 
 module.exports = types;
