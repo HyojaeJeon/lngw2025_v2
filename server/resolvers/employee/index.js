@@ -1,473 +1,386 @@
-const models = require('../../models');
-const { AuthenticationError, ForbiddenError, UserInputError } = require('apollo-server-express');
 
-const employeeResolvers = {
-  Query: {
-    employees: async (parent, { filter, limit = 50, offset = 0 }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      const where = { isActive: true };
-
-      if (filter) {
-        if (filter.department) where.department = filter.department;
-        if (filter.position) where.position = filter.position;
-        if (filter.employmentType) where.employmentType = filter.employmentType;
-        if (filter.employmentStatus) where.employmentStatus = filter.employmentStatus;
-        if (filter.search) {
-          where[models.Sequelize.Op.or] = [
-            { firstName: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
-            { lastName: { [models.Sequelize.Op.like]: `%${filter.search}%` } },
-            { email: { [models.Sequelize.Op.like]: `%${filter.search}%` } }
-          ];
-        }
-      }
-
-      return await models.Employee.findAll({
-        where,
-        limit,
-        offset,
-        order: [['createdAt', 'DESC']]
-      });
-    },
-
-    employee: async (parent, { id }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      return await models.Employee.findByPk(id);
-    },
-
-    employeeByNumber: async (parent, { employeeNumber }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      return await models.Employee.findOne({
-        where: { employeeNumber, isActive: true }
-      });
-    },
-
-    attendanceRecords: async (parent, { filter, limit = 50, offset = 0 }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      const where = { isActive: true };
-
-      if (filter) {
-        if (filter.employeeId) where.employeeId = filter.employeeId;
-        if (filter.attendanceDate) where.attendanceDate = filter.attendanceDate;
-        if (filter.attendanceStatus) where.attendanceStatus = filter.attendanceStatus;
-        if (filter.startDate && filter.endDate) {
-          where.attendanceDate = {
-            [models.Sequelize.Op.between]: [filter.startDate, filter.endDate]
-          };
-        }
-      }
-
-      return await models.AttendanceRecord.findAll({
-        where,
-        limit,
-        offset,
-        include: ['employee'],
-        order: [['attendanceDate', 'DESC']]
-      });
-    },
-
-    employeeStats: async (parent, args, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      const totalEmployees = await models.Employee.count({ where: { isActive: true } });
-      const activeEmployees = await models.Employee.count({ 
-        where: { isActive: true, employmentStatus: 'ACTIVE' } 
-      });
-      const onLeaveEmployees = await models.Employee.count({ 
-        where: { isActive: true, employmentStatus: 'ON_LEAVE' } 
-      });
-
-      // 이번 달 신규 입사자
-      const thisMonth = new Date();
-      const startOfMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
-      const newHiresThisMonth = await models.Employee.count({
-        where: {
-          isActive: true,
-          hireDate: {
-            [models.Sequelize.Op.gte]: startOfMonth
-          }
-        }
-      });
-
-      return {
-        totalEmployees,
-        activeEmployees,
-        onLeaveEmployees,
-        newHiresThisMonth,
-        pendingLeaveRequests: 0,
-        todayAttendance: 0,
-        averageWorkHours: 8.0,
-        departmentStats: []
-      };
-    }
-  },
-
-  Mutation: {
-    createEmployee: async (parent, { input }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      return await models.Employee.create({
-        ...input,
-        isActive: true
-      });
-    },
-
-    updateEmployee: async (parent, { id, input }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      const employee = await models.Employee.findByPk(id);
-      if (!employee) throw new UserInputError('Employee not found');
-
-      await employee.update(input);
-      return employee;
-    },
-
-    deleteEmployee: async (parent, { id }, { user }) => {
-      if (!user) throw new AuthenticationError('Authentication required');
-
-      const employee = await models.Employee.findByPk(id);
-      if (!employee) throw new UserInputError('Employee not found');
-
-      await employee.update({ isActive: false });
-
-      return {
-        success: true,
-        message: 'Employee deleted successfully'
-      };
-    }
-  },
-
-  Employee: {
-    fullName: (employee) => `${employee.firstName} ${employee.lastName}`,
-    fullNameEn: (employee) => `${employee.firstNameEn || ''} ${employee.lastNameEn || ''}`.trim(),
-    user: async (employee) => {
-      if (employee.userId) {
-        return await models.User.findByPk(employee.userId);
-      }
-      return null;
-    },
-    supervisor: async (employee) => {
-      if (employee.supervisorId) {
-        return await models.Employee.findByPk(employee.supervisorId);
-      }
-      return null;
-    },
-    subordinates: async (employee) => {
-      return await models.Employee.findAll({
-        where: { supervisorId: employee.id, isActive: true }
-      });
-    }
-  }
-};
-
-module.exports = employeeResolvers;
-const { Employee, AttendanceRecord, LeaveRequest, SalaryRecord, PerformanceEvaluation, EvaluationGoal, User } = require('../../models');
+const { 
+  Employee, 
+  User, 
+  AttendanceRecord, 
+  LeaveRequest, 
+  PerformanceEvaluation, 
+  EvaluationGoal,
+  SalaryRecord,
+  EmergencyContact,
+  Skill,
+  Experience 
+} = require('../../models');
 const { AuthenticationError, ValidationError } = require('../../lib/errors');
 const { Op } = require('sequelize');
 
 const employeeResolvers = {
   Query: {
-    // 직원 조회
-    employees: async (parent, { filter, limit = 20, offset = 0 }, { user }) => {
+    employees: async (_, { filter }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const whereClause = { isActive: true };
       
-      if (filter) {
-        if (filter.department) whereClause.department = filter.department;
-        if (filter.position) whereClause.position = filter.position;
-        if (filter.employmentType) whereClause.employmentType = filter.employmentType;
-        if (filter.employmentStatus) whereClause.employmentStatus = filter.employmentStatus;
-        if (filter.isActive !== undefined) whereClause.isActive = filter.isActive;
-        if (filter.search) {
-          whereClause[Op.or] = [
-            { firstName: { [Op.like]: `%${filter.search}%` } },
-            { lastName: { [Op.like]: `%${filter.search}%` } },
-            { email: { [Op.like]: `%${filter.search}%` } },
-            { employeeNumber: { [Op.like]: `%${filter.search}%` } }
-          ];
-        }
+      const where = {};
+      
+      if (filter?.search) {
+        where[Op.or] = [
+          { firstName: { [Op.like]: `%${filter.search}%` } },
+          { lastName: { [Op.like]: `%${filter.search}%` } },
+          { email: { [Op.like]: `%${filter.search}%` } },
+          { employeeId: { [Op.like]: `%${filter.search}%` } }
+        ];
       }
-
+      
+      if (filter?.department) {
+        where.department = filter.department;
+      }
+      
+      if (filter?.position) {
+        where.position = filter.position;
+      }
+      
+      if (filter?.status) {
+        where.status = filter.status;
+      }
+      
       return await Employee.findAll({
-        where: whereClause,
+        where,
         include: [
           { model: User, as: 'user' },
-          { model: Employee, as: 'supervisor' },
-          { model: Employee, as: 'subordinates' }
+          { model: EmergencyContact, as: 'emergencyContacts' },
+          { model: Skill, as: 'skills' },
+          { model: Experience, as: 'experiences' }
         ],
-        limit,
-        offset,
         order: [['createdAt', 'DESC']]
       });
     },
 
-    employee: async (parent, { id }, { user }) => {
+    employee: async (_, { id }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      return await Employee.findByPk(id, {
-        include: [
-          { model: User, as: 'user' },
-          { model: Employee, as: 'supervisor' },
-          { model: Employee, as: 'subordinates' },
-          { model: AttendanceRecord, as: 'attendances' },
-          { model: LeaveRequest, as: 'leaves' },
-          { model: SalaryRecord, as: 'salaries' },
-          { model: PerformanceEvaluation, as: 'evaluations' }
-        ]
-      });
-    },
-
-    employeeByNumber: async (parent, { employeeNumber }, { user }) => {
-      if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      return await Employee.findOne({
-        where: { employeeNumber, isActive: true },
-        include: [
-          { model: User, as: 'user' },
-          { model: Employee, as: 'supervisor' }
-        ]
-      });
-    },
-
-    // 출근 기록 조회
-    attendanceRecords: async (parent, { filter, limit = 20, offset = 0 }, { user }) => {
-      if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const whereClause = {};
       
-      if (filter) {
-        if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-        if (filter.attendanceDate) whereClause.attendanceDate = filter.attendanceDate;
-        if (filter.attendanceStatus) whereClause.attendanceStatus = filter.attendanceStatus;
-        if (filter.startDate && filter.endDate) {
-          whereClause.attendanceDate = {
-            [Op.between]: [filter.startDate, filter.endDate]
-          };
-        }
+      const employee = await Employee.findByPk(id, {
+        include: [
+          { model: User, as: 'user' },
+          { model: EmergencyContact, as: 'emergencyContacts' },
+          { model: Skill, as: 'skills' },
+          { model: Experience, as: 'experiences' },
+          { model: AttendanceRecord, as: 'attendanceRecords' },
+          { model: LeaveRequest, as: 'leaveRequests' },
+          { model: PerformanceEvaluation, as: 'performanceEvaluations' },
+          { model: SalaryRecord, as: 'salaryRecords' }
+        ]
+      });
+      
+      if (!employee) {
+        throw new ValidationError('직원을 찾을 수 없습니다');
       }
+      
+      return employee;
+    },
 
+    attendanceRecords: async (_, { employeeId, dateFrom, dateTo }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      const where = {};
+      
+      if (employeeId) {
+        where.employeeId = employeeId;
+      }
+      
+      if (dateFrom && dateTo) {
+        where.date = {
+          [Op.between]: [dateFrom, dateTo]
+        };
+      } else if (dateFrom) {
+        where.date = {
+          [Op.gte]: dateFrom
+        };
+      } else if (dateTo) {
+        where.date = {
+          [Op.lte]: dateTo
+        };
+      }
+      
       return await AttendanceRecord.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: 'employee' },
-          { model: Employee, as: 'approver' }
-        ],
-        limit,
-        offset,
-        order: [['attendanceDate', 'DESC']]
+        where,
+        include: [{ model: Employee, as: 'employee' }],
+        order: [['date', 'DESC']]
       });
     },
 
-    // 휴가 신청 조회
-    leaveRequests: async (parent, { filter, limit = 20, offset = 0 }, { user }) => {
+    leaveRequests: async (_, { employeeId, status }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const whereClause = {};
       
-      if (filter) {
-        if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-        if (filter.leaveType) whereClause.leaveType = filter.leaveType;
-        if (filter.leaveStatus) whereClause.leaveStatus = filter.leaveStatus;
-        if (filter.startDate && filter.endDate) {
-          whereClause.startDate = {
-            [Op.between]: [filter.startDate, filter.endDate]
-          };
-        }
+      const where = {};
+      
+      if (employeeId) {
+        where.employeeId = employeeId;
       }
-
+      
+      if (status) {
+        where.status = status;
+      }
+      
       return await LeaveRequest.findAll({
-        where: whereClause,
+        where,
         include: [
           { model: Employee, as: 'employee' },
-          { model: Employee, as: 'approver' }
+          { model: User, as: 'approver' }
         ],
-        limit,
-        offset,
-        order: [['appliedAt', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
     },
 
-    // 급여 기록 조회
-    salaryRecords: async (parent, { filter, limit = 20, offset = 0 }, { user }) => {
+    performanceEvaluations: async (_, { employeeId }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const whereClause = {};
       
-      if (filter) {
-        if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-        if (filter.payrollMonth) whereClause.payrollMonth = filter.payrollMonth;
-        if (filter.paymentStatus) whereClause.paymentStatus = filter.paymentStatus;
+      const where = {};
+      
+      if (employeeId) {
+        where.employeeId = employeeId;
       }
-
-      return await SalaryRecord.findAll({
-        where: whereClause,
+      
+      return await PerformanceEvaluation.findAll({
+        where,
         include: [
           { model: Employee, as: 'employee' },
-          { model: Employee, as: 'processor' }
+          { model: User, as: 'evaluator' },
+          { model: EvaluationGoal, as: 'goals' }
         ],
-        limit,
-        offset,
-        order: [['payrollMonth', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
     },
 
-    // 통계
-    employeeStats: async (parent, args, { user }) => {
+    salaryRecords: async (_, { employeeId }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const totalEmployees = await Employee.count({ where: { isActive: true } });
-      const activeEmployees = await Employee.count({ 
-        where: { isActive: true, employmentStatus: 'ACTIVE' } 
+      
+      const where = {};
+      
+      if (employeeId) {
+        where.employeeId = employeeId;
+      }
+      
+      return await SalaryRecord.findAll({
+        where,
+        include: [{ model: Employee, as: 'employee' }],
+        order: [['payDate', 'DESC']]
       });
-      const onLeaveEmployees = await Employee.count({ 
-        where: { isActive: true, employmentStatus: 'ON_LEAVE' } 
-      });
-
-      const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const newHiresThisMonth = await Employee.count({
-        where: {
-          isActive: true,
-          hireDate: { [Op.gte]: startOfMonth }
-        }
-      });
-
-      const pendingLeaveRequests = await LeaveRequest.count({
-        where: { leaveStatus: 'PENDING' }
-      });
-
-      const todayStr = today.toISOString().split('T')[0];
-      const todayAttendance = await AttendanceRecord.count({
-        where: {
-          attendanceDate: todayStr,
-          attendanceStatus: { [Op.in]: ['PRESENT', 'LATE', 'EARLY_LEAVE'] }
-        }
-      });
-
-      return {
-        totalEmployees,
-        activeEmployees,
-        onLeaveEmployees,
-        newHiresThisMonth,
-        pendingLeaveRequests,
-        todayAttendance,
-        averageWorkHours: 8.0,
-        departmentStats: []
-      };
     }
   },
 
   Mutation: {
-    // 직원 생성
-    createEmployee: async (parent, { input }, { user }) => {
+    createEmployee: async (_, { input }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const existingEmployee = await Employee.findOne({
-        where: { employeeNumber: input.employeeNumber }
-      });
-
-      if (existingEmployee) {
-        throw new ValidationError('이미 존재하는 사원번호입니다');
+      
+      try {
+        // 이름 조합
+        const name = `${input.firstName} ${input.lastName}`;
+        
+        const employee = await Employee.create({
+          ...input,
+          name,
+          status: 'ACTIVE'
+        });
+        
+        return {
+          success: true,
+          message: '직원이 성공적으로 등록되었습니다',
+          employee
+        };
+      } catch (error) {
+        console.error('직원 생성 오류:', error);
+        throw new ValidationError('직원 생성 중 오류가 발생했습니다');
       }
-
-      return await Employee.create({
-        ...input,
-        fullName: `${input.lastName} ${input.firstName}`,
-        fullNameEn: input.lastNameEn && input.firstNameEn ? 
-          `${input.firstNameEn} ${input.lastNameEn}` : null,
-        isActive: input.isActive !== undefined ? input.isActive : true
-      });
     },
 
-    // 직원 수정
-    updateEmployee: async (parent, { id, input }, { user }) => {
+    updateEmployee: async (_, { id, input }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const employee = await Employee.findByPk(id);
-      if (!employee) throw new ValidationError('직원을 찾을 수 없습니다');
-
-      if (input.employeeNumber && input.employeeNumber !== employee.employeeNumber) {
-        const existingEmployee = await Employee.findOne({
-          where: { employeeNumber: input.employeeNumber, id: { [Op.ne]: id } }
-        });
-        if (existingEmployee) {
-          throw new ValidationError('이미 존재하는 사원번호입니다');
+      
+      try {
+        const employee = await Employee.findByPk(id);
+        
+        if (!employee) {
+          throw new ValidationError('직원을 찾을 수 없습니다');
         }
-      }
-
-      const updateData = { ...input };
-      if (input.firstName || input.lastName) {
-        updateData.fullName = `${input.lastName || employee.lastName} ${input.firstName || employee.firstName}`;
-      }
-      if (input.firstNameEn || input.lastNameEn) {
-        updateData.fullNameEn = `${input.firstNameEn || employee.firstNameEn} ${input.lastNameEn || employee.lastNameEn}`;
-      }
-
-      await employee.update(updateData);
-      return employee;
-    },
-
-    // 출근 체크인
-    checkIn: async (parent, { employeeId, location, ip }, { user }) => {
-      if (!user) throw new AuthenticationError('인증이 필요합니다');
-
-      const today = new Date().toISOString().split('T')[0];
-      const existingRecord = await AttendanceRecord.findOne({
-        where: { employeeId, attendanceDate: today }
-      });
-
-      if (existingRecord && existingRecord.checkInTime) {
-        throw new ValidationError('이미 출근 처리되었습니다');
-      }
-
-      const checkInTime = new Date();
-      const standardStartTime = new Date();
-      standardStartTime.setHours(9, 0, 0, 0);
-
-      const lateMinutes = checkInTime > standardStartTime ? 
-        Math.floor((checkInTime - standardStartTime) / (1000 * 60)) : 0;
-
-      if (existingRecord) {
-        await existingRecord.update({
-          checkInTime,
-          checkInLocation: location,
-          checkInIp: ip,
-          lateMinutes,
-          attendanceStatus: lateMinutes > 0 ? 'LATE' : 'PRESENT'
-        });
-        return existingRecord;
-      } else {
-        return await AttendanceRecord.create({
-          employeeId,
-          attendanceDate: today,
-          checkInTime,
-          checkInLocation: location,
-          checkInIp: ip,
-          lateMinutes,
-          attendanceStatus: lateMinutes > 0 ? 'LATE' : 'PRESENT',
-          isActive: true
-        });
+        
+        // 이름 업데이트
+        if (input.firstName || input.lastName) {
+          input.name = `${input.firstName || employee.firstName} ${input.lastName || employee.lastName}`;
+        }
+        
+        await employee.update(input);
+        
+        return {
+          success: true,
+          message: '직원 정보가 성공적으로 업데이트되었습니다',
+          employee
+        };
+      } catch (error) {
+        console.error('직원 업데이트 오류:', error);
+        throw new ValidationError('직원 정보 업데이트 중 오류가 발생했습니다');
       }
     },
 
-    // 휴가 신청
-    createLeaveRequest: async (parent, { input }, { user }) => {
+    deleteEmployee: async (_, { id }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        const employee = await Employee.findByPk(id);
+        
+        if (!employee) {
+          throw new ValidationError('직원을 찾을 수 없습니다');
+        }
+        
+        // 소프트 삭제 (상태를 TERMINATED로 변경)
+        await employee.update({ status: 'TERMINATED' });
+        
+        return {
+          success: true,
+          message: '직원이 성공적으로 삭제되었습니다'
+        };
+      } catch (error) {
+        console.error('직원 삭제 오류:', error);
+        throw new ValidationError('직원 삭제 중 오류가 발생했습니다');
+      }
+    },
 
-      return await LeaveRequest.create({
-        ...input,
-        appliedAt: new Date(),
-        leaveStatus: 'PENDING',
-        isActive: true
-      });
+    recordAttendance: async (_, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        // 근무 시간 계산
+        let workHours = 0;
+        if (input.checkIn && input.checkOut) {
+          const checkIn = new Date(`${input.date} ${input.checkIn}`);
+          const checkOut = new Date(`${input.date} ${input.checkOut}`);
+          workHours = (checkOut - checkIn) / (1000 * 60 * 60); // 시간 단위
+        }
+        
+        const attendance = await AttendanceRecord.create({
+          ...input,
+          workHours
+        });
+        
+        return {
+          success: true,
+          message: '출근 기록이 성공적으로 등록되었습니다',
+          attendance
+        };
+      } catch (error) {
+        console.error('출근 기록 오류:', error);
+        throw new ValidationError('출근 기록 중 오류가 발생했습니다');
+      }
+    },
+
+    createLeaveRequest: async (_, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        // 휴가 일수 계산
+        const startDate = new Date(input.startDate);
+        const endDate = new Date(input.endDate);
+        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+        const leaveRequest = await LeaveRequest.create({
+          ...input,
+          days,
+          status: 'PENDING'
+        });
+        
+        return {
+          success: true,
+          message: '휴가 신청이 성공적으로 등록되었습니다',
+          leaveRequest
+        };
+      } catch (error) {
+        console.error('휴가 신청 오류:', error);
+        throw new ValidationError('휴가 신청 중 오류가 발생했습니다');
+      }
+    },
+
+    approveLeaveRequest: async (_, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        const leaveRequest = await LeaveRequest.findByPk(input.id);
+        
+        if (!leaveRequest) {
+          throw new ValidationError('휴가 신청을 찾을 수 없습니다');
+        }
+        
+        await leaveRequest.update({
+          status: input.status,
+          approvedBy: user.id,
+          approvedAt: new Date(),
+          notes: input.notes
+        });
+        
+        return {
+          success: true,
+          message: '휴가 신청이 성공적으로 처리되었습니다',
+          leaveRequest
+        };
+      } catch (error) {
+        console.error('휴가 승인 오류:', error);
+        throw new ValidationError('휴가 승인 중 오류가 발생했습니다');
+      }
+    },
+
+    createPerformanceEvaluation: async (_, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        const evaluation = await PerformanceEvaluation.create({
+          ...input,
+          evaluatorId: user.id,
+          status: 'DRAFT'
+        });
+        
+        // 목표 생성
+        if (input.goals && input.goals.length > 0) {
+          const goals = input.goals.map(goal => ({
+            ...goal,
+            evaluationId: evaluation.id
+          }));
+          
+          await EvaluationGoal.bulkCreate(goals);
+        }
+        
+        return {
+          success: true,
+          message: '성과 평가가 성공적으로 생성되었습니다',
+          evaluation
+        };
+      } catch (error) {
+        console.error('성과 평가 생성 오류:', error);
+        throw new ValidationError('성과 평가 생성 중 오류가 발생했습니다');
+      }
+    },
+
+    createSalaryRecord: async (_, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('인증이 필요합니다');
+      
+      try {
+        // 총 급여 계산
+        const totalSalary = (input.baseSalary || 0) + (input.allowances || 0) + (input.bonus || 0) - (input.deductions || 0);
+        
+        const salaryRecord = await SalaryRecord.create({
+          ...input,
+          totalSalary,
+          status: 'PENDING'
+        });
+        
+        return {
+          success: true,
+          message: '급여 기록이 성공적으로 생성되었습니다',
+          salaryRecord
+        };
+      } catch (error) {
+        console.error('급여 기록 생성 오류:', error);
+        throw new ValidationError('급여 기록 생성 중 오류가 발생했습니다');
+      }
     }
   },
 
-  // 타입 리졸버
   Employee: {
     user: async (employee) => {
       if (employee.userId) {
@@ -475,15 +388,53 @@ const employeeResolvers = {
       }
       return null;
     },
-    supervisor: async (employee) => {
-      if (employee.supervisorId) {
-        return await Employee.findByPk(employee.supervisorId);
-      }
-      return null;
+    
+    emergencyContacts: async (employee) => {
+      return await EmergencyContact.findAll({
+        where: { employeeId: employee.id }
+      });
     },
-    subordinates: async (employee) => {
-      return await Employee.findAll({
-        where: { supervisorId: employee.id, isActive: true }
+    
+    skills: async (employee) => {
+      return await Skill.findAll({
+        where: { employeeId: employee.id }
+      });
+    },
+    
+    experiences: async (employee) => {
+      return await Experience.findAll({
+        where: { employeeId: employee.id },
+        order: [['startDate', 'DESC']]
+      });
+    },
+    
+    attendanceRecords: async (employee) => {
+      return await AttendanceRecord.findAll({
+        where: { employeeId: employee.id },
+        order: [['date', 'DESC']],
+        limit: 30 // 최근 30일
+      });
+    },
+    
+    leaveRequests: async (employee) => {
+      return await LeaveRequest.findAll({
+        where: { employeeId: employee.id },
+        order: [['createdAt', 'DESC']]
+      });
+    },
+    
+    performanceEvaluations: async (employee) => {
+      return await PerformanceEvaluation.findAll({
+        where: { employeeId: employee.id },
+        include: [{ model: EvaluationGoal, as: 'goals' }],
+        order: [['createdAt', 'DESC']]
+      });
+    },
+    
+    salaryRecords: async (employee) => {
+      return await SalaryRecord.findAll({
+        where: { employeeId: employee.id },
+        order: [['payDate', 'DESC']]
       });
     }
   },
@@ -491,12 +442,6 @@ const employeeResolvers = {
   AttendanceRecord: {
     employee: async (attendance) => {
       return await Employee.findByPk(attendance.employeeId);
-    },
-    approver: async (attendance) => {
-      if (attendance.approvedBy) {
-        return await Employee.findByPk(attendance.approvedBy);
-      }
-      return null;
     }
   },
 
@@ -504,11 +449,34 @@ const employeeResolvers = {
     employee: async (leave) => {
       return await Employee.findByPk(leave.employeeId);
     },
+    
     approver: async (leave) => {
       if (leave.approvedBy) {
-        return await Employee.findByPk(leave.approvedBy);
+        return await User.findByPk(leave.approvedBy);
       }
       return null;
+    }
+  },
+
+  PerformanceEvaluation: {
+    employee: async (evaluation) => {
+      return await Employee.findByPk(evaluation.employeeId);
+    },
+    
+    evaluator: async (evaluation) => {
+      return await User.findByPk(evaluation.evaluatorId);
+    },
+    
+    goals: async (evaluation) => {
+      return await EvaluationGoal.findAll({
+        where: { evaluationId: evaluation.id }
+      });
+    }
+  },
+
+  SalaryRecord: {
+    employee: async (salary) => {
+      return await Employee.findByPk(salary.employeeId);
     }
   }
 };
