@@ -321,10 +321,6 @@ const salesTypeDefs = gql`
     # 모델 목록 (제품별, 검색 지원)
     productModelsForSales(productId: Int!, search: String, limit: Int): [ProductModel!]!
 
-    # 매출 카테고리 관련 쿼리 (기존 categories 사용)
-    # salesCategories(search: String, page: Int, limit: Int): SalesCategoryListResponse!
-    salesCategory(id: Int!): SalesCategoryResponse!
-
     # 인센티브 지급 내역 쿼리
     incentivePayouts(salesItemId: Int!, type: IncentiveType): IncentivePayoutListResponse!
     incentivePayout(id: Int!): IncentivePayoutResponse!
