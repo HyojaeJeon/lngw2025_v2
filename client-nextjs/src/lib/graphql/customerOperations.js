@@ -1,4 +1,3 @@
-
 import { gql } from "@apollo/client";
 
 export const GET_CUSTOMERS = gql`
@@ -89,19 +88,40 @@ export const CREATE_CUSTOMER = gql`
       companyType
       grade
       address
+      status
+      assignedUserId
+      assignedUser {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_CUSTOMER_DETAIL = gql`
+  query GetCustomerDetail($id: ID!) {
+    customer(id: $id) {
+      id
+      name
+      contactName
+      email
+      phone
+      industry
+      companyType
+      grade
+      address
+      status
+      profileImage
+      facebook
+      instagram
       assignedUserId
       assignedUser {
         id
         name
         email
-        department
-        position
       }
-      status
-      profileImage
-      facebook
-      tiktok
-      instagram
       contacts {
         id
         name
@@ -111,18 +131,48 @@ export const CREATE_CUSTOMER = gql`
         email
         birthDate
         facebook
-        tiktok
         instagram
         profileImage
       }
-      facilityImages {
+      opportunities {
+        id
+        title
+        description
+        expectedAmount
+        stage
+        probability
+        priority
+        expectedCloseDate
+        source
+      }
+      images {
         id
         imageUrl
+        imageType
         description
-        sortOrder
       }
       createdAt
       updatedAt
+    }
+  }
+`;
+
+export const GET_CUSTOMER_VOCS = gql`
+  query GetCustomerVocs($filter: VocFilter!) {
+    vocs(filter: $filter) {
+      id
+      title
+      type
+      content
+      priority
+      status
+      createdAt
+      updatedAt
+      resolvedAt
+      assignedTo {
+        id
+        name
+      }
     }
   }
 `;

@@ -5,6 +5,44 @@ const { createError, requireAuth, requireRole, handleDatabaseError } = require("
 
 const customerResolvers = {
   Query: {
+    customer: async (parent, { id }, { user, lang }) => {
+      requireAuth(user, lang);
+
+      try {
+        const customer = await Customer.findByPk(id, {
+          include: [
+            {
+              model: models.User,
+              as: "assignedUser",
+              attributes: ["id", "name", "email", "department", "position"],
+            },
+            {
+              model: models.ContactPerson,
+              as: "contacts",
+            },
+            {
+              model: models.CustomerImage,
+              as: "facilityImages",
+              order: [["sortOrder", "ASC"]],
+              attributes: ["id", "imageUrl", "description", "sortOrder"],
+            },
+          ],
+        });
+
+        if (!customer) {
+          throw createError("CUSTOMER_NOT_FOUND", lang);
+        }
+
+        return customer;
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Error fetching customer:", error);
+        handleDatabaseError(error, lang, "CUSTOMER_NOT_FOUND");
+      }
+    },
+
     users: async (parent, { limit = 10, offset = 0, search }, { user, lang }) => {
       requireAuth(user, lang);
 
@@ -97,44 +135,6 @@ const customerResolvers = {
       } catch (error) {
         console.error("Error fetching customers:", error);
         handleDatabaseError(error, lang, "DATABASE_ERROR");
-      }
-    },
-
-    customer: async (parent, { id }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const customer = await Customer.findByPk(id, {
-          include: [
-            {
-              model: models.User,
-              as: "assignedUser",
-              attributes: ["id", "name", "email", "department", "position"],
-            },
-            {
-              model: models.ContactPerson,
-              as: "contacts",
-            },
-            {
-              model: models.CustomerImage,
-              as: "facilityImages",
-              order: [["sortOrder", "ASC"]],
-              attributes: ["id", "imageUrl", "description", "sortOrder"],
-            },
-          ],
-        });
-
-        if (!customer) {
-          throw createError("CUSTOMER_NOT_FOUND", lang);
-        }
-
-        return customer;
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        console.error("Error fetching customer:", error);
-        handleDatabaseError(error, lang, "CUSTOMER_NOT_FOUND");
       }
     },
 

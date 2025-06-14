@@ -496,8 +496,6 @@ const types = gql`
   type PeakTimeData {
     hour: Int
     engagement: Int
-    hour: Int
-    engagement: Int
   }
 
   type CompetitorData {
