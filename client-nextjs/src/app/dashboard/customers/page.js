@@ -50,7 +50,7 @@ export default function CustomersPage() {
 
   const { data: customersData, loading: customersLoading, error: customersError } = useQuery(GET_CUSTOMERS, {
     variables: { 
-      first: 50,
+      limit: 50,
       offset: 0
     },
     errorPolicy: 'ignore'

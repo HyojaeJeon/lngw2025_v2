@@ -383,8 +383,10 @@ const requireAuth = (context) => {
     return context.user;
   }
 
+  // 프로덕션 환경에서의 인증 확인
   if (!context || !context.user) {
-    throw createError('AUTHENTICATION_REQUIRED', context?.lang || 'en');
+    const lang = context?.lang || 'en';
+    throw createError('AUTHENTICATION_REQUIRED', lang);
   }
   return context.user;
 };

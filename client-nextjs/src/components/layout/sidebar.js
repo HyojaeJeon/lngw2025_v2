@@ -589,6 +589,7 @@ const getMenuItems = (t) => [
 
 // 간단한 리사이즈 가능한 사이바
 export function ResizableSidebar({ children }) {
+```python
     const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
@@ -879,6 +880,7 @@ export function Sidebar({ isOpen, onToggle }) {
               const isExpanded = expandedMenus[item.name] || submenuIsActive;
 
               return (
+                
                 <div key={`category-${categoryIndex}`}>
                   {/* Main Menu Item */}
                   <div className="flex items-center">
@@ -943,6 +945,7 @@ export function Sidebar({ isOpen, onToggle }) {
                         {item.submenu.map((subItem) => {
                           const subIsActive = isActive(subItem.href);
                           return (
+                            
                             <Link
                               key={subItem.name}
                               href={subItem.href}
