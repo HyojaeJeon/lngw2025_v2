@@ -37,6 +37,8 @@ const salesTypeDefs = gql`
     notes: String
     isActive: Boolean!
     payments: [Payment!]
+    incentivePayouts: [IncentivePayout!]
+    histories: [SalesItemHistory!]
     createdAt: String!
     updatedAt: String!
   }
