@@ -6,7 +6,7 @@ import {
   createHttpLink,
   from,
 } from "@apollo/client";
-import { createUploadLink } from "apollo-upload-client";
+import { createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import errorLink from "../apollo/errorLink";
 import { store } from "../store";
@@ -40,7 +40,7 @@ const getServerUrl = () => {
 };
 
 // HTTP 연결을 위한 링크
-const uploadLink = createUploadLink({
+const httpLink = createHttpLink({
   uri: getServerUrl(),
   credentials: "same-origin",
 });
@@ -82,7 +82,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 // Apollo Client 인스턴스 생성
 export const apolloClient = new ApolloClient({
   // errorLink가 가장 먼저 오도록 설정하여 모든 에러를 중앙에서 처리
-  link: from([errorLink, authLink, uploadLink]),
+  link: from([errorLink, authLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
