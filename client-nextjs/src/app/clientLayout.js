@@ -1,25 +1,39 @@
 "use client";
 
-import { ReduxProvider } from "@/providers/reduxProvider";
-import ApolloProviderWrapper from '@/providers/apolloProvider';
-import { ThemeProvider } from "@/contexts/themeContext";
-import { LanguageProvider } from "@/hooks/useLanguage";
-import { Toaster } from "@/components/ui/toaster.js";
-import AuthInitializer from "@/components/ui/AuthInitializer";
+import { ApolloProvider } from "@apollo/client";
+import { ReduxProvider } from "../providers/reduxProvider";
+import { LanguageProvider } from "../hooks/useLanguage";
+import apolloClient from "../lib/apolloClient";
+import DashboardLayout from "../components/layout/dashboardLayout";
+import { Toaster } from "../components/ui/toaster";
+import { usePathname } from "next/navigation";
+import { ErrorBoundaryHandler } from "../apollo/errorLink";
 
 export default function ClientLayout({ children }) {
+  const pathname = usePathname();
+
+  // 로그인/회원가입 페이지에서는 DashboardLayout을 사용하지 않음
+  const isAuthPage = pathname === "/login" || pathname === "/register";
+
   return (
     <ReduxProvider>
-      <ApolloProviderWrapper>
-        <ThemeProvider>
-          <LanguageProvider>
-            <AuthInitializer>
-              {children}
-              <Toaster />
-            </AuthInitializer>
-          </LanguageProvider>
-        </ThemeProvider>
-      </ApolloProviderWrapper>
+      <LanguageProvider>
+        <ApolloProvider client={apolloClient}>
+          <ErrorBoundaryHandler>
+            {isAuthPage ? (
+              <>
+                {children}
+                <Toaster />
+              </>
+            ) : (
+              <DashboardLayout>
+                {children}
+                <Toaster />
+              </DashboardLayout>
+            )}
+          </ErrorBoundaryHandler>
+        </ApolloProvider>
+      </LanguageProvider>
     </ReduxProvider>
   );
 }

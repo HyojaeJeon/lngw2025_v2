@@ -70,8 +70,14 @@ export const LanguageProvider = ({ children }) => {
 // 4. useTranslation 훅 (번역 기능 전용)
 export const useTranslation = () => {
   const context = useContext(LanguageContext);
+  
+  // fallback 처리: context가 없을 때 기본값 제공
   if (!context) {
-    throw new Error("useTranslation must be used within a LanguageProvider");
+    console.warn("useTranslation must be used within a LanguageProvider. Using fallback.");
+    return { 
+      t: (key, fallback = key) => fallback, 
+      currentLanguage: DEFAULT_LANGUAGE 
+    };
   }
 
   const { translations, currentLanguage } = context;
@@ -93,8 +99,17 @@ export const useTranslation = () => {
 // 4. useLanguage 훅 (언어 변경 기능 포함)
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
+  
+  // fallback 처리: context가 없을 때 기본값 제공
   if (!context) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
+    console.warn("useLanguage must be used within a LanguageProvider. Using fallback.");
+    return { 
+      currentLanguage: DEFAULT_LANGUAGE, 
+      changeLanguage: () => {}, 
+      getNextLanguage: () => DEFAULT_LANGUAGE,
+      supportedLanguages: SUPPORTED_LANGUAGES,
+      languageInfo: LANGUAGE_INFO
+    };
   }
 
   const { currentLanguage, changeLanguage } = context;
@@ -117,10 +132,9 @@ export const useLanguage = () => {
 // 5. useLocaleFormat 훅
 export const useLocaleFormat = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error("useLocaleFormat must be used within a LanguageProvider");
-  }
-  const { currentLanguage } = context;
+  
+  // fallback 처리
+  const currentLanguage = context?.currentLanguage || DEFAULT_LANGUAGE;
 
   const getLocale = (lang) => {
     if (lang === "ko") return "ko-KR";
