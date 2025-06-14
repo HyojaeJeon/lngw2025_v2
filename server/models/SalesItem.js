@@ -228,22 +228,22 @@ module.exports = (sequelize) => {
       beforeSave: (salesItem) => {
         // 총 판매가 계산
         salesItem.totalPrice = salesItem.salesPrice * salesItem.quantity;
-        
+
         // 총 원가 계산
         salesItem.totalCost = salesItem.cost * salesItem.quantity;
-        
+
         // 할인율 계산
         if (salesItem.consumerPrice && salesItem.consumerPrice > 0) {
           salesItem.discountRate = ((salesItem.consumerPrice - salesItem.unitPrice) / salesItem.consumerPrice) * 100;
         }
-        
+
         // 마진 계산
         salesItem.margin = salesItem.unitPrice - salesItem.cost - (salesItem.incentiveA / salesItem.quantity) - (salesItem.incentiveB / salesItem.quantity);
         salesItem.totalMargin = salesItem.margin * salesItem.quantity;
-        
+
         // 최종 마진 계산
         salesItem.finalMargin = salesItem.totalPrice - salesItem.totalCost - salesItem.deliveryFee - salesItem.incentiveA - salesItem.incentiveB;
-        
+
         // 마진 요율 계산
         if (salesItem.totalPrice > 0) {
           salesItem.marginRate = (salesItem.finalMargin / salesItem.totalPrice) * 100;
@@ -253,7 +253,7 @@ module.exports = (sequelize) => {
   });
 
   SalesItem.associate = (models) => {
-    // User(영업사원)와의 관계
+    // User (영업사원)와의 관계
     SalesItem.belongsTo(models.User, {
       foreignKey: 'salesRepId',
       as: 'salesRep'
@@ -263,12 +263,6 @@ module.exports = (sequelize) => {
     SalesItem.belongsTo(models.Customer, {
       foreignKey: 'customerId',
       as: 'customer'
-    });
-
-    // Category와의 관계
-    SalesItem.belongsTo(models.Category, {
-      foreignKey: 'categoryId',
-      as: 'category'
     });
 
     // Product와의 관계
@@ -283,24 +277,28 @@ module.exports = (sequelize) => {
       as: 'productModel'
     });
 
-    // Payment와의 관계
-    SalesItem.hasMany(models.Payment, {
-      foreignKey: 'salesItemId',
-      as: 'payments'
+    // SalesCategory와의 관계
+    SalesItem.belongsTo(models.Category, {
+      foreignKey: 'categoryId',
+      as: 'category'
     });
 
-    // SalesItemHistory와의 관계
-    SalesItem.hasMany(models.SalesItemHistory, {
-      foreignKey: 'salesItemId',
-      as: 'histories'
-    });
+    // SalesItemHistory와의 관계 (변경 이력)
+    if (models.SalesItemHistory) {
+      SalesItem.hasMany(models.SalesItemHistory, {
+        foreignKey: 'salesItemId',
+        as: 'history'
+      });
+    }
 
     // IncentivePayout과의 관계
-    SalesItem.hasMany(models.IncentivePayout, {
-      foreignKey: 'salesItemId',
-      as: 'incentivePayouts'
-    });
+    if (models.IncentivePayout) {
+      SalesItem.hasMany(models.IncentivePayout, {
+        foreignKey: 'salesItemId',
+        as: 'incentivePayouts'
+      });
+    }
   };
 
   return SalesItem;
-}; 
+};

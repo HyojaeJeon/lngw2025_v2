@@ -172,12 +172,72 @@
     }
   },
   "sales": {
+    "title": "매출 관리",
     "overview": "영업 현황",
     "opportunities": "영업 기회",
     "pipeline": "영업 파이프라인",
     "quotes": "견적 관리",
     "activities": "영업 활동",
-    "kpi": "KPI 관리"
+    "kpi": "KPI 관리",
+    "management": "매출 관리",
+    "addSales": "매출 추가",
+    "editSales": "매출 수정",
+    "deleteSales": "매출 삭제",
+    "salesDate": "매출 일시",
+    "salesRep": "영업사원",
+    "customer": "고객사",
+    "category": "카테고리",
+    "product": "제품",
+    "productModel": "제품 모델",
+    "type": "구분",
+    "quantity": "수량",
+    "unitPrice": "단가",
+    "salesPrice": "판매가",
+    "totalPrice": "총액",
+    "cost": "원가",
+    "totalCost": "총 원가",
+    "margin": "마진",
+    "totalMargin": "총 마진",
+    "finalMargin": "최종 마진",
+    "marginRate": "마진율",
+    "paymentStatus": "결제 상태",
+    "paidAmount": "지급액",
+    "notes": "메모",
+    "filter": "필터",
+    "search": "검색",
+    "export": "내보내기",
+    "import": "가져오기",
+    "bulkUpdate": "일괄 수정",
+    "types": {
+      "SALE": "판매",
+      "SAMPLE": "샘플",
+      "DEFECTIVE": "불량",
+      "EXPIRED": "파손"
+    },
+    "paymentStatuses": {
+      "UNPAID": "미지급",
+      "PARTIAL_PAID": "부분지급",
+      "PAID": "완료"
+    },
+    "validation": {
+      "salesDateRequired": "매출 일시는 필수입니다",
+      "salesRepRequired": "영업사원은 필수입니다",
+      "customerRequired": "고객사는 필수입니다",
+      "categoryRequired": "카테고리는 필수입니다",
+      "quantityMin": "수량은 1 이상이어야 합니다",
+      "unitPriceMin": "단가는 0보다 커야 합니다"
+    },
+    "messages": {
+      "createSuccess": "매출이 성공적으로 등록되었습니다",
+      "createError": "매출 등록 중 오류가 발생했습니다",
+      "updateSuccess": "매출이 성공적으로 수정되었습니다",
+      "updateError": "매출 수정 중 오류가 발생했습니다",
+      "deleteSuccess": "매출이 성공적으로 삭제되었습니다",
+      "deleteError": "매출 삭제 중 오류가 발생했습니다",
+      "deleteConfirm": "정말로 이 매출 항목을 삭제하시겠습니까?",
+      "bulkUpdateSuccess": "일괄 수정이 완료되었습니다",
+      "bulkUpdateError": "일괄 수정 중 오류가 발생했습니다"
+    }
   },
   "marketing": {
     "title": "마케팅",
