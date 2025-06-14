@@ -1,77 +1,165 @@
+
 const { gql } = require("apollo-server-express");
 
 const employeeSchema = gql`
+  # 직원 타입 정의
   type Employee {
     id: ID!
-    userId: ID!
+    employeeNumber: String!
+    userId: ID
     user: User
-    employeeId: String!
     firstName: String!
     lastName: String!
-    name: String!
+    firstNameEn: String
+    lastNameEn: String
+    fullName: String
+    fullNameEn: String
     email: String!
     phone: String
-    position: String!
+    mobile: String
     department: String!
+    position: String!
+    jobTitle: String
+    employmentType: EmploymentType!
+    employmentStatus: EmploymentStatus!
     hireDate: String!
-    status: EmployeeStatus!
-    salary: Float
-    avatar: String
-    emergencyContacts: [EmergencyContact]
-    addresses: [Address]
-    skills: [Skill]
-    experiences: [Experience]
-    attendanceRecords: [AttendanceRecord]
-    leaveRequests: [LeaveRequest]
-    performanceEvaluations: [PerformanceEvaluation]
-    salaryRecords: [SalaryRecord]
+    terminationDate: String
+    birthDate: String
+    gender: Gender
+    nationality: String
+    address: String
+    profileImage: String
+    baseSalary: Float
+    salaryType: SalaryType
+    bankAccount: String
+    bankName: String
+    socialSecurityNumber: String
+    healthInsuranceNumber: String
+    workingHours: JSON
+    supervisorId: ID
+    supervisor: Employee
+    subordinates: [Employee!]
+    notes: String
+    isActive: Boolean!
+    attendances: [AttendanceRecord!]
+    leaves: [LeaveRequest!]
+    salaries: [SalaryRecord!]
+    evaluations: [PerformanceEvaluation!]
     createdAt: String!
     updatedAt: String!
   }
 
+  # 출근 타입 정의
   type AttendanceRecord {
     id: ID!
     employeeId: ID!
-    employee: Employee
-    date: String!
-    checkIn: String
-    checkOut: String
-    workHours: Float
-    status: AttendanceStatus!
+    employee: Employee!
+    attendanceDate: String!
+    checkInTime: String
+    checkOutTime: String
+    breakStartTime: String
+    breakEndTime: String
+    overtimeHours: Float
+    workingHours: Float
+    attendanceStatus: AttendanceStatus!
+    lateMinutes: Int
+    earlyLeaveMinutes: Int
+    checkInLocation: String
+    checkOutLocation: String
+    checkInIp: String
+    checkOutIp: String
     notes: String
+    approvedBy: ID
+    approver: Employee
+    approvedAt: String
+    isActive: Boolean!
     createdAt: String!
     updatedAt: String!
   }
 
+  # 휴가 타입 정의
   type LeaveRequest {
     id: ID!
     employeeId: ID!
-    employee: Employee
-    type: LeaveType!
+    employee: Employee!
+    leaveType: LeaveType!
     startDate: String!
     endDate: String!
-    days: Int!
-    reason: String
-    status: LeaveStatus!
+    totalDays: Float!
+    reason: String!
+    leaveStatus: LeaveStatus!
+    appliedAt: String!
     approvedBy: ID
-    approver: User
+    approver: Employee
     approvedAt: String
-    notes: String
+    rejectionReason: String
+    attachments: JSON
+    emergencyContact: String
+    isActive: Boolean!
     createdAt: String!
     updatedAt: String!
   }
 
+  # 급여 타입 정의
+  type SalaryRecord {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    payrollMonth: String!
+    baseSalary: Float!
+    allowances: JSON
+    totalAllowances: Float
+    overtimePay: Float
+    bonuses: JSON
+    totalBonuses: Float
+    grossSalary: Float!
+    deductions: JSON
+    totalDeductions: Float
+    netSalary: Float!
+    workingDays: Int
+    attendanceDays: Int
+    absenceDays: Int
+    overtimeHours: Float
+    paymentDate: String
+    paymentStatus: PaymentStatus!
+    bankAccount: String
+    bankName: String
+    notes: String
+    processedBy: ID
+    processor: Employee
+    processedAt: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  # 평가 타입 정의
   type PerformanceEvaluation {
     id: ID!
     employeeId: ID!
-    employee: Employee
+    employee: Employee!
     evaluatorId: ID!
-    evaluator: User
-    period: String!
-    score: Float!
-    goals: [EvaluationGoal]
-    feedback: String
-    status: EvaluationStatus!
+    evaluator: Employee!
+    evaluationPeriod: String!
+    evaluationType: EvaluationType!
+    evaluationDate: String!
+    goals: [EvaluationGoal!]
+    achievements: JSON
+    competencies: JSON
+    overallRating: Rating!
+    overallScore: Float
+    strengths: String
+    areasForImprovement: String
+    developmentPlan: String
+    evaluatorComments: String
+    employeeComments: String
+    promotionRecommendation: PromotionRecommendation
+    salaryAdjustmentRecommendation: Float
+    evaluationStatus: EvaluationStatus!
+    approvedBy: ID
+    approver: Employee
+    approvedAt: String
+    isActive: Boolean!
     createdAt: String!
     updatedAt: String!
   }
@@ -79,103 +167,65 @@ const employeeSchema = gql`
   type EvaluationGoal {
     id: ID!
     evaluationId: ID!
-    evaluation: PerformanceEvaluation
     title: String!
     description: String
-    target: String!
-    achievement: String
+    targetValue: String
+    actualValue: String
+    weight: Float!
     score: Float
-    weight: Float
-    createdAt: String!
-    updatedAt: String!
+    isAchieved: Boolean!
   }
 
-  type SalaryRecord {
-    id: ID!
-    employeeId: ID!
-    employee: Employee
-    baseSalary: Float!
-    allowances: Float
-    deductions: Float
-    bonus: Float
-    totalSalary: Float!
-    payPeriod: String!
-    payDate: String!
-    status: PaymentStatus!
-    notes: String
-    createdAt: String!
-    updatedAt: String!
+  # Enum 타입들
+  enum EmploymentType {
+    FULL_TIME
+    CONTRACT
+    INTERN
+    FREELANCER
+    PART_TIME
   }
 
-  type EmergencyContact {
-    id: ID!
-    employeeId: ID!
-    employee: Employee
-    name: String!
-    relationship: String!
-    phone: String!
-    email: String
-    address: String
-    isPrimary: Boolean!
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  type Skill {
-    id: ID!
-    employeeId: ID!
-    employee: Employee
-    name: String!
-    category: String
-    level: SkillLevel!
-    yearsOfExperience: Int
-    certified: Boolean!
-    certificationDate: String
-    notes: String
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  type Experience {
-    id: ID!
-    employeeId: ID!
-    employee: Employee
-    company: String!
-    position: String!
-    startDate: String!
-    endDate: String
-    isCurrent: Boolean!
-    description: String
-    achievements: String
-    skills: String
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  enum EmployeeStatus {
+  enum EmploymentStatus {
     ACTIVE
-    INACTIVE
-    TERMINATED
     ON_LEAVE
+    TERMINATED
+    PENDING
+  }
+
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
+  }
+
+  enum SalaryType {
+    MONTHLY
+    YEARLY
+    HOURLY
+    DAILY
   }
 
   enum AttendanceStatus {
     PRESENT
-    ABSENT
     LATE
-    HALF_DAY
-    HOLIDAY
+    EARLY_LEAVE
+    ABSENT
+    VACATION
     SICK_LEAVE
+    BUSINESS_TRIP
+    WORK_FROM_HOME
   }
 
   enum LeaveType {
     ANNUAL
+    HALF_DAY
     SICK
-    PERSONAL
+    BEREAVEMENT
     MATERNITY
     PATERNITY
-    BEREAVEMENT
     UNPAID
+    PUBLIC_HOLIDAY
+    OTHER
   }
 
   enum LeaveStatus {
@@ -185,129 +235,288 @@ const employeeSchema = gql`
     CANCELLED
   }
 
+  enum PaymentStatus {
+    CALCULATING
+    CONFIRMED
+    PAID
+    ON_HOLD
+  }
+
+  enum EvaluationType {
+    ANNUAL
+    SEMI_ANNUAL
+    QUARTERLY
+    PROBATION
+    PROMOTION
+  }
+
+  enum Rating {
+    S
+    A
+    B
+    C
+    D
+  }
+
+  enum PromotionRecommendation {
+    HIGHLY_RECOMMEND
+    RECOMMEND
+    NEUTRAL
+    NOT_RECOMMEND
+  }
+
   enum EvaluationStatus {
-    DRAFT
     IN_PROGRESS
     COMPLETED
+    PENDING_APPROVAL
     APPROVED
   }
 
-  enum SkillLevel {
-    BEGINNER
-    INTERMEDIATE
-    ADVANCED
-    EXPERT
-  }
-
-  input CreateEmployeeInput {
+  # 입력 타입들
+  input EmployeeInput {
+    employeeNumber: String!
     userId: ID
-    employeeId: String!
     firstName: String!
     lastName: String!
+    firstNameEn: String
+    lastNameEn: String
     email: String!
     phone: String
-    position: String!
+    mobile: String
     department: String!
+    position: String!
+    jobTitle: String
+    employmentType: EmploymentType!
+    employmentStatus: EmploymentStatus!
     hireDate: String!
-    salary: Float
-    avatar: String
-  }
-
-  input UpdateEmployeeInput {
-    employeeId: String
-    firstName: String
-    lastName: String
-    email: String
-    phone: String
-    position: String
-    department: String
-    hireDate: String
-    status: EmployeeStatus
-    salary: Float
-    avatar: String
-  }
-
-  input CreateAttendanceInput {
-    employeeId: ID!
-    date: String!
-    checkIn: String
-    checkOut: String
-    status: AttendanceStatus!
+    terminationDate: String
+    birthDate: String
+    gender: Gender
+    nationality: String
+    address: String
+    profileImage: String
+    baseSalary: Float
+    salaryType: SalaryType
+    bankAccount: String
+    bankName: String
+    socialSecurityNumber: String
+    healthInsuranceNumber: String
+    workingHours: JSON
+    supervisorId: ID
     notes: String
+    isActive: Boolean
   }
 
-  input CreateLeaveRequestInput {
+  input AttendanceInput {
     employeeId: ID!
-    type: LeaveType!
+    attendanceDate: String!
+    checkInTime: String
+    checkOutTime: String
+    breakStartTime: String
+    breakEndTime: String
+    overtimeHours: Float
+    workingHours: Float
+    attendanceStatus: AttendanceStatus!
+    lateMinutes: Int
+    earlyLeaveMinutes: Int
+    checkInLocation: String
+    checkOutLocation: String
+    checkInIp: String
+    checkOutIp: String
+    notes: String
+    approvedBy: ID
+  }
+
+  input LeaveInput {
+    employeeId: ID!
+    leaveType: LeaveType!
     startDate: String!
     endDate: String!
-    reason: String
+    totalDays: Float!
+    reason: String!
+    emergencyContact: String
+    attachments: JSON
   }
 
-  input ApproveLeaveRequestInput {
-    id: ID!
-    status: LeaveStatus!
+  input SalaryInput {
+    employeeId: ID!
+    payrollMonth: String!
+    baseSalary: Float!
+    allowances: JSON
+    totalAllowances: Float
+    overtimePay: Float
+    bonuses: JSON
+    totalBonuses: Float
+    grossSalary: Float!
+    deductions: JSON
+    totalDeductions: Float
+    netSalary: Float!
+    workingDays: Int
+    attendanceDays: Int
+    absenceDays: Int
+    overtimeHours: Float
+    paymentDate: String
+    paymentStatus: PaymentStatus!
+    bankAccount: String
+    bankName: String
     notes: String
   }
 
-  input CreatePerformanceEvaluationInput {
+  input EvaluationInput {
     employeeId: ID!
-    period: String!
-    score: Float!
-    feedback: String
-    goals: [CreateEvaluationGoalInput]
+    evaluatorId: ID!
+    evaluationPeriod: String!
+    evaluationType: EvaluationType!
+    evaluationDate: String!
+    goals: [EvaluationGoalInput!]
+    achievements: JSON
+    competencies: JSON
+    overallRating: Rating!
+    overallScore: Float
+    strengths: String
+    areasForImprovement: String
+    developmentPlan: String
+    evaluatorComments: String
+    employeeComments: String
+    promotionRecommendation: PromotionRecommendation
+    salaryAdjustmentRecommendation: Float
+    evaluationStatus: EvaluationStatus
   }
 
-  input CreateEvaluationGoalInput {
+  input EvaluationGoalInput {
     title: String!
     description: String
-    target: String!
-    weight: Float
+    targetValue: String!
+    weight: Float!
   }
 
-  input CreateSalaryRecordInput {
-    employeeId: ID!
-    baseSalary: Float!
-    allowances: Float
-    deductions: Float
-    bonus: Float
-    payPeriod: String!
-    payDate: String!
-    notes: String
-  }
-
-  input EmployeeFilter {
-    search: String
+  # 필터 입력 타입들
+  input EmployeeFilterInput {
     department: String
     position: String
-    status: EmployeeStatus
+    employmentType: EmploymentType
+    employmentStatus: EmploymentStatus
+    isActive: Boolean
+    search: String
   }
 
+  input AttendanceFilterInput {
+    employeeId: ID
+    attendanceDate: String
+    attendanceStatus: AttendanceStatus
+    startDate: String
+    endDate: String
+  }
+
+  input LeaveFilterInput {
+    employeeId: ID
+    leaveType: LeaveType
+    leaveStatus: LeaveStatus
+    startDate: String
+    endDate: String
+  }
+
+  input SalaryFilterInput {
+    employeeId: ID
+    payrollMonth: String
+    paymentStatus: PaymentStatus
+    startMonth: String
+    endMonth: String
+  }
+
+  input EvaluationFilterInput {
+    employeeId: ID
+    evaluatorId: ID
+    evaluationPeriod: String
+    evaluationType: EvaluationType
+    overallRating: Rating
+    evaluationStatus: EvaluationStatus
+  }
+
+  # 통계 타입
+  type EmployeeStats {
+    totalEmployees: Int!
+    activeEmployees: Int!
+    onLeaveEmployees: Int!
+    newHiresThisMonth: Int!
+    pendingLeaveRequests: Int!
+    todayAttendance: Int!
+    averageWorkHours: Float!
+    departmentStats: [DepartmentStats!]!
+  }
+
+  type DepartmentStats {
+    department: String!
+    employeeCount: Int!
+    averageSalary: Float!
+    attendanceRate: Float!
+  }
+
+  # 쿼리
   extend type Query {
-    employees(filter: EmployeeFilter): [Employee]
+    # 직원 조회
+    employees(filter: EmployeeFilterInput, limit: Int, offset: Int): [Employee!]!
     employee(id: ID!): Employee
-    attendanceRecords(employeeId: ID, dateFrom: String, dateTo: String): [AttendanceRecord]
-    leaveRequests(employeeId: ID, status: LeaveStatus): [LeaveRequest]
-    performanceEvaluations(employeeId: ID): [PerformanceEvaluation]
-    salaryRecords(employeeId: ID): [SalaryRecord]
+    employeeByNumber(employeeNumber: String!): Employee
+
+    # 출근 조회
+    attendanceRecords(filter: AttendanceFilterInput, limit: Int, offset: Int): [AttendanceRecord!]!
+    attendanceRecord(id: ID!): AttendanceRecord
+    attendancesByEmployee(employeeId: ID!, startDate: String, endDate: String): [AttendanceRecord!]!
+
+    # 휴가 조회
+    leaveRequests(filter: LeaveFilterInput, limit: Int, offset: Int): [LeaveRequest!]!
+    leaveRequest(id: ID!): LeaveRequest
+    leavesByEmployee(employeeId: ID!, year: String): [LeaveRequest!]!
+
+    # 급여 조회
+    salaryRecords(filter: SalaryFilterInput, limit: Int, offset: Int): [SalaryRecord!]!
+    salaryRecord(id: ID!): SalaryRecord
+    salariesByEmployee(employeeId: ID!, year: String): [SalaryRecord!]!
+
+    # 평가 조회
+    evaluations(filter: EvaluationFilterInput, limit: Int, offset: Int): [PerformanceEvaluation!]!
+    evaluation(id: ID!): PerformanceEvaluation
+    evaluationsByEmployee(employeeId: ID!, year: String): [PerformanceEvaluation!]!
+
+    # 통계
+    employeeStats: EmployeeStats!
   }
 
+  # 뮤테이션
   extend type Mutation {
-    createEmployee(input: CreateEmployeeInput!): MutationResponse
-    updateEmployee(id: ID!, input: UpdateEmployeeInput!): MutationResponse
-    deleteEmployee(id: ID!): DeleteResult
+    # 직원 관리
+    createEmployee(input: EmployeeInput!): Employee!
+    updateEmployee(id: ID!, input: EmployeeInput!): Employee!
+    deleteEmployee(id: ID!): DeleteResult!
 
-    recordAttendance(input: CreateAttendanceInput!): MutationResponse
-    updateAttendance(id: ID!, input: CreateAttendanceInput!): MutationResponse
+    # 출근 관리
+    createAttendance(input: AttendanceInput!): AttendanceRecord!
+    updateAttendance(id: ID!, input: AttendanceInput!): AttendanceRecord!
+    deleteAttendance(id: ID!): DeleteResult!
+    checkIn(employeeId: ID!, location: String, ip: String): AttendanceRecord!
+    checkOut(employeeId: ID!, location: String, ip: String): AttendanceRecord!
+    approveAttendance(id: ID!, approvedBy: ID!): AttendanceRecord!
 
-    createLeaveRequest(input: CreateLeaveRequestInput!): MutationResponse
-    approveLeaveRequest(input: ApproveLeaveRequestInput!): MutationResponse
+    # 휴가 관리
+    createLeaveRequest(input: LeaveInput!): LeaveRequest!
+    updateLeaveRequest(id: ID!, input: LeaveInput!): LeaveRequest!
+    deleteLeaveRequest(id: ID!): DeleteResult!
+    approveLeaveRequest(id: ID!, approvedBy: ID!): LeaveRequest!
+    rejectLeaveRequest(id: ID!, rejectionReason: String!, approvedBy: ID!): LeaveRequest!
 
-    createPerformanceEvaluation(input: CreatePerformanceEvaluationInput!): MutationResponse
-    updatePerformanceEvaluation(id: ID!, input: CreatePerformanceEvaluationInput!): MutationResponse
+    # 급여 관리
+    createSalaryRecord(input: SalaryInput!): SalaryRecord!
+    updateSalaryRecord(id: ID!, input: SalaryInput!): SalaryRecord!
+    deleteSalaryRecord(id: ID!): DeleteResult!
+    processSalary(id: ID!, processedBy: ID!): SalaryRecord!
 
-    createSalaryRecord(input: CreateSalaryRecordInput!): MutationResponse
-    updateSalaryRecord(id: ID!, input: CreateSalaryRecordInput!): MutationResponse
+    # 평가 관리
+    createEvaluation(input: EvaluationInput!): PerformanceEvaluation!
+    updateEvaluation(id: ID!, input: EvaluationInput!): PerformanceEvaluation!
+    deleteEvaluation(id: ID!): DeleteResult!
+    submitEvaluation(id: ID!): PerformanceEvaluation!
+    approveEvaluation(id: ID!, approvedBy: ID!): PerformanceEvaluation!
   }
 `;
 
