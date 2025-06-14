@@ -1,24 +1,23 @@
+const { gql } = require('apollo-server-express');
 
-const { gql } = require("apollo-server-express");
-
-const customerActivitySchema = gql`
+const customerActivityTypeDefs = gql`
   type CustomerActivity {
     id: ID!
     customerId: ID!
     type: String!
     title: String!
     description: String
-    activityDate: Date!
+    activityDate: String!
     duration: String
     participants: [String!]
-    result: String!
+    result: String
     nextAction: String
     attachments: [String!]
     createdBy: ID!
     customer: Customer
     creator: User
-    createdAt: Date!
-    updatedAt: Date!
+    createdAt: String!
+    updatedAt: String!
   }
 
   input CustomerActivityInput {
@@ -26,10 +25,10 @@ const customerActivitySchema = gql`
     type: String!
     title: String!
     description: String
-    activityDate: Date!
+    activityDate: String!
     duration: String
     participants: [String!]
-    result: String!
+    result: String
     nextAction: String
     attachments: [String!]
   }
@@ -38,7 +37,7 @@ const customerActivitySchema = gql`
     type: String
     title: String
     description: String
-    activityDate: Date
+    activityDate: String
     duration: String
     participants: [String!]
     result: String
@@ -46,29 +45,25 @@ const customerActivitySchema = gql`
     attachments: [String!]
   }
 
-  input CustomerActivityFilter {
+  input CustomerActivityFilterInput {
     customerId: ID
     type: String
-    result: String
-    dateFrom: Date
-    dateTo: Date
-    search: String
+    dateFrom: String
+    dateTo: String
+    createdBy: ID
   }
 
   extend type Query {
-    customerActivities(
-      limit: Int
-      offset: Int
-      filter: CustomerActivityFilter
-    ): [CustomerActivity!]!
+    customerActivities(filter: CustomerActivityFilterInput, limit: Int, offset: Int): [CustomerActivity!]!
     customerActivity(id: ID!): CustomerActivity
+    customerActivityTypes: [String!]!
   }
 
   extend type Mutation {
     createCustomerActivity(input: CustomerActivityInput!): CustomerActivity!
     updateCustomerActivity(id: ID!, input: CustomerActivityUpdateInput!): CustomerActivity!
-    deleteCustomerActivity(id: ID!): MutationResponse!
+    deleteCustomerActivity(id: ID!): DeleteResult!
   }
 `;
 
-module.exports = customerActivitySchema;
+module.exports = customerActivityTypeDefs;

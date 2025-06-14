@@ -1,9 +1,8 @@
-
 import { gql } from '@apollo/client';
 
 export const GET_CUSTOMER_ACTIVITIES = gql`
-  query GetCustomerActivities($limit: Int, $offset: Int, $filter: CustomerActivityFilter) {
-    customerActivities(limit: $limit, offset: $offset, filter: $filter) {
+  query GetCustomerActivities($filter: CustomerActivityFilterInput, $limit: Int, $offset: Int) {
+    customerActivities(filter: $filter, limit: $limit, offset: $offset) {
       id
       customerId
       type
@@ -20,6 +19,8 @@ export const GET_CUSTOMER_ACTIVITIES = gql`
         id
         name
         contactName
+        phone
+        email
       }
       creator {
         id
@@ -51,6 +52,8 @@ export const GET_CUSTOMER_ACTIVITY = gql`
         id
         name
         contactName
+        phone
+        email
       }
       creator {
         id
@@ -60,6 +63,12 @@ export const GET_CUSTOMER_ACTIVITY = gql`
       createdAt
       updatedAt
     }
+  }
+`;
+
+export const GET_CUSTOMER_ACTIVITY_TYPES = gql`
+  query GetCustomerActivityTypes {
+    customerActivityTypes
   }
 `;
 

@@ -1,205 +1,133 @@
-
-const models = require("../../models");
-const { Op } = require("sequelize");
-const { 
-  createError, 
-  requireAuth, 
-  requireRole, 
-  handleDatabaseError 
-} = require("../../lib/errors");
+const { Customer, CustomerActivity, User } = require('../../models');
+const { requireAuth } = require('../../lib/errors');
+const { Op } = require('sequelize');
 
 const customerActivityResolvers = {
   Query: {
-    customerActivities: async (parent, { limit = 10, offset = 0, filter }, { user, lang }) => {
-      requireAuth(user, lang);
+    customerActivities: async (parent, { filter = {}, limit = 20, offset = 0 }, { user }) => {
+      requireAuth(user);
 
-      const whereCondition = {};
-      
-      if (filter?.customerId) {
-        whereCondition.customerId = filter.customerId;
+      const where = {};
+
+      if (filter.customerId) where.customerId = filter.customerId;
+      if (filter.type) where.type = filter.type;
+      if (filter.createdBy) where.createdBy = filter.createdBy;
+
+      if (filter.dateFrom || filter.dateTo) {
+        where.activityDate = {};
+        if (filter.dateFrom) where.activityDate[Op.gte] = filter.dateFrom;
+        if (filter.dateTo) where.activityDate[Op.lte] = filter.dateTo;
       }
 
-      if (filter?.type) {
-        whereCondition.type = filter.type;
-      }
-
-      if (filter?.result) {
-        whereCondition.result = filter.result;
-      }
-
-      if (filter?.dateFrom || filter?.dateTo) {
-        whereCondition.activityDate = {};
-        if (filter.dateFrom) {
-          whereCondition.activityDate[Op.gte] = new Date(filter.dateFrom);
-        }
-        if (filter.dateTo) {
-          whereCondition.activityDate[Op.lte] = new Date(filter.dateTo);
-        }
-      }
-
-      if (filter?.search) {
-        whereCondition[Op.or] = [
-          { title: { [Op.like]: `%${filter.search}%` } },
-          { description: { [Op.like]: `%${filter.search}%` } },
-          { nextAction: { [Op.like]: `%${filter.search}%` } }
-        ];
-      }
-
-      try {
-        const activities = await models.CustomerActivity.findAll({
-          where: whereCondition,
-          limit,
-          offset,
-          include: [
-            {
-              model: models.Customer,
-              as: "customer",
-              attributes: ["id", "name", "contactName"],
-            },
-            {
-              model: models.User,
-              as: "creator",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-          order: [["activityDate", "DESC"]],
-        });
-
-        return activities;
-      } catch (error) {
-        console.error("Error fetching customer activities:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
-      }
+      return await CustomerActivity.findAll({
+        where,
+        limit,
+        offset,
+        order: [['activityDate', 'DESC']],
+        include: [
+          { model: Customer, as: 'customer' },
+          { model: User, as: 'creator' }
+        ]
+      });
     },
 
-    customerActivity: async (parent, { id }, { user, lang }) => {
-      requireAuth(user, lang);
+    customerActivity: async (parent, { id }, { user }) => {
+      requireAuth(user);
 
-      try {
-        const activity = await models.CustomerActivity.findByPk(id, {
-          include: [
-            {
-              model: models.Customer,
-              as: "customer",
-              attributes: ["id", "name", "contactName"],
-            },
-            {
-              model: models.User,
-              as: "creator",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-        });
-
-        if (!activity) {
-          throw createError("NOT_FOUND", lang);
-        }
-
-        return activity;
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        console.error("Error fetching customer activity:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
-      }
+      return await CustomerActivity.findByPk(id, {
+        include: [
+          { model: Customer, as: 'customer' },
+          { model: User, as: 'creator' }
+        ]
+      });
     },
+
+    customerActivityTypes: async (parent, args, { user }) => {
+      requireAuth(user);
+
+      return [
+        'meeting',
+        'call',
+        'email',
+        'visit',
+        'demo',
+        'presentation',
+        'negotiation',
+        'followup',
+        'support',
+        'consultation'
+      ];
+    }
   },
 
   Mutation: {
-    createCustomerActivity: async (parent, { input }, { user, lang }) => {
-      requireAuth(user, lang);
+    createCustomerActivity: async (parent, { input }, { user }) => {
+      requireAuth(user);
 
-      try {
-        const activity = await models.CustomerActivity.create({
-          ...input,
-          createdBy: user.id,
-          activityDate: new Date(input.activityDate),
-        });
+      const activity = await CustomerActivity.create({
+        ...input,
+        participants: Array.isArray(input.participants) ? input.participants : [],
+        attachments: Array.isArray(input.attachments) ? input.attachments : [],
+        createdBy: user.id
+      });
 
-        const createdActivity = await models.CustomerActivity.findByPk(activity.id, {
-          include: [
-            {
-              model: models.Customer,
-              as: "customer",
-              attributes: ["id", "name", "contactName"],
-            },
-            {
-              model: models.User,
-              as: "creator",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-        });
-
-        return createdActivity;
-      } catch (error) {
-        console.error("Error creating customer activity:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
-      }
+      return await CustomerActivity.findByPk(activity.id, {
+        include: [
+          { model: Customer, as: 'customer' },
+          { model: User, as: 'creator' }
+        ]
+      });
     },
 
-    updateCustomerActivity: async (parent, { id, input }, { user, lang }) => {
-      requireAuth(user, lang);
+    updateCustomerActivity: async (parent, { id, input }, { user }) => {
+      requireAuth(user);
 
-      try {
-        const activity = await models.CustomerActivity.findByPk(id);
-        if (!activity) {
-          throw createError("NOT_FOUND", lang);
-        }
-
-        const updateData = { ...input };
-        if (input.activityDate) {
-          updateData.activityDate = new Date(input.activityDate);
-        }
-
-        await activity.update(updateData);
-
-        const updatedActivity = await models.CustomerActivity.findByPk(id, {
-          include: [
-            {
-              model: models.Customer,
-              as: "customer",
-              attributes: ["id", "name", "contactName"],
-            },
-            {
-              model: models.User,
-              as: "creator",
-              attributes: ["id", "name", "email"],
-            },
-          ],
-        });
-
-        return updatedActivity;
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        console.error("Error updating customer activity:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      const activity = await CustomerActivity.findByPk(id);
+      if (!activity) {
+        throw new Error('활동 이력을 찾을 수 없습니다.');
       }
+
+      // 작성자 본인이거나 관리자만 수정 가능
+      if (activity.createdBy !== user.id && user.role !== 'admin') {
+        throw new Error('수정 권한이 없습니다.');
+      }
+
+      const updateData = { ...input };
+      if (input.participants) {
+        updateData.participants = Array.isArray(input.participants) ? input.participants : [];
+      }
+      if (input.attachments) {
+        updateData.attachments = Array.isArray(input.attachments) ? input.attachments : [];
+      }
+
+      await activity.update(updateData);
+
+      return await CustomerActivity.findByPk(id, {
+        include: [
+          { model: Customer, as: 'customer' },
+          { model: User, as: 'creator' }
+        ]
+      });
     },
 
-    deleteCustomerActivity: async (parent, { id }, { user, lang }) => {
-      requireAuth(user, lang);
+    deleteCustomerActivity: async (parent, { id }, { user }) => {
+      requireAuth(user);
 
-      try {
-        const activity = await models.CustomerActivity.findByPk(id);
-        if (!activity) {
-          throw createError("NOT_FOUND", lang);
-        }
-
-        await activity.destroy();
-        return { success: true, message: "Customer activity deleted successfully" };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        console.error("Error deleting customer activity:", error);
-        handleDatabaseError(error, lang, "DATABASE_ERROR");
+      const activity = await CustomerActivity.findByPk(id);
+      if (!activity) {
+        throw new Error('활동 이력을 찾을 수 없습니다.');
       }
-    },
-  },
+
+      // 작성자 본인이거나 관리자만 삭제 가능
+      if (activity.createdBy !== user.id && user.role !== 'admin') {
+        throw new Error('삭제 권한이 없습니다.');
+      }
+
+      await activity.destroy();
+
+      return { success: true, message: '활동 이력이 삭제되었습니다.' };
+    }
+  }
 };
 
 module.exports = customerActivityResolvers;
