@@ -3,7 +3,7 @@
 import SalesManagementPage from '@/components/sales/SalesManagementPage';
 
 export default function SalesPage() {
-  return <SalesManagementPage />);
+  return <SalesManagementPage />;
 }
 
 import { useState, useEffect, useMemo } from "react";
