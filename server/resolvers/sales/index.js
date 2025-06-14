@@ -146,7 +146,10 @@ const salesResolvers = {
           throw createError(ERROR_CODES.NOT_FOUND, '매출 항목을 찾을 수 없습니다');
         }
 
-        return salesItem;
+        return {
+          success: true,
+          salesItem
+        };
       } catch (error) {
         throw createError(ERROR_CODES.DATABASE_ERROR, '매출 항목 조회 실패', error);
       }

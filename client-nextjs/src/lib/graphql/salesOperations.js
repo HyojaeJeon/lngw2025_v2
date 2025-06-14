@@ -77,6 +77,10 @@ export const GET_SALES_REPS = gql`
       position
     }
   }
+`;partment
+      position
+    }
+  }
 `;
 
 // 고객사 목록 조회 (검색 지원)
@@ -84,6 +88,7 @@ export const GET_CUSTOMERS_FOR_SALES = gql`
   query GetCustomersForSales($limit: Int, $offset: Int) {
     customersForSales(limit: $limit, offset: $offset) {
       id
+      companyName
       contactName
       phone
       email
@@ -134,6 +139,15 @@ export const GET_SALES_CATEGORIES = gql`
         isActive
       }
       pagination {
+        totalCount
+        hasNextPage
+        hasPreviousPage
+        currentPage
+        totalPages
+      }
+    }
+  }
+`;
         totalCount
         hasNextPage
         hasPreviousPage
@@ -218,6 +232,16 @@ export const DELETE_SALES_ITEM = gql`
       }
     }
   }
+`;($id: Int!) {
+    deleteSalesItem(id: $id) {
+      success
+      message
+      errors {
+        field
+        message
+      }
+    }
+  }
 `;
 
 // 매출 카테고리 생성
@@ -271,6 +295,18 @@ export const BULK_UPDATE_SALES_ITEMS = gql`
       success
       message
       salesItems {
+        id
+        totalPrice
+        margin
+        marginRate
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;tems {
         id
         salesDate
         quantity
