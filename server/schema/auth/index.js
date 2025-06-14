@@ -102,6 +102,7 @@ const authSchemaExtensions = gql`
   extend type Mutation {
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
+    refreshToken(refreshToken: String!): AuthPayload!
     updateUserProfile(input: UpdateUserProfileInput!): User!
     verifyCurrentPassword(currentPassword: String!): Boolean
     changePassword(input: ChangePasswordInput!): Boolean

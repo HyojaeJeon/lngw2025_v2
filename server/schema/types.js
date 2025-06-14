@@ -54,9 +54,13 @@ const types = gql`
     updatedAt: Date
   }
 
+  # ====================
+  # AUTH PAYLOAD
+  # ====================
   type AuthPayload {
-    token: String
-    user: User
+    accessToken: String!
+    refreshToken: String!
+    user: User!
   }
 
   type EmergencyContact {

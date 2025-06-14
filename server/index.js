@@ -248,17 +248,22 @@ async function startServer() {
               const foundUser = await models.User.findByPk(decoded.userId);
               if (foundUser) {
                 user = {
-                  id: foundUser?.id,
-                  userId: foundUser?.id,
-                  email: foundUser?.email,
-                  role: foundUser?.role,
+                  id: foundUser.id,
+                  userId: foundUser.id,
+                  email: foundUser.email,
+                  role: foundUser.role,
+                  name: foundUser.name,
                 };
-                console.log("User authenticated successfully:", user?.email);
+                console.log("User authenticated successfully:", user.email);
               } else {
                 console.log("User not found in database for userId:", decoded.userId);
               }
             } catch (jwtError) {
-              console.log("JWT verification failed:", jwtError.message);
+              if (jwtError.name === "TokenExpiredError") {
+                console.log("JWT token expired:", jwtError.message);
+              } else {
+                console.log("JWT verification failed:", jwtError.message);
+              }
             }
           }
         }
@@ -266,7 +271,7 @@ async function startServer() {
         console.log("Authorization processing error:", error.message);
       }
 
-      return { user, lang };
+      return { user, lang, req };
     },
   });
 

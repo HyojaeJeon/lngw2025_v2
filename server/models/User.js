@@ -11,11 +11,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+          isEmail: true,
+        },
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: "비밀번호 (해시화됨)",
+      },
+      refreshToken: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       name: {
         type: DataTypes.STRING,

@@ -366,3 +366,20 @@ export const CHANGE_PASSWORD = gql`
     changePassword(input: $input)
   }
 `;
+
+export const REFRESH_TOKEN = gql`
+  mutation RefreshToken($refreshToken: String!) {
+    refreshToken(refreshToken: $refreshToken) {
+      accessToken
+      refreshToken
+      user {
+        id
+        email
+        name
+        role
+        department
+        position
+      }
+    }
+  }
+`;

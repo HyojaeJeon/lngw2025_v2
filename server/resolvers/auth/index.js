@@ -170,14 +170,14 @@ const authResolvers = {
         };
 
         // 새 사용자 생성
-        const user = await models.User.create(cleanUserData);
+        const newUser = await models.User.create(cleanUserData);
 
         // 관련 데이터 생성
         if (emergencyContact && emergencyContact.length > 0) {
           await models.EmergencyContact.bulkCreate(
             emergencyContact.map((contact) => ({
               ...contact,
-              userId: user.id,
+              userId: newUser.id,
             }))
           );
         }
@@ -186,7 +186,7 @@ const authResolvers = {
           await models.Skill.bulkCreate(
             skills.map((skill) => ({
               ...skill,
-              userId: user.id,
+              userId: newUser.id,
             }))
           );
         }
@@ -198,19 +198,38 @@ const authResolvers = {
             position: exp.position,
             period: exp.period,
             description: exp.description,
-            userId: user.id,
+            userId: newUser.id,
           }));
 
           await models.Experience.bulkCreate(experiencesToCreate);
         }
 
-        // JWT 토큰 생성
-        const expiresIn = input.rememberMe ? "30d" : "7d";
-        const token = jwt.sign({ userId: user.id, email: user.email, rememberMe: input.rememberMe }, JWT_SECRET, { expiresIn });
+        const accessToken = jwt.sign(
+          { userId: newUser.id, email: newUser.email },
+          JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+
+        const refreshToken = jwt.sign(
+          { userId: newUser.id },
+          JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        // refreshToken을 데이터베이스에 저장
+        await newUser.update({ refreshToken });
 
         return {
-          token,
-          user,
+          accessToken,
+          refreshToken,
+          user: {
+            id: newUser.id,
+            email: newUser.email,
+            name: newUser.name,
+            role: newUser.role,
+            department: newUser.department,
+            position: newUser.position,
+          },
         };
       } catch (error) {
         if (error.extensions?.errorKey) {
@@ -250,13 +269,32 @@ const authResolvers = {
           throw createError("INVALID_CREDENTIALS", lang);
         }
 
-        // JWT 토큰 생성
-        const expiresIn = rememberMe ? "30d" : "7d";
-        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn });
+        const accessToken = jwt.sign(
+          { userId: user.id, email: user.email },
+          JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+
+        const refreshToken = jwt.sign(
+          { userId: user.id },
+          JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        // refreshToken을 데이터베이스에 저장
+        await user.update({ refreshToken });
 
         return {
-          token,
-          user,
+          accessToken,
+          refreshToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            department: user.department,
+            position: user.position,
+          },
         };
       } catch (error) {
         if (error.extensions?.errorKey) {
@@ -360,38 +398,83 @@ const authResolvers = {
       }
     },
 
-    changePassword: async (_, { input }, { user, lang }) => {
+    changePassword: async (parent, { input }, { user, lang }) => {
       requireAuth(user, lang);
 
       try {
         const { currentPassword, newPassword } = input;
 
-        // 새 비밀번호 유효성 검사
-        if (!validatePassword(newPassword)) {
-          throw createError("WEAK_PASSWORD", lang);
-        }
-
-        const userData = await models.User.findByPk(user.userId);
-        if (!userData) {
+        const foundUser = await models.User.findByPk(user.id);
+        if (!foundUser) {
           throw createError("USER_NOT_FOUND", lang);
         }
 
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userData.password);
-        if (!isCurrentPasswordValid) {
+        const isPasswordValid = await bcrypt.compare(currentPassword, foundUser.password);
+        if (!isPasswordValid) {
           throw createError("INCORRECT_CURRENT_PASSWORD", lang);
         }
 
-        const saltRounds = 12;
-        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
-
-        await models.User.update({ password: hashedNewPassword }, { where: { id: user.userId } });
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        await foundUser.update({ password: hashedNewPassword });
 
         return true;
       } catch (error) {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        console.error("Change password error:", error);
         handleDatabaseError(error, lang, "PASSWORD_CHANGE_FAILED");
+      }
+    },
+
+    refreshToken: async (parent, { refreshToken }, { lang }) => {
+      try {
+        if (!refreshToken) {
+          throw createError("AUTHENTICATION_REQUIRED", lang);
+        }
+
+        const foundUser = await models.User.findOne({
+          where: { refreshToken }
+        });
+
+        if (!foundUser) {
+          throw createError("INVALID_CREDENTIALS", lang);
+        }
+
+        // 새로운 accessToken과 refreshToken 생성
+        const newAccessToken = jwt.sign(
+          { userId: foundUser.id, email: foundUser.email },
+          JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+
+        const newRefreshToken = jwt.sign(
+          { userId: foundUser.id },
+          JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        // refreshToken 업데이트
+        await foundUser.update({ refreshToken: newRefreshToken });
+
+        return {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          user: {
+            id: foundUser.id,
+            email: foundUser.email,
+            name: foundUser.name,
+            role: foundUser.role,
+            department: foundUser.department,
+            position: foundUser.position,
+          },
+        };
+      } catch (error) {
+        if (error.extensions?.errorKey) {
+          throw error;
+        }
+        console.error("Refresh token error:", error);
+        handleDatabaseError(error, lang, "AUTHENTICATION_REQUIRED");
       }
     },
   },
