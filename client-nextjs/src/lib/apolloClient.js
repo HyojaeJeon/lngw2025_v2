@@ -93,11 +93,11 @@ const client = new ApolloClient({
   }),
   defaultOptions: {
     watchQuery: {
-      errorPolicy: 'ignore',
+      errorPolicy: 'all',
       notifyOnNetworkStatusChange: true,
     },
     query: {
-      errorPolicy: 'ignore',
+      errorPolicy: 'all',
     },
     mutate: {
       errorPolicy: 'all',

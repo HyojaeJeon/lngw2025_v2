@@ -377,16 +377,17 @@ const requireAuth = (context) => {
         userId: 1,
         email: 'admin@example.com',
         name: 'Admin User',
-        role: 'ADMIN'
+        role: 'ADMIN',
+        department: 'IT',
+        position: 'Administrator'
       };
     }
     return context.user;
   }
 
-  // 프로덕션 환경에서의 인증 확인
   if (!context || !context.user) {
-    const lang = context?.lang || 'en';
-    throw createError('AUTHENTICATION_REQUIRED', lang);
+    console.error('인증 오류: 사용자 정보가 없습니다.', { context: !!context, user: !!context?.user });
+    throw createError('AUTHENTICATION_REQUIRED', context?.lang || 'ko');
   }
   return context.user;
 };
