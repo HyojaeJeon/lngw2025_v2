@@ -1,4 +1,3 @@
-
 import { gql } from '@apollo/client';
 
 // 매출 목록 조회
@@ -82,11 +81,10 @@ export const GET_SALES_REPS = gql`
 
 // 고객사 목록 조회 (검색 지원)
 export const GET_CUSTOMERS_FOR_SALES = gql`
-  query GetCustomersForSales($search: String, $limit: Int) {
-    customers(search: $search, limit: $limit) {
+  query GetCustomersForSales($limit: Int, $offset: Int) {
+    customersForSales(limit: $limit, offset: $offset) {
       id
-      companyName
-      contactPerson
+      contactName
       phone
       email
     }

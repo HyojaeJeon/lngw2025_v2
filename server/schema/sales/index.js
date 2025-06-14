@@ -404,4 +404,4 @@ const salesTypeDefs = gql`
   }
 `;
 
-module.exports = salesTypeDefs; 
+module.exports = salesTypeDefs;

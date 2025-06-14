@@ -1,4 +1,3 @@
-
 const models = require("../../models");
 const { 
   createError, 
@@ -71,72 +70,136 @@ const salesResolvers = {
   },
 
   Query: {
-    // 기존 쿼리들...
-    salesItems: async (_, { filter, sort, page = 1, limit = 20 }, { user, lang }) => {
-      requireAuth(user, lang);
+    salesItems: async (_, { filter = {}, sort = { field: "salesDate", direction: "DESC" }, page = 1, limit = 20 }, { user }) => {
+      requireAuth(user);
 
       try {
         const offset = (page - 1) * limit;
         const where = { isActive: true };
-        const order = [];
 
-        // 필터 처리
-        if (filter) {
-          if (filter.salesRepId) where.salesRepId = filter.salesRepId;
-          if (filter.customerId) where.customerId = filter.customerId;
-          if (filter.type) where.type = filter.type;
-          if (filter.categoryId) where.categoryId = filter.categoryId;
-          if (filter.productId) where.productId = filter.productId;
-          if (filter.productModelId) where.productModelId = filter.productModelId;
-          if (filter.paymentStatus) where.paymentStatus = filter.paymentStatus;
-          if (filter.dateFrom && filter.dateTo) {
-            where.salesDate = {
-              [Op.between]: [filter.dateFrom, filter.dateTo]
-            };
-          }
-          if (filter.search) {
-            where[Op.or] = [
-              { notes: { [Op.like]: `%${filter.search}%` } }
-            ];
-          }
+        // 필터 조건 적용
+        if (filter.search) {
+          where[Op.or] = [
+            { notes: { [Op.like]: `%${filter.search}%` } },
+            { productModel: { [Op.like]: `%${filter.search}%` } }
+          ];
         }
 
-        // 정렬 처리
-        if (sort) {
-          order.push([sort.field, sort.direction]);
-        } else {
-          order.push(['salesDate', 'DESC']);
+        if (filter.salesRepId) where.salesRepId = filter.salesRepId;
+        if (filter.customerId) where.customerId = filter.customerId;
+        if (filter.categoryId) where.categoryId = filter.categoryId;
+        if (filter.productId) where.productId = filter.productId;
+        if (filter.type) where.type = filter.type;
+        if (filter.paymentStatus) where.paymentStatus = filter.paymentStatus;
+
+        if (filter.dateFrom || filter.dateTo) {
+          where.salesDate = {};
+          if (filter.dateFrom) where.salesDate[Op.gte] = filter.dateFrom;
+          if (filter.dateTo) where.salesDate[Op.lte] = filter.dateTo;
         }
 
-        const { rows: salesItems, count } = await models.SalesItem.findAndCountAll({
+        const orderDirection = sort.direction === "ASC" ? "ASC" : "DESC";
+
+        const { count, rows } = await models.SalesItem.findAndCountAll({
           where,
-          order,
           limit,
           offset,
+          order: [[sort.field, orderDirection]],
           include: [
             { model: models.User, as: 'salesRep' },
             { model: models.Customer, as: 'customer' },
             { model: models.Category, as: 'category' },
-            { model: models.Product, as: 'product' },
-            { model: models.ProductModel, as: 'productModel' },
-            { model: models.Payment, as: 'payments' },
-            { model: models.IncentivePayout, as: 'incentivePayouts' }
+            { model: models.Product, as: 'product' }
           ]
         });
 
         return {
-          success: true,
-          salesItems,
+          salesItems: rows,
           pagination: {
-            totalCount: count,
-            hasNextPage: offset + salesItems.length < count,
-            hasPreviousPage: page > 1,
             currentPage: page,
-            totalPages: Math.ceil(count / limit)
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            itemsPerPage: limit,
+            hasNextPage: page * limit < count,
+            hasPreviousPage: page > 1
           }
         };
       } catch (error) {
         handleDatabaseError(error, lang, "SALES_ITEMS_FETCH_FAILED");
+      }
+    },
+
+    salesItem: async (_, { id }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const salesItem = await models.SalesItem.findByPk(id, {
+          include: [
+            { model: models.User, as: 'salesRep' },
+            { model: models.Customer, as: 'customer' },
+            { model: models.Category, as: 'category' },
+            { model: models.Product, as: 'product' }
+          ]
+        });
+
+        if (!salesItem) {
+          throw createError(ERROR_CODES.NOT_FOUND, '매출 항목을 찾을 수 없습니다');
+        }
+
+        return salesItem;
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '매출 항목 조회 실패', error);
+      }
+    },
+
+    salesReps: async (_, { limit = 100, offset = 0 }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const users = await models.User.findAll({
+          where: { isActive: true },
+          limit,
+          offset,
+          order: [['name', 'ASC']]
+        });
+
+        return users;
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '영업사원 조회 실패', error);
+      }
+    },
+
+    customersForSales: async (_, { limit = 100, offset = 0 }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const customers = await models.Customer.findAll({
+          where: { isActive: true },
+          limit,
+          offset,
+          order: [['contactName', 'ASC']]
+        });
+
+        return customers;
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '고객사 조회 실패', error);
+      }
+    },
+
+    productsForSales: async (_, { limit = 100, offset = 0 }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const products = await models.Product.findAll({
+          where: { isActive: true },
+          limit,
+          offset,
+          order: [['name', 'ASC']]
+        });
+
+        return products;
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '제품 조회 실패', error);
       }
     },
 
@@ -250,7 +313,7 @@ const salesResolvers = {
         }
 
         await salesCategory.update(input);
-        
+
         return {
           success: true,
           salesCategory,
@@ -269,7 +332,7 @@ const salesResolvers = {
 
       try {
         const incentivePayout = await models.IncentivePayout.create(input);
-        
+
         return {
           success: true,
           incentivePayout,
