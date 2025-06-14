@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -21,7 +20,7 @@ import {
   UPDATE_CUSTOMER_ACTIVITY, 
   DELETE_CUSTOMER_ACTIVITY 
 } from "@/lib/graphql/customerActivityOperations.js";
-import { GET_CUSTOMERS } from "@/lib/graphql/customerOperations.js";
+import { GET_CUSTOMERS } from '@/lib/graphql/queries.js';
 import CustomCalendar from "@/components/common/CustomCalendar.js";
 import {
   Calendar,
@@ -47,7 +46,7 @@ import {
 const ActivityModal = ({ isOpen, onClose, activity, onSave, customers }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     customerId: '',
     type: '미팅',
@@ -60,7 +59,7 @@ const ActivityModal = ({ isOpen, onClose, activity, onSave, customers }) => {
     nextAction: '',
     attachments: []
   });
-  
+
   const [newParticipant, setNewParticipant] = useState('');
   const [uploadingFiles, setUploadingFiles] = useState(false);
 
@@ -373,7 +372,7 @@ const ActivityModal = ({ isOpen, onClose, activity, onSave, customers }) => {
                   </span>
                 </label>
               </div>
-              
+
               {formData.attachments.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {formData.attachments.map((file, index) => (
@@ -650,7 +649,7 @@ export default function CustomerHistoryPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="transition-all duration-300 focus:scale-105 focus:shadow-md"
             />
-            
+
             <select
               value={selectedCustomer}
               onChange={(e) => setSelectedCustomer(e.target.value)}

@@ -125,6 +125,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "customerId",
       as: "salesItems",
     });
+
+    // VOC와의 관계
+    Customer.hasMany(models.Voc, {
+      foreignKey: "customerId",
+      as: "vocs",
+      onDelete: "CASCADE",
+    });
   };
 
   return Customer;

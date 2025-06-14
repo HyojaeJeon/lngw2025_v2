@@ -119,6 +119,7 @@ const CustomerActivity = require("./CustomerActivity")(
   sequelize,
   Sequelize.DataTypes,
 );
+const Voc = require("./Voc")(sequelize, Sequelize.DataTypes);
 const Role = require("./Role")(
   sequelize,
   Sequelize.DataTypes,
@@ -165,6 +166,7 @@ const models = {
   InventoryRecord,
   StockMovement,
   CustomerActivity,
+  Voc,
   Role,
   RolePermission,
 };
@@ -211,6 +213,7 @@ const syncOrder = [
   "EmergencyContact",
   "Experience",
   "CustomerActivity",
+  "Voc",
   "Role",
   "RolePermission",
 ];

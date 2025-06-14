@@ -1,294 +1,194 @@
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
+import { RetryLink } from '@apollo/client/link/retry';
 
-"use client";
+// GraphQL 서버 URL 설정
+const isReplit = !!(process.env.NEXT_PUBLIC_REPLIT || 
+  typeof window !== 'undefined' && 
+  (window.location.hostname.includes('replit.dev') || 
+   window.location.hostname.includes('replit.co')));
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  createHttpLink,
-  from,
-} from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import { onError } from "@apollo/client/link/error";
-import { gql } from "@apollo/client";
-import errorLink from "../apollo/errorLink";
-import { store } from "../store";
-import { selectCurrentLanguage } from "../store/slices/languageSlice";
-
-// 서버 URL 설정 - Replit 환경에 맞게 수정
-const getServerUrl = () => {
-  if (typeof window !== "undefined") {
-    // 클라이언트에서 실행될 때
-    const origin = window.location.origin;
-    const hostname = window.location.hostname;
-
-    // Replit 환경 감지
-    if (hostname.includes("replit.dev")) {
-      // Replit 환경에서는 현재 호스트의 포트 80(서버)으로 연결
-      const baseUrl = origin.replace(/:3000$/, ""); // 3000 포트 제거
-      return `${baseUrl}/graphql`;
-    }
-
-    // 로컬 개발 환경
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return "http://localhost:5000/graphql";
-    }
-
-    // 기본값
-    return `${origin}/graphql`;
+const getGraphQLUri = () => {
+  if (typeof window === 'undefined') {
+    // 서버 사이드에서는 환경변수 기반으로 결정
+    return process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:5000/graphql';
   }
 
-  // 서버에서 실행될 때 (SSR)
-  return "http://localhost:5000/graphql";
+  // 클라이언트 사이드에서는 현재 origin 기반으로 결정
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+
+  if (isReplit) {
+    // Replit 환경에서는 동일한 호스트의 5000번 포트 사용
+    return `${protocol}//${hostname}:5000/graphql`;
+  }
+
+  // 로컬 개발 환경
+  return 'http://localhost:5000/graphql';
 };
 
-// HTTP 연결을 위한 링크
 const httpLink = createHttpLink({
-  uri: getServerUrl(),
-  credentials: "same-origin",
+  uri: getGraphQLUri(),
 });
 
-// 토큰 새로고침 뮤테이션
-const REFRESH_TOKEN_MUTATION = gql`
-  mutation RefreshToken($refreshToken: String!) {
-    refreshToken(refreshToken: $refreshToken) {
-      accessToken
-      refreshToken
-      user {
-        id
-        email
-        name
-        role
-      }
-    }
-  }
-`;
+// 현재 origin 로깅
+if (typeof window !== 'undefined') {
+  console.log('Apollo Client Server URL:', getGraphQLUri());
+  console.log('Current origin:', window.location.origin);
+}
 
-// 토큰 저장 유틸리티
-const getStoredTokens = () => {
-  if (typeof window === "undefined") return { accessToken: null, refreshToken: null };
-  
-  const accessToken = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
-  const refreshToken = localStorage.getItem("refresh_token") || sessionStorage.getItem("refresh_token");
-  
-  return { accessToken, refreshToken };
-};
+// 토큰 재발급 함수
+const refreshAccessToken = async () => {
+  const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
-const setStoredTokens = (accessToken, refreshToken) => {
-  if (typeof window === "undefined") return;
-  
-  if (accessToken) {
-    localStorage.setItem("auth_token", accessToken);
-    sessionStorage.setItem("auth_token", accessToken);
-  }
-  
-  if (refreshToken) {
-    localStorage.setItem("refresh_token", refreshToken);
-    sessionStorage.setItem("refresh_token", refreshToken);
-  }
-};
-
-const clearStoredTokens = () => {
-  if (typeof window === "undefined") return;
-  
-  localStorage.removeItem("auth_token");
-  localStorage.removeItem("refresh_token");
-  sessionStorage.removeItem("auth_token");
-  sessionStorage.removeItem("refresh_token");
-};
-
-// 토큰 새로고침 함수
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  
-  failedQueue = [];
-};
-
-const refreshTokens = async () => {
-  const { refreshToken } = getStoredTokens();
-  
   if (!refreshToken) {
-    throw new Error("No refresh token available");
+    throw new Error('No refresh token available');
   }
 
   try {
-    const response = await fetch(getServerUrl(), {
-      method: "POST",
+    const response = await fetch(getGraphQLUri(), {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query: REFRESH_TOKEN_MUTATION.loc.source.body,
-        variables: { refreshToken },
+        query: `
+          mutation RefreshToken($refreshToken: String!) {
+            refreshToken(refreshToken: $refreshToken) {
+              accessToken
+              refreshToken
+              user {
+                id
+                email
+                name
+                role
+              }
+            }
+          }
+        `,
+        variables: { refreshToken }
       }),
     });
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (data.errors) {
-      throw new Error(data.errors[0].message);
+    if (result.data?.refreshToken) {
+      const { accessToken, refreshToken: newRefreshToken, user } = result.data.refreshToken;
+
+      // 새 토큰들을 저장
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      return accessToken;
+    } else {
+      throw new Error('Token refresh failed');
     }
-
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data.refreshToken;
-    setStoredTokens(newAccessToken, newRefreshToken);
-    
-    return newAccessToken;
   } catch (error) {
-    clearStoredTokens();
-    // 로그인 페이지로 리다이렉트
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
+    console.error('Token refresh error:', error);
     throw error;
   }
 };
 
-// 에러 링크 - 토큰 만료 시 자동 갱신
-const authErrorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
-  if (graphQLErrors) {
-    for (let err of graphQLErrors) {
-      if (err.extensions?.code === "AUTHENTICATION_ERROR" || err.extensions?.errorKey === "AUTHENTICATION_REQUIRED") {
-        if (!isRefreshing) {
-          isRefreshing = true;
-          
-          return new Promise((resolve, reject) => {
-            refreshTokens()
-              .then((newToken) => {
-                isRefreshing = false;
-                processQueue(null, newToken);
-                
-                // 실패한 요청 재시도
-                const oldHeaders = operation.getContext().headers;
-                operation.setContext({
-                  headers: {
-                    ...oldHeaders,
-                    authorization: `Bearer ${newToken}`,
-                  },
-                });
-                
-                resolve(forward(operation));
-              })
-              .catch((error) => {
-                isRefreshing = false;
-                processQueue(error, null);
-                reject(error);
-              });
-          });
-        } else {
-          // 이미 토큰 갱신 중인 경우 대기
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          }).then((token) => {
-            const oldHeaders = operation.getContext().headers;
-            operation.setContext({
-              headers: {
-                ...oldHeaders,
-                authorization: `Bearer ${token}`,
-              },
-            });
-            
-            return forward(operation);
-          });
-        }
-      }
-    }
-  }
-  
-  if (networkError) {
-    console.error("Network error:", networkError);
-  }
-});
-
-// 인증 정보와 언어 설정을 추가하는 링크
-const authLink = setContext((_, { headers }) => {
-  const { accessToken } = getStoredTokens();
-  let currentLanguage = "ko";
-
-  if (typeof window !== "undefined") {
-    // 현재 언어 가져오기
-    try {
-      const state = store.getState();
-      currentLanguage = selectCurrentLanguage(state);
-    } catch (error) {
-      console.warn("Could not get current language from store:", error);
-    }
-  }
+// Auth Link 설정
+const authLink = setContext(async (_, { headers }) => {
+  // localStorage에서 토큰 가져오기
+  let token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   return {
     headers: {
       ...headers,
-      authorization: accessToken ? `Bearer ${accessToken}` : "",
-      "Accept-Language": currentLanguage,
-      "Content-Type": "application/json",
-    },
+      authorization: token ? `Bearer ${token}` : "",
+    }
   };
 });
 
-// Apollo Client 로깅 (개발 환경에서만)
-if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("Apollo Client Server URL:", getServerUrl());
-  console.log("Current origin:", window.location.origin);
-}
+// Error Link 설정 - 토큰 재발급 로직 포함
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+  if (graphQLErrors) {
+    for (let err of graphQLErrors) {
+      console.log('GraphQL error:', { 
+        message: err.message, 
+        locations: err.locations, 
+        path: err.path, 
+        extensions: err.extensions 
+      });
+
+      // 인증 오류 처리
+      if (err.extensions?.code === 'AUTHENTICATION_ERROR' || 
+          err.extensions?.errorKey === 'AUTHENTICATION_REQUIRED') {
+
+        const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+
+        if (refreshToken) {
+          // 토큰 재발급 시도
+          return new Promise((resolve) => {
+            refreshAccessToken()
+              .then((newAccessToken) => {
+                // 새 토큰으로 헤더 업데이트
+                const oldHeaders = operation.getContext().headers;
+                operation.setContext({
+                  headers: {
+                    ...oldHeaders,
+                    authorization: `Bearer ${newAccessToken}`,
+                  },
+                });
+
+                // 원래 요청 재시도
+                resolve(forward(operation));
+              })
+              .catch(() => {
+                // 토큰 재발급 실패 시 로그인 페이지로 리디렉션
+                if (typeof window !== 'undefined') {
+                  localStorage.clear();
+                  window.location.href = '/login';
+                }
+                resolve();
+              });
+          });
+        } else {
+          // 리프레시 토큰이 없으면 로그인 페이지로 리디렉션
+          if (typeof window !== 'undefined') {
+            localStorage.clear();
+            window.location.href = '/login';
+          }
+        }
+      }
+    }
+  }
+
+  if (networkError) {
+    console.log(`Network error: ${networkError}`);
+  }
+});
+
+// Retry Link - 네트워크 오류 시 재시도
+const retryLink = new RetryLink({
+  delay: {
+    initial: 300,
+    max: Infinity,
+    jitter: true
+  },
+  attempts: {
+    max: 3,
+    retryIf: (error, _operation) => !!error && !error.message.includes('Authentication')
+  }
+});
 
 // Apollo Client 인스턴스 생성
-export const apolloClient = new ApolloClient({
-  // 에러 링크가 가장 먼저 오도록 설정
-  link: from([authErrorLink, errorLink, authLink, httpLink]),
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          customers: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-          salesOpportunities: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-          categories: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-          products: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-          salesItems: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-          salesReps: {
-            merge(existing = [], incoming) {
-              return incoming;
-            },
-          },
-        },
-      },
-    },
-  }),
+const client = new ApolloClient({
+  link: from([errorLink, retryLink, authLink, httpLink]),
+  cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: "cache-and-network",
+      errorPolicy: 'all',
     },
     query: {
-      fetchPolicy: "cache-first",
+      errorPolicy: 'all',
     },
   },
 });
 
-// 토큰 관리 유틸리티 export
-export { getStoredTokens, setStoredTokens, clearStoredTokens };
+export default client;
