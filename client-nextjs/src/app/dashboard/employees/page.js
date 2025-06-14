@@ -1,419 +1,458 @@
+
 "use client";
 
-import { useState } from "react";
-import { useTranslation } from "../../../../hooks/useLanguage.js";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card.js";
-import { Badge } from "../../../components/ui/badge.js";
-import { Button } from "../../../components/ui/button.js";
-import {
-  Users,
-  Calendar,
-  DollarSign,
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/hooks/useLanguage';
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  UserCheck,
+  UserX,
   Clock,
+  Calendar,
   TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  User,
-  Star,
-  Bell,
-} from "lucide-react";
+  AlertCircle,
+  Loader2,
+  UserPlus,
+  Eye,
+  Building,
+  DollarSign,
+  Target
+} from 'lucide-react';
 
-export default function EmployeeDashboardPage() {
+// GraphQL Operations
+import { gql } from '@apollo/client';
+
+const GET_EMPLOYEES = gql`
+  query GetEmployees($department: String, $status: EmployeeStatus, $search: String, $first: Int, $skip: Int) {
+    employees(department: $department, status: $status, search: $search, first: $first, skip: $skip) {
+      id
+      employeeId
+      name
+      email
+      phone
+      department
+      position
+      status
+      hireDate
+      salary
+      avatar
+      isActive
+      createdAt
+    }
+  }
+`;
+
+const GET_EMPLOYEE_STATS = gql`
+  query GetEmployeeStats {
+    employeeStats {
+      totalEmployees
+      activeEmployees
+      onLeaveEmployees
+      newHiresThisMonth
+      pendingLeaveRequests
+      todayAttendance
+      averageWorkHours
+      departmentStats {
+        department
+        employeeCount
+        averageSalary
+        attendanceRate
+      }
+    }
+  }
+`;
+
+const CREATE_EMPLOYEE = gql`
+  mutation CreateEmployee($input: EmployeeInput!) {
+    createEmployee(input: $input) {
+      id
+      employeeId
+      name
+      email
+      department
+      position
+      status
+      hireDate
+    }
+  }
+`;
+
+export default function EmployeesPage() {
   const { t } = useTranslation();
-  const [period, setPeriod] = useState("month");
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
 
-  // 직원 대시보드 데이터
-  const dashboardData = {
-    summary: {
-      totalEmployees: 127,
-      activeEmployees: 124,
-      onLeave: 8,
-      newHires: 3,
-    },
-    leaveStats: {
-      pendingRequests: 12,
-      approvedToday: 5,
-      totalDaysUsed: 234,
-      remainingDays: 1456,
-    },
-    attendance: {
-      onTime: 98,
-      late: 15,
-      absent: 3,
-      overtime: 8,
-    },
-    recent: {
-      activities: [
-        {
-          id: 1,
-          type: "leave",
-          employee: "김민수",
-          action: "연차 신청",
-          status: "pending",
-          time: "10분 전",
-        },
-        {
-          id: 2,
-          type: "attendance",
-          employee: "이영희",
-          action: "지각 기록",
-          status: "warning",
-          time: "30분 전",
-        },
-        {
-          id: 3,
-          type: "salary",
-          employee: "박철수",
-          action: "급여 조정",
-          status: "approved",
-          time: "1시간 전",
-        },
-        {
-          id: 4,
-          type: "evaluation",
-          employee: "정미영",
-          action: "성과평가 완료",
-          status: "completed",
-          time: "2시간 전",
-        },
-      ],
-    },
-  };
+  // 인증 상태 확인
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
 
-  const getStatusBadge = (status) => {
+  const { data: employeesData, loading: employeesLoading, error: employeesError, refetch: refetchEmployees } = useQuery(GET_EMPLOYEES, {
+    variables: { 
+      first: 50,
+      skip: 0,
+      search: searchTerm || undefined,
+      department: selectedDepartment || undefined,
+      status: selectedStatus || undefined
+    },
+    errorPolicy: 'ignore'
+  });
+
+  const { data: statsData, loading: statsLoading } = useQuery(GET_EMPLOYEE_STATS, {
+    errorPolicy: 'ignore'
+  });
+
+  const [createEmployee, { loading: createLoading }] = useMutation(CREATE_EMPLOYEE, {
+    onCompleted: () => {
+      refetchEmployees();
+    },
+    onError: (error) => {
+      console.error('Create employee error:', error);
+    }
+  });
+
+  // 로딩 상태
+  if (employeesLoading || statsLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
+          <p className="text-gray-600 dark:text-gray-400">직원 데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (employeesError && !employeesData) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            데이터 로딩 오류
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            직원 데이터를 불러오는 중 오류가 발생했습니다.
+          </p>
+          <Button onClick={() => refetchEmployees()} className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4" />
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const employees = employeesData?.employees || [];
+  const stats = statsData?.employeeStats || {};
+
+  // 필터링된 직원 목록
+  const filteredEmployees = employees.filter(employee => {
+    const matchesSearch = !searchTerm || 
+      employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesDepartment = !selectedDepartment || employee.department === selectedDepartment;
+    const matchesStatus = !selectedStatus || employee.status === selectedStatus;
+
+    return matchesSearch && matchesDepartment && matchesStatus;
+  });
+
+  // 상태별 배지 색상
+  const getStatusBadgeColor = (status) => {
     switch (status) {
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">대기중</Badge>;
-      case "approved":
-        return <Badge className="bg-green-100 text-green-800">승인</Badge>;
-      case "warning":
-        return <Badge className="bg-red-100 text-red-800">주의</Badge>;
-      case "completed":
-        return <Badge className="bg-blue-100 text-blue-800">완료</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+      case 'ACTIVE': return 'bg-green-100 text-green-800 border-green-200';
+      case 'ON_LEAVE': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'INACTIVE': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'TERMINATED': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const quickActions = [
-    {
-      name: "휴가 승인",
-      href: "/dashboard/employees/leave",
-      icon: Calendar,
-      color: "bg-blue-500",
-    },
-    {
-      name: "급여 확인",
-      href: "/dashboard/employees/salary",
-      icon: DollarSign,
-      color: "bg-green-500",
-    },
-    {
-      name: "근태 관리",
-      href: "/dashboard/employees/attendance",
-      icon: Clock,
-      color: "bg-purple-500",
-    },
-    {
-      name: "성과 평가",
-      href: "/dashboard/employees/evaluation",
-      icon: Star,
-      color: "bg-orange-500",
-    },
-  ];
+  // 상태 한국어 변환
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'ACTIVE': return '재직중';
+      case 'ON_LEAVE': return '휴직중';
+      case 'INACTIVE': return '비활성';
+      case 'TERMINATED': return '퇴사';
+      default: return status;
+    }
+  };
+
+  // 고유 부서 목록
+  const departments = [...new Set(employees.map(emp => emp.department).filter(Boolean))];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fadeIn">
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t("employees.dashboard")}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            직원 현황과 주요 지표를 한눈에 확인하세요
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Button
-            variant={period === "week" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPeriod("week")}
-          >
-            주간
-          </Button>
-          <Button
-            variant={period === "month" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPeriod("month")}
-          >
-            월간
-          </Button>
-          <Button
-            variant={period === "quarter" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPeriod("quarter")}
-          >
-            분기
-          </Button>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 
+                      rounded-xl p-6 transform transition-all duration-500 hover:scale-105">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                           bg-clip-text text-transparent">
+              직원 관리
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              직원 정보를 체계적으로 관리하고 조직을 효율적으로 운영하세요
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => router.push('/dashboard/employees/add')}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+                         text-white shadow-lg transform transition-all duration-200 hover:scale-105"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              신규 직원 등록
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* 주요 지표 카드 */}
+      {/* 통계 카드들 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">총 직원 수</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {dashboardData.summary.totalEmployees}명
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 직원</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {stats.totalEmployees || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              활성 직원: {dashboardData.summary.activeEmployees}명
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">휴가 중</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {dashboardData.summary.onLeave}명
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">재직 중</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {stats.activeEmployees || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                <UserCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              대기 요청: {dashboardData.leaveStats.pendingRequests}건
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">신규 채용</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {dashboardData.summary.newHires}명
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">휴직 중</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {stats.onLeaveEmployees || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                <UserX className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">이번 달 신규 입사</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">출근율</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {(
-                (dashboardData.attendance.onTime /
-                  dashboardData.summary.activeEmployees) *
-                100
-              ).toFixed(1)}
-              %
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">이번 달 신규</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {stats.newHiresThisMonth || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+                <UserPlus className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              정시 출근: {dashboardData.attendance.onTime}명
-            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 빠른 작업 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">빠른 작업</CardTitle>
-            <CardDescription>
-              자주 사용하는 직원 관리 기능에 빠르게 접근하세요
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {quickActions.map((action, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg ${action.color}`}>
-                  <action.icon className="h-4 w-4 text-white" />
+      {/* 검색 및 필터 */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="직원명, 사번, 이메일로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">전체 부서</option>
+              {departments.map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">전체 상태</option>
+              <option value="ACTIVE">재직중</option>
+              <option value="ON_LEAVE">휴직중</option>
+              <option value="INACTIVE">비활성</option>
+              <option value="TERMINATED">퇴사</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 직원 목록 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEmployees.map((employee) => (
+          <Card key={employee.id} className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                    {employee.avatar ? (
+                      <img 
+                        src={employee.avatar} 
+                        alt="Avatar" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      employee.name?.charAt(0).toUpperCase() || "U"
+                    )}
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {employee.name}
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {employee.employeeId}
+                    </p>
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  className="justify-start flex-1 h-auto p-2"
-                >
-                  <span className="text-sm font-medium">{action.name}</span>
-                </Button>
+                <Badge className={`${getStatusBadgeColor(employee.status)} text-xs`}>
+                  {getStatusText(employee.status)}
+                </Badge>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* 출근 현황 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">오늘 출근 현황</CardTitle>
-            <CardDescription>직원들의 실시간 출근 상태입니다</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">정시 출근</span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Building className="w-4 h-4" />
+                <span>{employee.department} • {employee.position}</span>
               </div>
-              <Badge variant="secondary">
-                {dashboardData.attendance.onTime}명
-              </Badge>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm">지각</span>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Calendar className="w-4 h-4" />
+                <span>입사: {new Date(employee.hireDate).toLocaleDateString('ko-KR')}</span>
               </div>
-              <Badge className="bg-yellow-100 text-yellow-800">
-                {dashboardData.attendance.late}명
-              </Badge>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-                <span className="text-sm">결근</span>
-              </div>
-              <Badge variant="destructive">
-                {dashboardData.attendance.absent}명
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
-                <span className="text-sm">초과근무</span>
-              </div>
-              <Badge className="bg-blue-100 text-blue-800">
-                {dashboardData.attendance.overtime}명
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 최근 활동 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">최근 활동</CardTitle>
-            <CardDescription>
-              최근 직원 관련 활동들을 확인하세요
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {dashboardData.recent.activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start justify-between"
-              >
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.employee}</p>
-                  <p className="text-xs text-gray-600">{activity.action}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {activity.time}
-                  </p>
+              {employee.salary && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <DollarSign className="w-4 h-4" />
+                  <span>연봉: {employee.salary.toLocaleString()}만원</span>
                 </div>
-                <div>{getStatusBadge(activity.status)}</div>
+              )}
+
+              <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <Link href={`/dashboard/employees/${employee.id}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="w-4 h-4 mr-1" />
+                    상세보기
+                  </Button>
+                </Link>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* 휴가 및 근태 통계 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 결과가 없는 경우 */}
+      {filteredEmployees.length === 0 && (
+        <div className="text-center py-12">
+          <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            직원이 없습니다
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {searchTerm || selectedDepartment || selectedStatus
+              ? '검색 조건에 맞는 직원이 없습니다.' 
+              : '아직 등록된 직원이 없습니다.'}
+          </p>
+          {!searchTerm && !selectedDepartment && !selectedStatus && (
+            <Button onClick={() => router.push('/dashboard/employees/add')}>
+              <Plus className="w-4 h-4 mr-2" />
+              첫 번째 직원 등록하기
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* 부서별 통계 */}
+      {stats.departmentStats && stats.departmentStats.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">휴가 현황</CardTitle>
-            <CardDescription>전체 직원의 휴가 사용 현황입니다</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="w-5 h-5" />
+              부서별 통계
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">총 사용 일수</span>
-                <span className="font-semibold">
-                  {dashboardData.leaveStats.totalDaysUsed}일
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">잔여 일수</span>
-                <span className="font-semibold text-green-600">
-                  {dashboardData.leaveStats.remainingDays}일
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">오늘 승인</span>
-                <span className="font-semibold text-blue-600">
-                  {dashboardData.leaveStats.approvedToday}건
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full"
-                  style={{
-                    width: `${(dashboardData.leaveStats.totalDaysUsed / (dashboardData.leaveStats.totalDaysUsed + dashboardData.leaveStats.remainingDays)) * 100}%`,
-                  }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                전체 휴가 사용률:{" "}
-                {(
-                  (dashboardData.leaveStats.totalDaysUsed /
-                    (dashboardData.leaveStats.totalDaysUsed +
-                      dashboardData.leaveStats.remainingDays)) *
-                  100
-                ).toFixed(1)}
-                %
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stats.departmentStats.map((dept, index) => (
+                <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    {dept.department}
+                  </h4>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex justify-between">
+                      <span>직원 수:</span>
+                      <span className="font-medium">{dept.employeeCount}명</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>평균 연봉:</span>
+                      <span className="font-medium">{dept.averageSalary.toFixed(0)}만원</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>출석률:</span>
+                      <span className="font-medium">{dept.attendanceRate.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">베트남 노동법 준수</CardTitle>
-            <CardDescription>현지 법규 준수 현황을 확인하세요</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">법정 휴일 적용</span>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">최대 근무시간 준수</span>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">연차 산정 기준</span>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">급여 지급 기준</span>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                모든 베트남 노동법 기준을 준수하고 있습니다
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 }

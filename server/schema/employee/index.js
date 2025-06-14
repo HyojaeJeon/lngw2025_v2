@@ -479,3 +479,315 @@ const employeeSchema = gql`
 `;
 
 module.exports = employeeSchema;
+const { gql } = require('apollo-server-express');
+
+const employeeTypeDefs = gql`
+  type Employee {
+    id: ID!
+    employeeId: String!
+    name: String!
+    email: String!
+    phone: String
+    department: String!
+    position: String!
+    status: EmployeeStatus!
+    hireDate: String!
+    salary: Float
+    emergencyContact: JSON
+    address: String
+    birthDate: String
+    skills: [Skill!]
+    experiences: [Experience!]
+    attendanceRecords: [AttendanceRecord!]
+    leaveRequests: [LeaveRequest!]
+    evaluations: [PerformanceEvaluation!]
+    avatar: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AttendanceRecord {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    date: String!
+    checkIn: String
+    checkOut: String
+    workHours: Float
+    status: AttendanceStatus!
+    notes: String
+    createdAt: String!
+  }
+
+  type LeaveRequest {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    type: LeaveType!
+    startDate: String!
+    endDate: String!
+    days: Int!
+    reason: String!
+    status: LeaveStatus!
+    approvedBy: ID
+    approver: Employee
+    approvedAt: String
+    notes: String
+    attachments: [String!]
+    createdAt: String!
+  }
+
+  type PerformanceEvaluation {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    evaluatorId: ID!
+    evaluator: Employee!
+    period: String!
+    type: EvaluationType!
+    overallScore: Float!
+    goals: [EvaluationGoal!]
+    strengths: String
+    improvements: String
+    comments: String
+    status: EvaluationStatus!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type EvaluationGoal {
+    id: ID!
+    evaluationId: ID!
+    title: String!
+    description: String
+    targetValue: String
+    actualValue: String
+    weight: Float!
+    score: Float
+    isAchieved: Boolean!
+  }
+
+  type SalaryRecord {
+    id: ID!
+    employeeId: ID!
+    employee: Employee!
+    period: String!
+    baseSalary: Float!
+    overtime: Float
+    bonus: Float
+    deductions: Float
+    totalSalary: Float!
+    paymentDate: String
+    status: PaymentStatus!
+    notes: String
+    createdAt: String!
+  }
+
+  enum EmployeeStatus {
+    ACTIVE
+    INACTIVE
+    ON_LEAVE
+    TERMINATED
+  }
+
+  enum AttendanceStatus {
+    PRESENT
+    LATE
+    ABSENT
+    HALF_DAY
+    SICK_LEAVE
+    VACATION
+  }
+
+  enum LeaveType {
+    ANNUAL
+    SICK
+    MATERNITY
+    PATERNITY
+    PERSONAL
+    BEREAVEMENT
+    STUDY
+    OTHER
+  }
+
+  enum LeaveStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    CANCELLED
+  }
+
+  enum EvaluationType {
+    ANNUAL
+    QUARTERLY
+    MONTHLY
+    PROBATION
+    PROJECT
+  }
+
+  enum EvaluationStatus {
+    DRAFT
+    IN_PROGRESS
+    COMPLETED
+    APPROVED
+  }
+
+  enum PaymentStatus {
+    PENDING
+    PAID
+    DELAYED
+    CANCELLED
+  }
+
+  input EmployeeInput {
+    employeeId: String!
+    name: String!
+    email: String!
+    phone: String
+    department: String!
+    position: String!
+    hireDate: String!
+    salary: Float
+    address: String
+    birthDate: String
+    emergencyContact: JSON
+  }
+
+  input AttendanceInput {
+    employeeId: ID!
+    date: String!
+    checkIn: String
+    checkOut: String
+    status: AttendanceStatus!
+    notes: String
+  }
+
+  input LeaveRequestInput {
+    employeeId: ID!
+    type: LeaveType!
+    startDate: String!
+    endDate: String!
+    reason: String!
+    attachments: [String!]
+  }
+
+  input EvaluationInput {
+    employeeId: ID!
+    evaluatorId: ID!
+    period: String!
+    type: EvaluationType!
+    goals: [EvaluationGoalInput!]!
+    strengths: String
+    improvements: String
+    comments: String
+  }
+
+  input EvaluationGoalInput {
+    title: String!
+    description: String
+    targetValue: String!
+    weight: Float!
+  }
+
+  input SalaryRecordInput {
+    employeeId: ID!
+    period: String!
+    baseSalary: Float!
+    overtime: Float
+    bonus: Float
+    deductions: Float
+    notes: String
+  }
+
+  extend type Query {
+    employees(
+      department: String
+      status: EmployeeStatus
+      search: String
+      first: Int
+      skip: Int
+    ): [Employee!]!
+    
+    employee(id: ID!): Employee
+    
+    attendanceRecords(
+      employeeId: ID
+      date: String
+      period: String
+      status: AttendanceStatus
+      first: Int
+      skip: Int
+    ): [AttendanceRecord!]!
+    
+    leaveRequests(
+      employeeId: ID
+      status: LeaveStatus
+      type: LeaveType
+      period: String
+      first: Int
+      skip: Int
+    ): [LeaveRequest!]!
+    
+    evaluations(
+      employeeId: ID
+      evaluatorId: ID
+      type: EvaluationType
+      status: EvaluationStatus
+      period: String
+      first: Int
+      skip: Int
+    ): [PerformanceEvaluation!]!
+    
+    salaryRecords(
+      employeeId: ID
+      period: String
+      status: PaymentStatus
+      first: Int
+      skip: Int
+    ): [SalaryRecord!]!
+    
+    employeeStats: EmployeeStats!
+  }
+
+  extend type Mutation {
+    createEmployee(input: EmployeeInput!): Employee!
+    updateEmployee(id: ID!, input: EmployeeInput!): Employee!
+    deleteEmployee(id: ID!): DeleteResult!
+    
+    createAttendance(input: AttendanceInput!): AttendanceRecord!
+    updateAttendance(id: ID!, input: AttendanceInput!): AttendanceRecord!
+    
+    createLeaveRequest(input: LeaveRequestInput!): LeaveRequest!
+    approveLeaveRequest(id: ID!, notes: String): LeaveRequest!
+    rejectLeaveRequest(id: ID!, notes: String!): LeaveRequest!
+    
+    createEvaluation(input: EvaluationInput!): PerformanceEvaluation!
+    updateEvaluation(id: ID!, input: EvaluationInput!): PerformanceEvaluation!
+    submitEvaluation(id: ID!): PerformanceEvaluation!
+    
+    createSalaryRecord(input: SalaryRecordInput!): SalaryRecord!
+    updateSalaryRecord(id: ID!, input: SalaryRecordInput!): SalaryRecord!
+    processSalaryPayment(id: ID!): SalaryRecord!
+  }
+
+  type EmployeeStats {
+    totalEmployees: Int!
+    activeEmployees: Int!
+    onLeaveEmployees: Int!
+    newHiresThisMonth: Int!
+    pendingLeaveRequests: Int!
+    todayAttendance: Int!
+    averageWorkHours: Float!
+    departmentStats: [DepartmentStats!]!
+  }
+
+  type DepartmentStats {
+    department: String!
+    employeeCount: Int!
+    averageSalary: Float!
+    attendanceRate: Float!
+  }
+`;
+
+module.exports = employeeTypeDefs;

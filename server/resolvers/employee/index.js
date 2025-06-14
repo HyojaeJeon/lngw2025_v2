@@ -1,577 +1,483 @@
-
-const { Op } = require("sequelize");
-const { 
-  Employee, 
-  Attendance, 
-  Leave, 
-  Salary, 
-  Evaluation, 
-  User 
-} = require("../../models");
+const { Op } = require('sequelize');
+const { requireAuth, createError, handleDatabaseError } = require('../../lib/errors');
+const models = require('../../models');
 
 const employeeResolvers = {
   Query: {
-    // 직원 조회
-    employees: async (parent, { filter = {}, limit = 50, offset = 0 }) => {
-      const whereClause = {};
+    employees: async (_, { department, status, search, first = 50, skip = 0 }, context) => {
+      requireAuth(context);
 
-      if (filter.department) whereClause.department = filter.department;
-      if (filter.position) whereClause.position = filter.position;
-      if (filter.employmentType) whereClause.employmentType = filter.employmentType;
-      if (filter.employmentStatus) whereClause.employmentStatus = filter.employmentStatus;
-      if (filter.isActive !== undefined) whereClause.isActive = filter.isActive;
+      try {
+        const whereClause = {};
 
-      if (filter.search) {
-        whereClause[Op.or] = [
-          { firstName: { [Op.like]: `%${filter.search}%` } },
-          { lastName: { [Op.like]: `%${filter.search}%` } },
-          { email: { [Op.like]: `%${filter.search}%` } },
-          { employeeNumber: { [Op.like]: `%${filter.search}%` } },
-        ];
+        if (department) whereClause.department = department;
+        if (status) whereClause.status = status;
+        if (search) {
+          whereClause[Op.or] = [
+            { name: { [Op.like]: `%${search}%` } },
+            { employeeId: { [Op.like]: `%${search}%` } },
+            { email: { [Op.like]: `%${search}%` } }
+          ];
+        }
+
+        const employees = await models.Employee.findAll({
+          where: whereClause,
+          include: [
+            { model: models.Skill, as: 'skills' },
+            { model: models.Experience, as: 'experiences' }
+          ],
+          limit: first,
+          offset: skip,
+          order: [['createdAt', 'DESC']]
+        });
+
+        return employees;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
       }
-
-      return await Employee.findAll({
-        where: whereClause,
-        include: [
-          { model: User, as: "user" },
-          { model: Employee, as: "supervisor" },
-        ],
-        limit,
-        offset,
-        order: [["createdAt", "DESC"]],
-      });
     },
 
-    employee: async (parent, { id }) => {
-      return await Employee.findByPk(id, {
-        include: [
-          { model: User, as: "user" },
-          { model: Employee, as: "supervisor" },
-          { model: Employee, as: "subordinates" },
-        ],
-      });
+    employee: async (_, { id }, context) => {
+      requireAuth(context);
+
+      try {
+        const employee = await models.Employee.findByPk(id, {
+          include: [
+            { model: models.Skill, as: 'skills' },
+            { model: models.Experience, as: 'experiences' },
+            { model: models.AttendanceRecord, as: 'attendanceRecords' },
+            { model: models.LeaveRequest, as: 'leaveRequests' },
+            { model: models.PerformanceEvaluation, as: 'evaluations' }
+          ]
+        });
+
+        if (!employee) {
+          throw createError('USER_NOT_FOUND', context.lang);
+        }
+
+        return employee;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
+      }
     },
 
-    employeeByNumber: async (parent, { employeeNumber }) => {
-      return await Employee.findOne({
-        where: { employeeNumber },
-        include: [
-          { model: User, as: "user" },
-          { model: Employee, as: "supervisor" },
-          { model: Employee, as: "subordinates" },
-        ],
-      });
+    attendanceRecords: async (_, { employeeId, date, period, status, first = 50, skip = 0 }, context) => {
+      requireAuth(context);
+
+      try {
+        const whereClause = {};
+
+        if (employeeId) whereClause.employeeId = employeeId;
+        if (date) whereClause.date = date;
+        if (status) whereClause.status = status;
+        if (period) {
+          const [year, month] = period.split('-');
+          whereClause.date = {
+            [Op.gte]: `${year}-${month}-01`,
+            [Op.lt]: `${year}-${month}-32`
+          };
+        }
+
+        const records = await models.AttendanceRecord.findAll({
+          where: whereClause,
+          include: [{ model: models.Employee, as: 'employee' }],
+          limit: first,
+          offset: skip,
+          order: [['date', 'DESC']]
+        });
+
+        return records;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
+      }
     },
 
-    // 출근 조회
-    attendances: async (parent, { filter = {}, limit = 50, offset = 0 }) => {
-      const whereClause = {};
+    leaveRequests: async (_, { employeeId, status, type, period, first = 50, skip = 0 }, context) => {
+      requireAuth(context);
 
-      if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-      if (filter.attendanceDate) whereClause.attendanceDate = filter.attendanceDate;
-      if (filter.attendanceStatus) whereClause.attendanceStatus = filter.attendanceStatus;
+      try {
+        const whereClause = {};
 
-      if (filter.startDate && filter.endDate) {
-        whereClause.attendanceDate = {
-          [Op.between]: [filter.startDate, filter.endDate],
+        if (employeeId) whereClause.employeeId = employeeId;
+        if (status) whereClause.status = status;
+        if (type) whereClause.type = type;
+        if (period) {
+          const [year] = period.split('-');
+          whereClause.startDate = {
+            [Op.gte]: `${year}-01-01`,
+            [Op.lt]: `${parseInt(year) + 1}-01-01`
+          };
+        }
+
+        const requests = await models.LeaveRequest.findAll({
+          where: whereClause,
+          include: [
+            { model: models.Employee, as: 'employee' },
+            { model: models.Employee, as: 'approver' }
+          ],
+          limit: first,
+          offset: skip,
+          order: [['createdAt', 'DESC']]
+        });
+
+        return requests;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
+      }
+    },
+
+    evaluations: async (_, { employeeId, evaluatorId, type, status, period, first = 50, skip = 0 }, context) => {
+      requireAuth(context);
+
+      try {
+        const whereClause = {};
+
+        if (employeeId) whereClause.employeeId = employeeId;
+        if (evaluatorId) whereClause.evaluatorId = evaluatorId;
+        if (type) whereClause.type = type;
+        if (status) whereClause.status = status;
+        if (period) whereClause.period = period;
+
+        const evaluations = await models.PerformanceEvaluation.findAll({
+          where: whereClause,
+          include: [
+            { model: models.Employee, as: 'employee' },
+            { model: models.Employee, as: 'evaluator' },
+            { model: models.EvaluationGoal, as: 'goals' }
+          ],
+          limit: first,
+          offset: skip,
+          order: [['createdAt', 'DESC']]
+        });
+
+        return evaluations;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
+      }
+    },
+
+    salaryRecords: async (_, { employeeId, period, status, first = 50, skip = 0 }, context) => {
+      requireAuth(context);
+
+      try {
+        const whereClause = {};
+
+        if (employeeId) whereClause.employeeId = employeeId;
+        if (period) whereClause.period = period;
+        if (status) whereClause.status = status;
+
+        const records = await models.SalaryRecord.findAll({
+          where: whereClause,
+          include: [{ model: models.Employee, as: 'employee' }],
+          limit: first,
+          offset: skip,
+          order: [['period', 'DESC']]
+        });
+
+        return records;
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
+      }
+    },
+
+    employeeStats: async (_, __, context) => {
+      requireAuth(context);
+
+      try {
+        const totalEmployees = await models.Employee.count();
+        const activeEmployees = await models.Employee.count({ where: { status: 'ACTIVE' } });
+        const onLeaveEmployees = await models.Employee.count({ where: { status: 'ON_LEAVE' } });
+
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+
+        const newHiresThisMonth = await models.Employee.count({
+          where: {
+            hireDate: {
+              [Op.gte]: `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`,
+              [Op.lt]: `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-01`
+            }
+          }
+        });
+
+        const pendingLeaveRequests = await models.LeaveRequest.count({
+          where: { status: 'PENDING' }
+        });
+
+        const today = currentDate.toISOString().split('T')[0];
+        const todayAttendance = await models.AttendanceRecord.count({
+          where: { 
+            date: today,
+            status: { [Op.in]: ['PRESENT', 'LATE'] }
+          }
+        });
+
+        // 부서별 통계
+        const departmentStats = await models.Employee.findAll({
+          attributes: [
+            'department',
+            [models.sequelize.fn('COUNT', '*'), 'employeeCount'],
+            [models.sequelize.fn('AVG', models.sequelize.col('salary')), 'averageSalary']
+          ],
+          where: { status: 'ACTIVE' },
+          group: ['department'],
+          raw: true
+        });
+
+        return {
+          totalEmployees,
+          activeEmployees,
+          onLeaveEmployees,
+          newHiresThisMonth,
+          pendingLeaveRequests,
+          todayAttendance,
+          averageWorkHours: 8.0, // 임시값
+          departmentStats: departmentStats.map(dept => ({
+            department: dept.department,
+            employeeCount: parseInt(dept.employeeCount),
+            averageSalary: parseFloat(dept.averageSalary) || 0,
+            attendanceRate: 95.0 // 임시값
+          }))
         };
+      } catch (error) {
+        handleDatabaseError(error, context.lang);
       }
-
-      return await Attendance.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-        limit,
-        offset,
-        order: [["attendanceDate", "DESC"]],
-      });
-    },
-
-    attendance: async (parent, { id }) => {
-      return await Attendance.findByPk(id, {
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-      });
-    },
-
-    attendancesByEmployee: async (parent, { employeeId, startDate, endDate }) => {
-      const whereClause = { employeeId };
-
-      if (startDate && endDate) {
-        whereClause.attendanceDate = {
-          [Op.between]: [startDate, endDate],
-        };
-      }
-
-      return await Attendance.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-        order: [["attendanceDate", "DESC"]],
-      });
-    },
-
-    // 휴가 조회
-    leaves: async (parent, { filter = {}, limit = 50, offset = 0 }) => {
-      const whereClause = {};
-
-      if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-      if (filter.leaveType) whereClause.leaveType = filter.leaveType;
-      if (filter.leaveStatus) whereClause.leaveStatus = filter.leaveStatus;
-
-      if (filter.startDate && filter.endDate) {
-        whereClause[Op.or] = [
-          {
-            startDate: {
-              [Op.between]: [filter.startDate, filter.endDate],
-            },
-          },
-          {
-            endDate: {
-              [Op.between]: [filter.startDate, filter.endDate],
-            },
-          },
-        ];
-      }
-
-      return await Leave.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-        limit,
-        offset,
-        order: [["appliedAt", "DESC"]],
-      });
-    },
-
-    leave: async (parent, { id }) => {
-      return await Leave.findByPk(id, {
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-      });
-    },
-
-    leavesByEmployee: async (parent, { employeeId, year }) => {
-      const whereClause = { employeeId };
-
-      if (year) {
-        whereClause.startDate = {
-          [Op.between]: [`${year}-01-01`, `${year}-12-31`],
-        };
-      }
-
-      return await Leave.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "approver" },
-        ],
-        order: [["startDate", "DESC"]],
-      });
-    },
-
-    // 급여 조회
-    salaries: async (parent, { filter = {}, limit = 50, offset = 0 }) => {
-      const whereClause = {};
-
-      if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-      if (filter.payrollMonth) whereClause.payrollMonth = filter.payrollMonth;
-      if (filter.paymentStatus) whereClause.paymentStatus = filter.paymentStatus;
-
-      if (filter.startMonth && filter.endMonth) {
-        whereClause.payrollMonth = {
-          [Op.between]: [filter.startMonth, filter.endMonth],
-        };
-      }
-
-      return await Salary.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "processor" },
-        ],
-        limit,
-        offset,
-        order: [["payrollMonth", "DESC"]],
-      });
-    },
-
-    salary: async (parent, { id }) => {
-      return await Salary.findByPk(id, {
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "processor" },
-        ],
-      });
-    },
-
-    salariesByEmployee: async (parent, { employeeId, year }) => {
-      const whereClause = { employeeId };
-
-      if (year) {
-        whereClause.payrollMonth = {
-          [Op.like]: `${year}-%`,
-        };
-      }
-
-      return await Salary.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "processor" },
-        ],
-        order: [["payrollMonth", "DESC"]],
-      });
-    },
-
-    // 평가 조회
-    evaluations: async (parent, { filter = {}, limit = 50, offset = 0 }) => {
-      const whereClause = {};
-
-      if (filter.employeeId) whereClause.employeeId = filter.employeeId;
-      if (filter.evaluatorId) whereClause.evaluatorId = filter.evaluatorId;
-      if (filter.evaluationPeriod) whereClause.evaluationPeriod = filter.evaluationPeriod;
-      if (filter.evaluationType) whereClause.evaluationType = filter.evaluationType;
-      if (filter.overallRating) whereClause.overallRating = filter.overallRating;
-      if (filter.evaluationStatus) whereClause.evaluationStatus = filter.evaluationStatus;
-
-      return await Evaluation.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "evaluator" },
-          { model: Employee, as: "approver" },
-        ],
-        limit,
-        offset,
-        order: [["evaluationDate", "DESC"]],
-      });
-    },
-
-    evaluation: async (parent, { id }) => {
-      return await Evaluation.findByPk(id, {
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "evaluator" },
-          { model: Employee, as: "approver" },
-        ],
-      });
-    },
-
-    evaluationsByEmployee: async (parent, { employeeId, year }) => {
-      const whereClause = { employeeId };
-
-      if (year) {
-        whereClause.evaluationDate = {
-          [Op.between]: [`${year}-01-01`, `${year}-12-31`],
-        };
-      }
-
-      return await Evaluation.findAll({
-        where: whereClause,
-        include: [
-          { model: Employee, as: "employee" },
-          { model: Employee, as: "evaluator" },
-          { model: Employee, as: "approver" },
-        ],
-        order: [["evaluationDate", "DESC"]],
-      });
-    },
+    }
   },
 
   Mutation: {
-    // 직원 관리
-    createEmployee: async (parent, { input }) => {
-      return await Employee.create(input);
-    },
+    createEmployee: async (_, { input }, context) => {
+      requireAuth(context);
 
-    updateEmployee: async (parent, { id, input }) => {
-      const employee = await Employee.findByPk(id);
-      if (!employee) {
-        throw new Error("직원을 찾을 수 없습니다.");
-      }
-      return await employee.update(input);
-    },
-
-    deleteEmployee: async (parent, { id }) => {
-      const employee = await Employee.findByPk(id);
-      if (!employee) {
-        throw new Error("직원을 찾을 수 없습니다.");
-      }
-      await employee.update({ isActive: false });
-      return true;
-    },
-
-    // 출근 관리
-    createAttendance: async (parent, { input }) => {
-      return await Attendance.create(input);
-    },
-
-    updateAttendance: async (parent, { id, input }) => {
-      const attendance = await Attendance.findByPk(id);
-      if (!attendance) {
-        throw new Error("출근 기록을 찾을 수 없습니다.");
-      }
-      return await attendance.update(input);
-    },
-
-    deleteAttendance: async (parent, { id }) => {
-      const attendance = await Attendance.findByPk(id);
-      if (!attendance) {
-        throw new Error("출근 기록을 찾을 수 없습니다.");
-      }
-      await attendance.update({ isActive: false });
-      return true;
-    },
-
-    checkIn: async (parent, { employeeId, location, ip }) => {
-      const today = new Date().toISOString().split('T')[0];
-      const now = new Date().toTimeString().split(' ')[0];
-
-      // 오늘 출근 기록이 있는지 확인
-      let attendance = await Attendance.findOne({
-        where: {
-          employeeId,
-          attendanceDate: today,
-        },
-      });
-
-      if (attendance) {
-        // 이미 출근 기록이 있으면 업데이트
-        return await attendance.update({
-          checkInTime: now,
-          checkInLocation: location,
-          checkInIp: ip,
-          attendanceStatus: "정상출근",
+      try {
+        const employee = await models.Employee.create({
+          ...input,
+          status: 'ACTIVE',
+          isActive: true
         });
-      } else {
-        // 새로운 출근 기록 생성
-        return await Attendance.create({
-          employeeId,
-          attendanceDate: today,
-          checkInTime: now,
-          checkInLocation: location,
-          checkInIp: ip,
-          attendanceStatus: "정상출근",
+
+        return employee;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'EMPLOYEE_CREATE_FAILED');
+      }
+    },
+
+    updateEmployee: async (_, { id, input }, context) => {
+      requireAuth(context);
+
+      try {
+        const employee = await models.Employee.findByPk(id);
+        if (!employee) {
+          throw createError('USER_NOT_FOUND', context.lang);
+        }
+
+        await employee.update(input);
+        return employee;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'EMPLOYEE_UPDATE_FAILED');
+      }
+    },
+
+    deleteEmployee: async (_, { id }, context) => {
+      requireAuth(context);
+
+      try {
+        const employee = await models.Employee.findByPk(id);
+        if (!employee) {
+          throw createError('USER_NOT_FOUND', context.lang);
+        }
+
+        await employee.update({ status: 'TERMINATED', isActive: false });
+
+        return {
+          success: true,
+          message: '직원이 성공적으로 삭제되었습니다.'
+        };
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'EMPLOYEE_DELETE_FAILED');
+      }
+    },
+
+    createAttendance: async (_, { input }, context) => {
+      requireAuth(context);
+
+      try {
+        // 근무 시간 계산
+        let workHours = 0;
+        if (input.checkIn && input.checkOut) {
+          const checkIn = new Date(`${input.date}T${input.checkIn}`);
+          const checkOut = new Date(`${input.date}T${input.checkOut}`);
+          workHours = (checkOut - checkIn) / (1000 * 60 * 60);
+        }
+
+        const attendance = await models.AttendanceRecord.create({
+          ...input,
+          workHours
         });
+
+        return attendance;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'ATTENDANCE_CREATE_FAILED');
       }
     },
 
-    checkOut: async (parent, { employeeId, location, ip }) => {
-      const today = new Date().toISOString().split('T')[0];
-      const now = new Date().toTimeString().split(' ')[0];
+    updateAttendance: async (_, { id, input }, context) => {
+      requireAuth(context);
 
-      const attendance = await Attendance.findOne({
-        where: {
-          employeeId,
-          attendanceDate: today,
-        },
-      });
+      try {
+        const attendance = await models.AttendanceRecord.findByPk(id);
+        if (!attendance) {
+          throw createError('NOT_FOUND', context.lang);
+        }
 
-      if (!attendance) {
-        throw new Error("출근 기록을 찾을 수 없습니다.");
+        // 근무 시간 재계산
+        let workHours = attendance.workHours;
+        if (input.checkIn && input.checkOut) {
+          const checkIn = new Date(`${input.date || attendance.date}T${input.checkIn}`);
+          const checkOut = new Date(`${input.date || attendance.date}T${input.checkOut}`);
+          workHours = (checkOut - checkIn) / (1000 * 60 * 60);
+        }
+
+        await attendance.update({
+          ...input,
+          workHours
+        });
+
+        return attendance;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'ATTENDANCE_UPDATE_FAILED');
       }
-
-      return await attendance.update({
-        checkOutTime: now,
-        checkOutLocation: location,
-        checkOutIp: ip,
-      });
     },
 
-    approveAttendance: async (parent, { id, approvedBy }) => {
-      const attendance = await Attendance.findByPk(id);
-      if (!attendance) {
-        throw new Error("출근 기록을 찾을 수 없습니다.");
+    createLeaveRequest: async (_, { input }, context) => {
+      requireAuth(context);
+
+      try {
+        // 날짜 차이 계산
+        const startDate = new Date(input.startDate);
+        const endDate = new Date(input.endDate);
+        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+        const leaveRequest = await models.LeaveRequest.create({
+          ...input,
+          days,
+          status: 'PENDING'
+        });
+
+        return leaveRequest;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'LEAVE_REQUEST_CREATE_FAILED');
       }
-
-      return await attendance.update({
-        approvedBy,
-        approvedAt: new Date(),
-      });
     },
 
-    // 휴가 관리
-    createLeave: async (parent, { input }) => {
-      return await Leave.create(input);
-    },
+    approveLeaveRequest: async (_, { id, notes }, context) => {
+      const user = requireAuth(context);
 
-    updateLeave: async (parent, { id, input }) => {
-      const leave = await Leave.findByPk(id);
-      if (!leave) {
-        throw new Error("휴가 신청을 찾을 수 없습니다.");
+      try {
+        const leaveRequest = await models.LeaveRequest.findByPk(id);
+        if (!leaveRequest) {
+          throw createError('NOT_FOUND', context.lang);
+        }
+
+        await leaveRequest.update({
+          status: 'APPROVED',
+          approvedBy: user.id,
+          approvedAt: new Date().toISOString(),
+          notes
+        });
+
+        return leaveRequest;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'LEAVE_REQUEST_UPDATE_FAILED');
       }
-      return await leave.update(input);
     },
 
-    deleteLeave: async (parent, { id }) => {
-      const leave = await Leave.findByPk(id);
-      if (!leave) {
-        throw new Error("휴가 신청을 찾을 수 없습니다.");
+    rejectLeaveRequest: async (_, { id, notes }, context) => {
+      const user = requireAuth(context);
+
+      try {
+        const leaveRequest = await models.LeaveRequest.findByPk(id);
+        if (!leaveRequest) {
+          throw createError('NOT_FOUND', context.lang);
+        }
+
+        await leaveRequest.update({
+          status: 'REJECTED',
+          approvedBy: user.id,
+          approvedAt: new Date().toISOString(),
+          notes
+        });
+
+        return leaveRequest;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'LEAVE_REQUEST_UPDATE_FAILED');
       }
-      await leave.update({ isActive: false });
-      return true;
     },
 
-    approveLeave: async (parent, { id, approvedBy }) => {
-      const leave = await Leave.findByPk(id);
-      if (!leave) {
-        throw new Error("휴가 신청을 찾을 수 없습니다.");
+    createSalaryRecord: async (_, { input }, context) => {
+      requireAuth(context);
+
+      try {
+        const totalSalary = (input.baseSalary || 0) + (input.overtime || 0) + (input.bonus || 0) - (input.deductions || 0);
+
+        const salaryRecord = await models.SalaryRecord.create({
+          ...input,
+          totalSalary,
+          status: 'PENDING'
+        });
+
+        return salaryRecord;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'SALARY_RECORD_CREATE_FAILED');
       }
-
-      return await leave.update({
-        leaveStatus: "승인",
-        approvedBy,
-        approvedAt: new Date(),
-      });
     },
 
-    rejectLeave: async (parent, { id, rejectionReason, approvedBy }) => {
-      const leave = await Leave.findByPk(id);
-      if (!leave) {
-        throw new Error("휴가 신청을 찾을 수 없습니다.");
+    updateSalaryRecord: async (_, { id, input }, context) => {
+      requireAuth(context);
+
+      try {
+        const salaryRecord = await models.SalaryRecord.findByPk(id);
+        if (!salaryRecord) {
+          throw createError('NOT_FOUND', context.lang);
+        }
+
+        const totalSalary = (input.baseSalary || salaryRecord.baseSalary) + 
+                           (input.overtime || salaryRecord.overtime || 0) + 
+                           (input.bonus || salaryRecord.bonus || 0) - 
+                           (input.deductions || salaryRecord.deductions || 0);
+
+        await salaryRecord.update({
+          ...input,
+          totalSalary
+        });
+
+        return salaryRecord;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'SALARY_RECORD_UPDATE_FAILED');
       }
-
-      return await leave.update({
-        leaveStatus: "반려",
-        rejectionReason,
-        approvedBy,
-        approvedAt: new Date(),
-      });
     },
 
-    // 급여 관리
-    createSalary: async (parent, { input }) => {
-      return await Salary.create(input);
-    },
+    processSalaryPayment: async (_, { id }, context) => {
+      requireAuth(context);
 
-    updateSalary: async (parent, { id, input }) => {
-      const salary = await Salary.findByPk(id);
-      if (!salary) {
-        throw new Error("급여 기록을 찾을 수 없습니다.");
+      try {
+        const salaryRecord = await models.SalaryRecord.findByPk(id);
+        if (!salaryRecord) {
+          throw createError('NOT_FOUND', context.lang);
+        }
+
+        await salaryRecord.update({
+          status: 'PAID',
+          paymentDate: new Date().toISOString()
+        });
+
+        return salaryRecord;
+      } catch (error) {
+        handleDatabaseError(error, context.lang, 'SALARY_PAYMENT_FAILED');
       }
-      return await salary.update(input);
-    },
-
-    deleteSalary: async (parent, { id }) => {
-      const salary = await Salary.findByPk(id);
-      if (!salary) {
-        throw new Error("급여 기록을 찾을 수 없습니다.");
-      }
-      await salary.update({ isActive: false });
-      return true;
-    },
-
-    processSalary: async (parent, { id, processedBy }) => {
-      const salary = await Salary.findByPk(id);
-      if (!salary) {
-        throw new Error("급여 기록을 찾을 수 없습니다.");
-      }
-
-      return await salary.update({
-        paymentStatus: "지급완료",
-        processedBy,
-        processedAt: new Date(),
-      });
-    },
-
-    // 평가 관리
-    createEvaluation: async (parent, { input }) => {
-      return await Evaluation.create(input);
-    },
-
-    updateEvaluation: async (parent, { id, input }) => {
-      const evaluation = await Evaluation.findByPk(id);
-      if (!evaluation) {
-        throw new Error("평가를 찾을 수 없습니다.");
-      }
-      return await evaluation.update(input);
-    },
-
-    deleteEvaluation: async (parent, { id }) => {
-      const evaluation = await Evaluation.findByPk(id);
-      if (!evaluation) {
-        throw new Error("평가를 찾을 수 없습니다.");
-      }
-      await evaluation.update({ isActive: false });
-      return true;
-    },
-
-    approveEvaluation: async (parent, { id, approvedBy }) => {
-      const evaluation = await Evaluation.findByPk(id);
-      if (!evaluation) {
-        throw new Error("평가를 찾을 수 없습니다.");
-      }
-
-      return await evaluation.update({
-        evaluationStatus: "승인완료",
-        approvedBy,
-        approvedAt: new Date(),
-      });
-    },
-  },
-
-  // 필드 리졸버
-  Employee: {
-    fullName: (parent) => `${parent.lastName}${parent.firstName}`,
-    fullNameEn: (parent) => {
-      if (parent.firstNameEn && parent.lastNameEn) {
-        return `${parent.firstNameEn} ${parent.lastNameEn}`;
-      }
-      return null;
-    },
-    user: async (parent) => {
-      if (parent.userId) {
-        return await User.findByPk(parent.userId);
-      }
-      return null;
-    },
-    supervisor: async (parent) => {
-      if (parent.supervisorId) {
-        return await Employee.findByPk(parent.supervisorId);
-      }
-      return null;
-    },
-    subordinates: async (parent) => {
-      return await Employee.findAll({
-        where: { supervisorId: parent.id },
-      });
-    },
-    attendances: async (parent) => {
-      return await Attendance.findAll({
-        where: { employeeId: parent.id },
-        order: [["attendanceDate", "DESC"]],
-      });
-    },
-    leaves: async (parent) => {
-      return await Leave.findAll({
-        where: { employeeId: parent.id },
-        order: [["appliedAt", "DESC"]],
-      });
-    },
-    salaries: async (parent) => {
-      return await Salary.findAll({
-        where: { employeeId: parent.id },
-        order: [["payrollMonth", "DESC"]],
-      });
-    },
-    evaluations: async (parent) => {
-      return await Evaluation.findAll({
-        where: { employeeId: parent.id },
-        order: [["evaluationDate", "DESC"]],
-      });
-    },
-  },
+    }
+  }
 };
 
 module.exports = employeeResolvers;

@@ -1115,6 +1115,14 @@ const types = gql`
     payPeriod: String!
     payDate: Date!
   }
+
+   enum SalesType {
+    QUOTE
+    ORDER
+    SUBSCRIPTION
+    RENTAL
+    SERVICE
+  }
 `;
 
 module.exports = types;
