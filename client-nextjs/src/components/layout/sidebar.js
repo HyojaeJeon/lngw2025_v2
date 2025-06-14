@@ -589,7 +589,7 @@ const getMenuItems = (t) => [
 
 // 간단한 리사이즈 가능한 사이드바
 export function ResizableSidebar({ children }) {
-  const [sidebarWidth, setSidebarWidth] = useState(280);
+    const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const pathname = usePathname();
@@ -693,13 +693,13 @@ export function ResizableSidebar({ children }) {
           </div>
 
           <nav className="space-y-2">
-            {menuItems.map((item) => {
+            {menuItems.map((item, categoryIndex) => {
               const itemIsActive = isActive(item.href);
               const submenuIsActive = hasActiveSubmenu(item.submenu);
               const isExpanded = expandedMenus[item.name] || submenuIsActive;
 
               return (
-                <div key={item.name}>
+                <div key={`category-${categoryIndex}`}>
                   {/* Main Menu Item */}
                   <div className="flex items-center">
                     <Link
@@ -873,13 +873,13 @@ export function Sidebar({ isOpen, onToggle }) {
 
           {/* 네비게이션 */}
           <nav className="space-y-2 flex-1 overflow-y-auto">
-            {menuItems.map((item) => {
+            {menuItems.map((item, categoryIndex) => {
               const itemIsActive = isActive(item.href);
               const submenuIsActive = hasActiveSubmenu(item.submenu);
               const isExpanded = expandedMenus[item.name] || submenuIsActive;
 
               return (
-                <div key={item.name}>
+                <div key={`category-${categoryIndex}`}>
                   {/* Main Menu Item */}
                   <div className="flex items-center">
                     <Link

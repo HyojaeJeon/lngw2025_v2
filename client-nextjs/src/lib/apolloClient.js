@@ -52,6 +52,25 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
+// 서버 URL 설정
+const getServerUrl = () => {
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin;
+    console.log('Current origin:', origin);
+
+    if (origin.includes('replit.dev')) {
+      // Replit 환경: 5000번 포트 사용
+      const baseUrl = origin.replace(':3000', ':5000');
+      return `${baseUrl}/graphql`;
+    }
+  }
+
+  // 서버사이드 또는 로컬 개발환경
+  return process.env.REPLIT 
+    ? 'https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:5000/graphql'
+    : 'http://localhost:5000/graphql';
+};
+
 const client = new ApolloClient({
   link: from([authLink, httpLink]),
   cache: new InMemoryCache({
