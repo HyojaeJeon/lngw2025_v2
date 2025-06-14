@@ -3,9 +3,8 @@
 import SalesManagementPage from '@/components/sales/SalesManagementPage';
 
 export default function SalesPage() {
-  return <SalesManagementPage />;
+  return <SalesManagementPage />);
 }
-"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@apollo/client";
