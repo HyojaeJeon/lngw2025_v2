@@ -6,7 +6,6 @@ import {
   createHttpLink,
   from,
 } from "@apollo/client";
-import { createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import errorLink from "../apollo/errorLink";
 import { store } from "../store";
@@ -22,7 +21,7 @@ const getServerUrl = () => {
     // Replit 환경 감지
     if (hostname.includes("replit.dev")) {
       // Replit 환경에서는 현재 호스트의 포트 80(서버)으로 연결
-      const baseUrl = origin.replace(/:3000$/, ''); // 3000 포트 제거
+      const baseUrl = origin.replace(/:3000$/, ""); // 3000 포트 제거
       return `${baseUrl}/graphql`;
     }
 
@@ -48,11 +47,13 @@ const httpLink = createHttpLink({
 // 인증 정보와 언어 설정을 추가하는 링크
 const authLink = setContext((_, { headers }) => {
   let token = null;
-  let currentLanguage = 'ko';
+  let currentLanguage = "ko";
 
   if (typeof window !== "undefined") {
     // 토큰 가져오기
-    token = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+    token =
+      localStorage.getItem("auth_token") ||
+      sessionStorage.getItem("auth_token");
 
     // 현재 언어 가져오기
     try {
@@ -113,10 +114,10 @@ export const apolloClient = new ApolloClient({
   }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: "cache-and-network",
     },
     query: {
-      fetchPolicy: 'cache-first',
+      fetchPolicy: "cache-first",
     },
   },
 });
