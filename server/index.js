@@ -151,8 +151,8 @@ async function startServer() {
     }
 
     try {
-      // Proxy to Next.js dev server
-      const fetch = require("node-fetch");
+      // Proxy to Next.js dev server using dynamic import
+      const { default: fetch } = await import("node-fetch");
       const response = await fetch(`http://localhost:3000${req.url}`, {
         method: req.method,
         headers: req.headers,

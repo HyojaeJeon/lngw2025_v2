@@ -1,383 +1,388 @@
-"use client";
 
-import React, { useState } from "react";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.js";
-import { Button } from "@/components/ui/button.js";
-import { useTranslation } from "@/hooks/useLanguage.js";
+'use client';
 
-export default function CustomerGradesPage() {
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_CUSTOMER_GRADES, GET_CUSTOMER_GRADE_STATS } from '@/lib/graphql/customerOperations';
+import { CREATE_GRADE_RULE, UPDATE_GRADE_RULE, DELETE_GRADE_RULE } from '@/lib/graphql/customerOperations';
+import { useTranslation } from '@/hooks/useLanguage';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Edit, Plus, TrendingUp, Users, Award } from 'lucide-react';
+
+const CustomerGradesPage = () => {
   const { t } = useTranslation();
+  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    grade: '',
+    minPurchaseAmount: 0,
+    minPurchaseCount: 0,
+    benefits: '',
+    discountRate: 0,
+    description: ''
+  });
 
-  // 샘플 등급별 고객 데이터
-  const gradeData = {
-    A: {
-      name: "A등급 (VIP)",
-      description: "최우수 고객",
-      color: "bg-red-500",
-      lightColor: "bg-red-50 dark:bg-red-900",
-      textColor: "text-red-700 dark:text-red-300",
-      criteria: ["연매출 10억원 이상", "계약기간 3년 이상", "추천 실적 있음"],
-      benefits: ["전담 매니저 배정", "24시간 기술지원", "특별 할인율 적용"],
-      customers: [
-        {
-          id: 1,
-          company: "삼성전자",
-          contact: "김철수 과장",
-          revenue: "15억원",
-          since: "2019-01-15",
-        },
-        {
-          id: 2,
-          company: "LG화학",
-          contact: "이민수 대리",
-          revenue: "12억원",
-          since: "2020-03-20",
-        },
-      ],
-    },
-    B: {
-      name: "B등급 (우수)",
-      description: "우수 고객",
-      color: "bg-blue-500",
-      lightColor: "bg-blue-50 dark:bg-blue-900",
-      textColor: "text-blue-700 dark:text-blue-300",
-      criteria: ["연매출 5억원 이상", "계약기간 1년 이상", "정기 거래"],
-      benefits: ["우선 기술지원", "분기별 비즈니스 리뷰", "표준 할인율 적용"],
-      customers: [
-        {
-          id: 3,
-          company: "현대모비스",
-          contact: "정수영 차장",
-          revenue: "8억원",
-          since: "2021-06-10",
-        },
-        {
-          id: 4,
-          company: "SK하이닉스",
-          contact: "박민영 대리",
-          revenue: "6억원",
-          since: "2022-01-15",
-        },
-        {
-          id: 5,
-          company: "POSCO",
-          contact: "최도현 팀장",
-          revenue: "7억원",
-          since: "2021-09-01",
-        },
-      ],
-    },
-    C: {
-      name: "C등급 (일반)",
-      description: "일반 고객",
-      color: "bg-gray-500",
-      lightColor: "bg-gray-50 dark:bg-gray-700",
-      textColor: "text-gray-700 dark:text-gray-300",
-      criteria: ["신규 고객", "연매출 5억원 미만", "계약 초기 단계"],
-      benefits: ["표준 기술지원", "기본 서비스 제공", "표준 가격 적용"],
-      customers: [
-        {
-          id: 6,
-          company: "네이버",
-          contact: "김소영 과장",
-          revenue: "2억원",
-          since: "2023-11-20",
-        },
-        {
-          id: 7,
-          company: "카카오",
-          contact: "이준호 대리",
-          revenue: "3억원",
-          since: "2023-12-05",
-        },
-        {
-          id: 8,
-          company: "쿠팡",
-          contact: "박지원 팀장",
-          revenue: "4억원",
-          since: "2024-01-10",
-        },
-      ],
-    },
+  // GraphQL 쿼리
+  const { data: gradesData, loading: gradesLoading, refetch: refetchGrades } = useQuery(GET_CUSTOMER_GRADES);
+  const { data: statsData, loading: statsLoading } = useQuery(GET_CUSTOMER_GRADE_STATS);
+
+  // GraphQL 뮤테이션
+  const [createGradeRule] = useMutation(CREATE_GRADE_RULE, {
+    onCompleted: () => {
+      refetchGrades();
+      setIsModalOpen(false);
+      resetForm();
+    }
+  });
+
+  const [updateGradeRule] = useMutation(UPDATE_GRADE_RULE, {
+    onCompleted: () => {
+      refetchGrades();
+      setIsModalOpen(false);
+      resetForm();
+    }
+  });
+
+  const [deleteGradeRule] = useMutation(DELETE_GRADE_RULE, {
+    onCompleted: () => {
+      refetchGrades();
+    }
+  });
+
+  const resetForm = () => {
+    setFormData({
+      grade: '',
+      minPurchaseAmount: 0,
+      minPurchaseCount: 0,
+      benefits: '',
+      discountRate: 0,
+      description: ''
+    });
+    setSelectedGrade(null);
   };
 
-  const [selectedGrade, setSelectedGrade] = useState("A");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (selectedGrade) {
+        await updateGradeRule({
+          variables: {
+            id: selectedGrade.id,
+            input: formData
+          }
+        });
+      } else {
+        await createGradeRule({
+          variables: {
+            input: formData
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Grade rule save error:', error);
+    }
+  };
 
-  const totalCustomers = Object.values(gradeData).reduce(
-    (sum, grade) => sum + grade.customers.length,
-    0,
-  );
-  const totalRevenue = Object.values(gradeData).reduce(
-    (sum, grade) =>
-      sum +
-      grade.customers.reduce(
-        (gradeSum, customer) =>
-          gradeSum + parseFloat(customer.revenue.replace(/[^0-9]/g, "")),
-        0,
-      ),
-    0,
-  );
+  const handleEdit = (grade) => {
+    setSelectedGrade(grade);
+    setFormData({
+      grade: grade.grade || '',
+      minPurchaseAmount: grade.minPurchaseAmount || 0,
+      minPurchaseCount: grade.minPurchaseCount || 0,
+      benefits: grade.benefits || '',
+      discountRate: grade.discountRate || 0,
+      description: grade.description || ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm(t('common.confirmDelete'))) {
+      try {
+        await deleteGradeRule({
+          variables: { id }
+        });
+      } catch (error) {
+        console.error('Grade rule delete error:', error);
+      }
+    }
+  };
+
+  const getGradeColor = (grade) => {
+    const colors = {
+      'BRONZE': 'bg-orange-100 text-orange-800',
+      'SILVER': 'bg-gray-100 text-gray-800',
+      'GOLD': 'bg-yellow-100 text-yellow-800',
+      'PLATINUM': 'bg-purple-100 text-purple-800',
+      'DIAMOND': 'bg-blue-100 text-blue-800'
+    };
+    return colors[grade] || 'bg-gray-100 text-gray-800';
+  };
+
+  if (gradesLoading || statsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* 헤더 섹션 */}
-      <div
-        className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 
-                        rounded-xl p-6 transform transition-all duration-500 hover:scale-105"
-      >
-        <h1
-          className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
-                         bg-clip-text text-transparent"
-        >
-          {t("customers.grades")}
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
-          고객 등급별 현황을 관리합니다
-        </p>
+    <div className="space-y-6">
+      {/* 페이지 헤더 */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('customer.gradeManagement')}</h1>
+          <p className="text-gray-600">{t('customer.gradeManagementDescription')}</p>
+        </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { resetForm(); setIsModalOpen(true); }}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('customer.addGradeRule')}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedGrade ? t('customer.editGradeRule') : t('customer.addGradeRule')}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="grade">{t('customer.grade')}</Label>
+                <Select value={formData.grade} onValueChange={(value) => setFormData({...formData, grade: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('customer.selectGrade')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BRONZE">Bronze</SelectItem>
+                    <SelectItem value="SILVER">Silver</SelectItem>
+                    <SelectItem value="GOLD">Gold</SelectItem>
+                    <SelectItem value="PLATINUM">Platinum</SelectItem>
+                    <SelectItem value="DIAMOND">Diamond</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="minPurchaseAmount">{t('customer.minPurchaseAmount')}</Label>
+                <Input
+                  id="minPurchaseAmount"
+                  type="number"
+                  value={formData.minPurchaseAmount}
+                  onChange={(e) => setFormData({...formData, minPurchaseAmount: parseFloat(e.target.value) || 0})}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="minPurchaseCount">{t('customer.minPurchaseCount')}</Label>
+                <Input
+                  id="minPurchaseCount"
+                  type="number"
+                  value={formData.minPurchaseCount}
+                  onChange={(e) => setFormData({...formData, minPurchaseCount: parseInt(e.target.value) || 0})}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="discountRate">{t('customer.discountRate')} (%)</Label>
+                <Input
+                  id="discountRate"
+                  type="number"
+                  step="0.1"
+                  value={formData.discountRate}
+                  onChange={(e) => setFormData({...formData, discountRate: parseFloat(e.target.value) || 0})}
+                  placeholder="0.0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="benefits">{t('customer.benefits')}</Label>
+                <Input
+                  id="benefits"
+                  value={formData.benefits}
+                  onChange={(e) => setFormData({...formData, benefits: e.target.value})}
+                  placeholder={t('customer.benefitsPlaceholder')}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description">{t('common.description')}</Label>
+                <Input
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder={t('common.descriptionPlaceholder')}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                  {t('common.cancel')}
+                </Button>
+                <Button type="submit">
+                  {selectedGrade ? t('common.update') : t('common.create')}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* 전체 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card
-          className="transform transition-all duration-500 hover:scale-105 hover:shadow-xl
-                          bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              전체 고객 수
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {totalCustomers}명
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">{t('common.overview')}</TabsTrigger>
+          <TabsTrigger value="rules">{t('customer.gradeRules')}</TabsTrigger>
+          <TabsTrigger value="history">{t('customer.gradeHistory')}</TabsTrigger>
+        </TabsList>
 
-        <Card
-          className="transform transition-all duration-500 hover:scale-105 hover:shadow-xl
-                          bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              총 매출액
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {totalRevenue}억원
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="overview" className="space-y-4">
+          {/* 통계 카드 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('customer.totalCustomers')}</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statsData?.customerGradeStats?.totalCustomers || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {t('customer.activeCustomers')}
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card
-          className="transform transition-all duration-500 hover:scale-105 hover:shadow-xl
-                          bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              VIP 고객 비율
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {((gradeData.A.customers.length / totalCustomers) * 100).toFixed(
-                1,
-              )}
-              %
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('customer.averageGrade')}</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statsData?.customerGradeStats?.averageGrade || 'BRONZE'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {t('customer.currentAverageGrade')}
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* 등급별 탭 */}
-      <Card
-        className="transform transition-all duration-500 hover:shadow-xl
-                        bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-      >
-        <CardHeader>
-          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-            {Object.entries(gradeData).map(([grade, data]) => (
-              <button
-                key={grade}
-                onClick={() => setSelectedGrade(grade)}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300
-                             ${
-                               selectedGrade === grade
-                                 ? `${data.lightColor} ${data.textColor} shadow-sm`
-                                 : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                             }`}
-              >
-                {data.name} ({data.customers.length})
-              </button>
-            ))}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('customer.monthlyPromotions')}</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statsData?.customerGradeStats?.monthlyPromotions || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {t('customer.thisMonth')}
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-      </Card>
 
-      {/* 선택된 등급 상세 정보 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 등급 정보 */}
-        <Card
-          className="transform transition-all duration-500 hover:scale-105 hover:shadow-xl
-                          bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-        >
-          <CardHeader>
-            <CardTitle
-              className={`flex items-center ${gradeData[selectedGrade].textColor}`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full ${gradeData[selectedGrade].color} mr-3`}
-              ></div>
-              {gradeData[selectedGrade].name}
-            </CardTitle>
-            <CardDescription>
-              {gradeData[selectedGrade].description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                등급 기준
-              </h4>
-              <ul className="space-y-1">
-                {gradeData[selectedGrade].criteria.map((criterion, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    {criterion}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                제공 혜택
-              </h4>
-              <ul className="space-y-1">
-                {gradeData[selectedGrade].benefits.map((benefit, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2 text-blue-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 고객 목록 */}
-        <Card
-          className="lg:col-span-2 transform transition-all duration-500 hover:scale-105 hover:shadow-xl
-                          bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg"
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-gray-900 dark:text-white">
-                {gradeData[selectedGrade].name} 고객 목록
-              </span>
-              <Button
-                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600
-                                 transition-all duration-300 transform hover:scale-105"
-              >
-                등급 변경
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {gradeData[selectedGrade].customers.map((customer, index) => (
-                <div
-                  key={customer.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-700 
-                                 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 
-                                 hover:scale-105 hover:shadow-md animate-slideUp"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className={`w-12 h-12 ${gradeData[selectedGrade].color} rounded-full 
-                                     flex items-center justify-center text-white font-bold`}
-                    >
-                      {customer.company.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">
-                        {customer.company}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {customer.contact}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        거래시작: {customer.since}
-                      </p>
+          {/* 등급별 분포 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('customer.gradeDistribution')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {statsData?.customerGradeStats?.gradeDistribution?.map((grade) => (
+                  <div key={grade.grade} className="text-center">
+                    <Badge className={`${getGradeColor(grade.grade)} mb-2`}>
+                      {grade.grade}
+                    </Badge>
+                    <div className="text-2xl font-bold">{grade.count}</div>
+                    <div className="text-sm text-gray-600">
+                      {((grade.count / (statsData?.customerGradeStats?.totalCustomers || 1)) * 100).toFixed(1)}%
                     </div>
                   </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {customer.revenue}
-                    </div>
-                    <div className="flex space-x-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="transition-all duration-300 transform hover:scale-105"
-                      >
-                        상세보기
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="transition-all duration-300 transform hover:scale-105"
-                      >
-                        등급변경
-                      </Button>
+        <TabsContent value="rules" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('customer.gradeRules')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {gradesData?.customerGrades?.map((grade) => (
+                  <div key={grade.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Badge className={getGradeColor(grade.grade)}>
+                            {grade.grade}
+                          </Badge>
+                          <span className="font-medium">{grade.description}</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                          <div>
+                            <span className="font-medium">{t('customer.minPurchaseAmount')}:</span>
+                            <div>${grade.minPurchaseAmount?.toLocaleString() || 0}</div>
+                          </div>
+                          <div>
+                            <span className="font-medium">{t('customer.minPurchaseCount')}:</span>
+                            <div>{grade.minPurchaseCount || 0}회</div>
+                          </div>
+                          <div>
+                            <span className="font-medium">{t('customer.discountRate')}:</span>
+                            <div>{grade.discountRate || 0}%</div>
+                          </div>
+                          <div>
+                            <span className="font-medium">{t('customer.benefits')}:</span>
+                            <div>{grade.benefits || '-'}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(grade)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(grade.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('customer.gradeHistory')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                {t('common.comingSoon')}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
+
+export default CustomerGradesPage;
