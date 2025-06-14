@@ -1,6 +1,5 @@
-const models = require("../../models");
-const { createError, requireAuth, handleDatabaseError, ErrorCodes } = require("../../lib/errors");
-const { Op } = require("sequelize");
+const models = require('../../models');
+const { AuthenticationError, UserInputError } = require('apollo-server-express');
 
 const salesResolvers = {
   SalesItem: {
@@ -66,99 +65,44 @@ const salesResolvers = {
   },
 
   Query: {
-    salesItems: async (_, { filter = {}, sort = { field: "salesDate", direction: "DESC" }, page = 1, limit = 20 }, { user, lang }) => {
-      try {
-        requireAuth(user, lang);
+    salesItems: async (parent, { filter, limit = 50, offset = 0 }, { user }) => {
+      if (!user) throw new AuthenticationError('Authentication required');
 
-        const offset = (page - 1) * limit;
-        const where = { isActive: true };
+      const where = { isActive: true };
 
-        // 필터 조건 적용
-        if (filter.search) {
-          where[Op.or] = [{ notes: { [Op.like]: `%${filter.search}%` } }, { productModel: { [Op.like]: `%${filter.search}%` } }];
-        }
-
-        if (filter.salesRepId) where.salesRepId = filter.salesRepId;
+      if (filter) {
         if (filter.customerId) where.customerId = filter.customerId;
-        if (filter.categoryId) where.categoryId = filter.categoryId;
         if (filter.productId) where.productId = filter.productId;
-        if (filter.type) where.type = filter.type;
         if (filter.paymentStatus) where.paymentStatus = filter.paymentStatus;
-
-        if (filter.dateFrom || filter.dateTo) {
-          where.salesDate = {};
-          if (filter.dateFrom) where.salesDate[Op.gte] = filter.dateFrom;
-          if (filter.dateTo) where.salesDate[Op.lte] = filter.dateTo;
+        if (filter.deliveryStatus) where.deliveryStatus = filter.deliveryStatus;
+        if (filter.startDate && filter.endDate) {
+          where.saleDate = {
+            [models.Sequelize.Op.between]: [filter.startDate, filter.endDate]
+          };
         }
-
-        const orderDirection = sort.direction === "ASC" ? "ASC" : "DESC";
-
-        const { count, rows } = await models.SalesItem.findAndCountAll({
-          where,
-          limit,
-          offset,
-          order: [[sort.field, orderDirection]],
-          include: [
-            { model: models.User, as: "salesRep" },
-            { model: models.Customer, as: "customer" },
-            { model: models.Category, as: "category" },
-            { model: models.Product, as: "product" },
-          ],
-        });
-
-        return {
-          success: true,
-          salesItems: rows,
-          pagination: {
-            currentPage: page,
-            totalPages: Math.ceil(count / limit),
-            totalItems: count,
-            itemsPerPage: limit,
-            hasNextPage: page * limit < count,
-            hasPreviousPage: page > 1,
-            totalCount: count,
-          },
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_ITEMS_FETCH_FAILED");
       }
+
+      return await models.SalesItem.findAll({
+        where,
+        limit,
+        offset,
+        include: ['customer', 'product'],
+        order: [['saleDate', 'DESC']]
+      });
     },
 
-    salesItem: async (_, { id }, { user, lang }) => {
-      try {
-        requireAuth(user, lang);
+    salesItem: async (parent, { id }, { user }) => {
+      if (!user) throw new AuthenticationError('Authentication required');
 
-        const salesItem = await models.SalesItem.findByPk(id, {
-          include: [
-            { model: models.User, as: "salesRep" },
-            { model: models.Customer, as: "customer" },
-            { model: models.Category, as: "category" },
-            { model: models.Product, as: "product" },
-          ],
-        });
-
-        if (!salesItem) {
-          throw createError(ErrorCodes.NOT_FOUND, "매출 항목을 찾을 수 없습니다");
-        }
-
-        return {
-          success: true,
-          salesItem,
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_ITEM_FETCH_FAILED");
-      }
+      return await models.SalesItem.findByPk(id, {
+        include: ['customer', 'product']
+      });
     },
 
     salesReps: async (_, { search, limit = 100 }, { user, lang }) => {
       try {
-        requireAuth(user, lang);
+        if (!user) throw new AuthenticationError('Authentication required');
+        const { Op } = require("sequelize");
 
         const where = {};
 
@@ -177,13 +121,14 @@ const salesResolvers = {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "SALES_REPS_FETCH_FAILED");
       }
     },
 
     customersForSales: async (_, { limit = 100, offset = 0 }, { user, lang }) => {
       try {
-        requireAuth(user, lang);
+        if (!user) throw new AuthenticationError('Authentication required');
 
         const customers = await models.Customer.findAll({
           where: {},
@@ -197,13 +142,15 @@ const salesResolvers = {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "CUSTOMERS_FOR_SALES_FETCH_FAILED");
       }
     },
 
     productsForSales: async (_, { categoryId, search, limit = 100 }, { user, lang }) => {
       try {
-        requireAuth(user, lang);
+        if (!user) throw new AuthenticationError('Authentication required');
+        const { Op } = require("sequelize");
 
         const where = { isActive: true };
 
@@ -227,13 +174,15 @@ const salesResolvers = {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "PRODUCTS_FOR_SALES_FETCH_FAILED");
       }
     },
 
     productModelsForSales: async (_, { productId, search, limit = 100 }, { user, lang }) => {
       try {
-        requireAuth(user, lang);
+        if (!user) throw new AuthenticationError('Authentication required');
+        const { Op } = require("sequelize");
 
         const where = { productId, isActive: true };
 
@@ -252,11 +201,13 @@ const salesResolvers = {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "PRODUCT_MODELS_FOR_SALES_FETCH_FAILED");
       }
     },
 
     incentivePayouts: async (_, { salesItemId, type }, { user, lang }) => {
+      const { requireAuth } = require("../../lib/errors");
       requireAuth(user, lang);
 
       try {
@@ -274,11 +225,13 @@ const salesResolvers = {
           incentivePayouts,
         };
       } catch (error) {
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "INCENTIVE_PAYOUTS_FETCH_FAILED");
       }
     },
 
     salesItemHistories: async (_, { salesItemId }, { user, lang }) => {
+      const { requireAuth } = require("../../lib/errors");
       requireAuth(user, lang);
 
       try {
@@ -294,107 +247,66 @@ const salesResolvers = {
           histories,
         };
       } catch (error) {
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "SALES_ITEM_HISTORIES_FETCH_FAILED");
       }
     },
   },
 
   Mutation: {
-    createSalesItem: async (_, { input }, { user, lang }) => {
-      try {
-        requireAuth(user, lang);
+    createSalesItem: async (parent, { input }, { user }) => {
+      if (!user) throw new AuthenticationError('Authentication required');
 
-        // 제품 정보 조회하여 기본값 설정
-        let productData = null;
-        let productModelData = null;
+      const totalAmount = input.quantity * input.unitPrice;
+      const discountAmount = totalAmount * (input.discountRate || 0) / 100;
+      const finalAmount = totalAmount - discountAmount;
 
-        if (input.productId) {
-          productData = await models.Product.findByPk(input.productId);
-        }
-
-        if (input.productModelId) {
-          productModelData = await models.ProductModel.findByPk(input.productModelId);
-        }
-
-        // 제품의 기본 인센티브 및 원가 값 설정
-        const enrichedInput = {
-          ...input,
-          // 제품 기본 인센티브 값 (사용자가 직접 입력하지 않은 경우)
-          productIncentiveA: input.productIncentiveA ?? (productModelData?.incentiveA || productData?.incentiveA || 0),
-          productIncentiveB: input.productIncentiveB ?? (productModelData?.incentiveB || productData?.incentiveB || 0),
-          // 원가 정보 설정
-          originalUnitCost: productModelData?.cost || productData?.cost || 0,
-          adjustedUnitCost: input.adjustedUnitCost ?? (productModelData?.cost || productData?.cost || 0),
-          // 기본 소비자가 설정
-          consumerPrice: input.consumerPrice ?? (productModelData?.consumerPrice || productData?.consumerPrice || 0),
-        };
-
-        const salesItem = await models.SalesItem.create(enrichedInput);
-
-        return {
-          success: true,
-          message: "매출이 성공적으로 등록되었습니다.",
-          salesItem,
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_ITEM_CREATE_FAILED");
-      }
+      return await models.SalesItem.create({
+        ...input,
+        totalAmount,
+        discountAmount,
+        finalAmount,
+        isActive: true
+      });
     },
 
-    updateSalesItem: async (_, { id, input }, { user, lang }) => {
-      try {
-        requireAuth(user, lang);
+    updateSalesItem: async (parent, { id, input }, { user }) => {
+      if (!user) throw new AuthenticationError('Authentication required');
 
-        const [updatedRowsCount] = await models.SalesItem.update(input, {
-          where: { id, isActive: true },
-        });
+      const salesItem = await models.SalesItem.findByPk(id);
+      if (!salesItem) throw new UserInputError('Sales item not found');
 
-        if (updatedRowsCount === 0) {
-          throw createError(ErrorCodes.NOT_FOUND, "매출 항목을 찾을 수 없습니다");
-        }
+      const totalAmount = input.quantity * input.unitPrice;
+      const discountAmount = totalAmount * (input.discountRate || 0) / 100;
+      const finalAmount = totalAmount - discountAmount;
 
-        const salesItem = await models.SalesItem.findByPk(id);
+      await salesItem.update({
+        ...input,
+        totalAmount,
+        discountAmount,
+        finalAmount
+      });
 
-        return {
-          success: true,
-          message: "매출이 성공적으로 수정되었습니다.",
-          salesItem,
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_ITEM_UPDATE_FAILED");
-      }
+      return salesItem;
     },
 
-    deleteSalesItem: async (_, { id }, { user, lang }) => {
-      try {
-        requireAuth(user, lang);
+    deleteSalesItem: async (parent, { id }, { user }) => {
+      if (!user) throw new AuthenticationError('Authentication required');
 
-        const [updatedRowsCount] = await models.SalesItem.update({ isActive: false }, { where: { id, isActive: true } });
+      const salesItem = await models.SalesItem.findByPk(id);
+      if (!salesItem) throw new UserInputError('Sales item not found');
 
-        if (updatedRowsCount === 0) {
-          throw createError(ErrorCodes.NOT_FOUND, "매출 항목을 찾을 수 없습니다");
-        }
+      await salesItem.update({ isActive: false });
 
-        return {
-          success: true,
-          message: "매출이 성공적으로 삭제되었습니다.",
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_ITEM_DELETE_FAILED");
-      }
+      return {
+        success: true,
+        message: 'Sales item deleted successfully'
+      };
     },
 
     bulkUpdateSalesItems: async (_, { updates }, { user, lang }) => {
       try {
+        const { requireAuth, createError, ErrorCodes, handleDatabaseError } = require("../../lib/errors");
         requireAuth(user, lang);
 
         const updatedSalesItems = [];
@@ -419,11 +331,13 @@ const salesResolvers = {
         if (error.extensions?.errorKey) {
           throw error;
         }
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "BULK_UPDATE_SALES_ITEMS_FAILED");
       }
     },
 
     createIncentivePayout: async (_, { input }, { user, lang }) => {
+      const { requireAuth, handleDatabaseError } = require("../../lib/errors");
       requireAuth(user, lang);
 
       try {
@@ -435,10 +349,20 @@ const salesResolvers = {
           message: "인센티브 지급 내역이 성공적으로 등록되었습니다.",
         };
       } catch (error) {
+        const { handleDatabaseError } = require("../../lib/errors");
         handleDatabaseError(error, lang, "INCENTIVE_PAYOUT_CREATE_FAILED");
       }
     },
   },
+
+  SalesItem: {
+    customer: async (salesItem) => {
+      return await models.Customer.findByPk(salesItem.customerId);
+    },
+    product: async (salesItem) => {
+      return await models.Product.findByPk(salesItem.productId);
+    }
+  }
 };
 
 module.exports = salesResolvers;

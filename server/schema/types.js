@@ -910,7 +910,7 @@ const types = gql`
     phone: String
     department: String!
     position: String!
-    hireDate: Date!
+    hireDate: String!
     status: EmployeeStatus!
     salary: Float
     manager: Employee

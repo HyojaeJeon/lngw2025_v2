@@ -1,482 +1,671 @@
 
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.js";
-import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input.js";
-import { Badge } from "@/components/ui/badge.js";
-import { useLanguage } from '@/hooks/useLanguage.js';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_EMPLOYEES, CREATE_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE } from '@/lib/graphql/employeeOperations.js';
-import {
-  Users,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Mail,
-  Phone,
-  Calendar,
-  MapPin,
-  Building,
-  User,
-  Filter
-} from "lucide-react";
-import Link from "next/link";
+import { useTranslation } from '../../../hooks/useLanguage';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Badge } from '../../../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { LoadingModal } from '../../../components/ui/LoadingModal';
+import { GET_EMPLOYEES, GET_EMPLOYEE_STATS } from '../../../lib/graphql/employeeOperations';
+import { CREATE_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE } from '../../../lib/graphql/employeeOperations';
+import { notifySuccess, notifyError } from '../../../utils/notifications';
+import { PlusIcon, SearchIcon, UsersIcon, UserCheckIcon, ClockIcon, CalendarIcon } from 'lucide-react';
 
 export default function EmployeesPage() {
-  const { t } = useLanguage();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
+  const { t } = useTranslation();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({});
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    department: "",
-    position: "",
-    hireDate: "",
-    salary: "",
-    status: "ACTIVE"
-  });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { data: employeesData, loading, error, refetch } = useQuery(GET_EMPLOYEES, {
+  // GraphQL 쿼리
+  const { data: employeesData, loading: employeesLoading, refetch: refetchEmployees } = useQuery(GET_EMPLOYEES, {
     variables: {
       filter: {
-        search: searchTerm,
-        department: departmentFilter
-      }
+        search: searchTerm || undefined,
+        ...filters
+      },
+      limit: 50,
+      offset: 0
+    },
+    fetchPolicy: 'cache-and-network'
+  });
+
+  const { data: statsData, loading: statsLoading } = useQuery(GET_EMPLOYEE_STATS, {
+    fetchPolicy: 'cache-and-network'
+  });
+
+  // 뮤테이션
+  const [createEmployee] = useMutation(CREATE_EMPLOYEE, {
+    onCompleted: () => {
+      notifySuccess(t('직원이 성공적으로 등록되었습니다'));
+      setIsCreateModalOpen(false);
+      refetchEmployees();
+    },
+    onError: (error) => {
+      notifyError(error.message);
     }
   });
 
-  const [createEmployee] = useMutation(CREATE_EMPLOYEE);
-  const [updateEmployee] = useMutation(UPDATE_EMPLOYEE);
-  const [deleteEmployee] = useMutation(DELETE_EMPLOYEE);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (selectedEmployee) {
-        await updateEmployee({
-          variables: {
-            id: selectedEmployee.id,
-            input: formData
-          }
-        });
-      } else {
-        await createEmployee({
-          variables: {
-            input: formData
-          }
-        });
-      }
-      setShowAddForm(false);
+  const [updateEmployee] = useMutation(UPDATE_EMPLOYEE, {
+    onCompleted: () => {
+      notifySuccess(t('직원 정보가 성공적으로 수정되었습니다'));
+      setIsEditModalOpen(false);
       setSelectedEmployee(null);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        department: "",
-        position: "",
-        hireDate: "",
-        salary: "",
-        status: "ACTIVE"
+      refetchEmployees();
+    },
+    onError: (error) => {
+      notifyError(error.message);
+    }
+  });
+
+  const [deleteEmployee] = useMutation(DELETE_EMPLOYEE, {
+    onCompleted: () => {
+      notifySuccess(t('직원이 성공적으로 삭제되었습니다'));
+      refetchEmployees();
+    },
+    onError: (error) => {
+      notifyError(error.message);
+    }
+  });
+
+  const employees = employeesData?.employees || [];
+  const stats = statsData?.employeeStats || {};
+
+  const handleCreateEmployee = async (formData) => {
+    try {
+      await createEmployee({
+        variables: {
+          input: formData
+        }
       });
-      refetch();
     } catch (error) {
-      console.error('Error saving employee:', error);
+      console.error('직원 생성 오류:', error);
     }
   };
 
-  const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-    setFormData({
-      name: employee.name || "",
-      email: employee.email || "",
-      phone: employee.phone || "",
-      department: employee.department || "",
-      position: employee.position || "",
-      hireDate: employee.hireDate || "",
-      salary: employee.salary || "",
-      status: employee.status || "ACTIVE"
-    });
-    setShowAddForm(true);
+  const handleUpdateEmployee = async (formData) => {
+    try {
+      await updateEmployee({
+        variables: {
+          id: selectedEmployee.id,
+          input: formData
+        }
+      });
+    } catch (error) {
+      console.error('직원 수정 오류:', error);
+    }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('정말로 이 직원을 삭제하시겠습니까?')) {
+  const handleDeleteEmployee = async (employeeId) => {
+    if (window.confirm(t('정말로 이 직원을 삭제하시겠습니까?'))) {
       try {
         await deleteEmployee({
-          variables: {
-            id
-          }
+          variables: { id: employeeId }
         });
-        refetch();
       } catch (error) {
-        console.error('Error deleting employee:', error);
+        console.error('직원 삭제 오류:', error);
       }
     }
   };
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      ACTIVE: { variant: "default", label: "재직", className: "bg-green-100 text-green-800" },
-      INACTIVE: { variant: "secondary", label: "휴직", className: "bg-yellow-100 text-yellow-800" },
-      TERMINATED: { variant: "destructive", label: "퇴사", className: "bg-red-100 text-red-800" }
+    const statusColors = {
+      ACTIVE: 'bg-green-100 text-green-800',
+      ON_LEAVE: 'bg-yellow-100 text-yellow-800',
+      TERMINATED: 'bg-red-100 text-red-800',
+      PENDING: 'bg-gray-100 text-gray-800'
     };
-    
-    const config = statusConfig[status] || statusConfig.ACTIVE;
+
+    const statusLabels = {
+      ACTIVE: t('재직중'),
+      ON_LEAVE: t('휴직중'),
+      TERMINATED: t('퇴사'),
+      PENDING: t('대기중')
+    };
+
     return (
-      <Badge className={config.className}>
-        {config.label}
+      <Badge className={statusColors[status] || 'bg-gray-100 text-gray-800'}>
+        {statusLabels[status] || status}
       </Badge>
     );
   };
 
-  const employees = employeesData?.employees || [];
-  const departments = [...new Set(employees.map(emp => emp.department).filter(Boolean))];
+  const getEmploymentTypeBadge = (type) => {
+    const typeColors = {
+      FULL_TIME: 'bg-blue-100 text-blue-800',
+      CONTRACT: 'bg-purple-100 text-purple-800',
+      INTERN: 'bg-orange-100 text-orange-800',
+      FREELANCER: 'bg-pink-100 text-pink-800',
+      PART_TIME: 'bg-cyan-100 text-cyan-800'
+    };
 
-  if (loading) {
+    const typeLabels = {
+      FULL_TIME: t('정규직'),
+      CONTRACT: t('계약직'),
+      INTERN: t('인턴'),
+      FREELANCER: t('프리랜서'),
+      PART_TIME: t('파트타임')
+    };
+
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">직원 정보를 불러오는 중...</p>
-          </div>
-        </div>
-      </DashboardLayout>
+      <Badge className={typeColors[type] || 'bg-gray-100 text-gray-800'}>
+        {typeLabels[type] || type}
+      </Badge>
     );
+  };
+
+  if (employeesLoading && !employeesData) {
+    return <LoadingModal isOpen={true} message={t('직원 정보를 불러오는 중...')} />;
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              직원 관리
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              직원 정보를 관리하고 추적하세요
-            </p>
-          </div>
-          <Button 
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            새 직원 추가
-          </Button>
+    <div className="p-6 space-y-6">
+      {/* 헤더 */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{t('직원 관리')}</h1>
+          <p className="text-gray-600 mt-1">{t('직원 정보를 관리하고 현황을 확인하세요')}</p>
         </div>
+        <Button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <PlusIcon className="w-4 h-4 mr-2" />
+          {t('직원 등록')}
+        </Button>
+      </div>
 
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">총 직원 수</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {employees.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <User className="h-8 w-8 text-green-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">재직자</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {employees.filter(emp => emp.status === 'ACTIVE').length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Building className="h-8 w-8 text-purple-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">부서 수</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {departments.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-orange-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">신규 입사 (이번 달)</p>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 필터 및 검색 */}
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <div className="flex items-center">
+              <UsersIcon className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">{t('전체 직원')}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalEmployees || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <UserCheckIcon className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">{t('재직 중')}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.activeEmployees || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <ClockIcon className="h-8 w-8 text-orange-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">{t('오늘 출근')}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.todayAttendance || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <CalendarIcon className="h-8 w-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">{t('휴가 신청')}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pendingLeaveRequests || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 검색 및 필터 */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder={t('이름, 이메일, 사원번호로 검색...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select onValueChange={(value) => setFilters({ ...filters, department: value === 'all' ? undefined : value })}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder={t('부서')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('전체 부서')}</SelectItem>
+                <SelectItem value="개발팀">{t('개발팀')}</SelectItem>
+                <SelectItem value="영업팀">{t('영업팀')}</SelectItem>
+                <SelectItem value="마케팅팀">{t('마케팅팀')}</SelectItem>
+                <SelectItem value="인사팀">{t('인사팀')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={(value) => setFilters({ ...filters, employmentStatus: value === 'all' ? undefined : value })}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder={t('상태')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('전체 상태')}</SelectItem>
+                <SelectItem value="ACTIVE">{t('재직중')}</SelectItem>
+                <SelectItem value="ON_LEAVE">{t('휴직중')}</SelectItem>
+                <SelectItem value="TERMINATED">{t('퇴사')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 직원 목록 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('직원 목록')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4 font-semibold">{t('프로필')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('사원번호')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('부서/직책')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('고용형태')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('상태')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('입사일')}</th>
+                  <th className="text-left py-3 px-4 font-semibold">{t('작업')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((employee) => (
+                  <tr key={employee.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold">
+                            {employee.firstName?.[0]}{employee.lastName?.[0]}
+                          </span>
+                        </div>
+                        <div className="ml-3">
+                          <p className="font-medium text-gray-900">{employee.fullName}</p>
+                          <p className="text-sm text-gray-600">{employee.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-mono text-sm">{employee.employeeNumber}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div>
+                        <p className="font-medium">{employee.department}</p>
+                        <p className="text-sm text-gray-600">{employee.position}</p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      {getEmploymentTypeBadge(employee.employmentType)}
+                    </td>
+                    <td className="py-3 px-4">
+                      {getStatusBadge(employee.employmentStatus)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm">
+                        {new Date(employee.hireDate).toLocaleDateString('ko-KR')}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedEmployee(employee);
+                            setIsEditModalOpen(true);
+                          }}
+                        >
+                          {t('수정')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteEmployee(employee.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          {t('삭제')}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 직원 등록 모달 */}
+      <EmployeeFormModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateEmployee}
+        title={t('새 직원 등록')}
+      />
+
+      {/* 직원 수정 모달 */}
+      {selectedEmployee && (
+        <EmployeeFormModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedEmployee(null);
+          }}
+          onSubmit={handleUpdateEmployee}
+          employee={selectedEmployee}
+          title={t('직원 정보 수정')}
+        />
+      )}
+    </div>
+  );
+}
+
+// 직원 폼 모달 컴포넌트
+function EmployeeFormModal({ isOpen, onClose, onSubmit, employee, title }) {
+  const { t } = useTranslation();
+  const [formData, setFormData] = useState({
+    employeeNumber: '',
+    firstName: '',
+    lastName: '',
+    firstNameEn: '',
+    lastNameEn: '',
+    email: '',
+    phone: '',
+    mobile: '',
+    department: '',
+    position: '',
+    jobTitle: '',
+    employmentType: 'FULL_TIME',
+    employmentStatus: 'ACTIVE',
+    hireDate: '',
+    birthDate: '',
+    gender: '',
+    nationality: '',
+    address: '',
+    baseSalary: '',
+    salaryType: 'MONTHLY',
+    bankAccount: '',
+    bankName: '',
+    notes: ''
+  });
+
+  useEffect(() => {
+    if (employee) {
+      setFormData({
+        employeeNumber: employee.employeeNumber || '',
+        firstName: employee.firstName || '',
+        lastName: employee.lastName || '',
+        firstNameEn: employee.firstNameEn || '',
+        lastNameEn: employee.lastNameEn || '',
+        email: employee.email || '',
+        phone: employee.phone || '',
+        mobile: employee.mobile || '',
+        department: employee.department || '',
+        position: employee.position || '',
+        jobTitle: employee.jobTitle || '',
+        employmentType: employee.employmentType || 'FULL_TIME',
+        employmentStatus: employee.employmentStatus || 'ACTIVE',
+        hireDate: employee.hireDate ? new Date(employee.hireDate).toISOString().split('T')[0] : '',
+        birthDate: employee.birthDate ? new Date(employee.birthDate).toISOString().split('T')[0] : '',
+        gender: employee.gender || '',
+        nationality: employee.nationality || '',
+        address: employee.address || '',
+        baseSalary: employee.baseSalary || '',
+        salaryType: employee.salaryType || 'MONTHLY',
+        bankAccount: employee.bankAccount || '',
+        bankName: employee.bankName || '',
+        notes: employee.notes || ''
+      });
+    } else {
+      setFormData({
+        employeeNumber: '',
+        firstName: '',
+        lastName: '',
+        firstNameEn: '',
+        lastNameEn: '',
+        email: '',
+        phone: '',
+        mobile: '',
+        department: '',
+        position: '',
+        jobTitle: '',
+        employmentType: 'FULL_TIME',
+        employmentStatus: 'ACTIVE',
+        hireDate: '',
+        birthDate: '',
+        gender: '',
+        nationality: '',
+        address: '',
+        baseSalary: '',
+        salaryType: 'MONTHLY',
+        bankAccount: '',
+        bankName: '',
+        notes: ''
+      });
+    }
+  }, [employee]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const submitData = { ...formData };
+    
+    // 빈 문자열을 null로 변환
+    Object.keys(submitData).forEach(key => {
+      if (submitData[key] === '') {
+        submitData[key] = null;
+      }
+    });
+
+    // 숫자 필드 변환
+    if (submitData.baseSalary) {
+      submitData.baseSalary = parseFloat(submitData.baseSalary);
+    }
+
+    onSubmit(submitData);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 기본 정보 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{t('기본 정보')}</h3>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('사원번호')} *</label>
+                <Input
+                  value={formData.employeeNumber}
+                  onChange={(e) => setFormData({ ...formData, employeeNumber: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('성')} *</label>
                   <Input
-                    placeholder="직원 이름, 이메일로 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('이름')} *</label>
+                  <Input
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    required
                   />
                 </div>
               </div>
-              <div className="w-full md:w-48">
-                <select
-                  value={departmentFilter}
-                  onChange={(e) => setDepartmentFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">모든 부서</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('영문 성')}</label>
+                  <Input
+                    value={formData.lastNameEn}
+                    onChange={(e) => setFormData({ ...formData, lastNameEn: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('영문 이름')}</label>
+                  <Input
+                    value={formData.firstNameEn}
+                    onChange={(e) => setFormData({ ...formData, firstNameEn: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('이메일')} *</label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('전화번호')}</label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('휴대폰')}</label>
+                  <Input
+                    value={formData.mobile}
+                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* 직원 목록 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {employees.map((employee) => (
-            <Card key={employee.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{employee.name}</h3>
-                      <p className="text-sm text-gray-600">{employee.position}</p>
-                    </div>
-                  </div>
-                  {getStatusBadge(employee.status)}
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Building className="w-4 h-4 mr-2" />
-                    {employee.department}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="w-4 h-4 mr-2" />
-                    {employee.email}
-                  </div>
-                  {employee.phone && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {employee.phone}
-                    </div>
-                  )}
-                  {employee.hireDate && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      입사일: {new Date(employee.hireDate).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-between">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(employee)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    편집
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(employee.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    삭제
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* 빠른 액세스 링크 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>빠른 액세스</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Link href="/dashboard/employees/attendance">
-                <Button variant="outline" className="w-full h-20 flex-col">
-                  <Calendar className="w-6 h-6 mb-2" />
-                  출근 관리
-                </Button>
-              </Link>
-              <Link href="/dashboard/employees/salary">
-                <Button variant="outline" className="w-full h-20 flex-col">
-                  <Users className="w-6 h-6 mb-2" />
-                  급여 관리
-                </Button>
-              </Link>
-              <Link href="/dashboard/employees/evaluation">
-                <Button variant="outline" className="w-full h-20 flex-col">
-                  <User className="w-6 h-6 mb-2" />
-                  평가 관리
-                </Button>
-              </Link>
-              <Link href="/dashboard/employees/leave">
-                <Button variant="outline" className="w-full h-20 flex-col">
-                  <Calendar className="w-6 h-6 mb-2" />
-                  휴가 관리
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 직원 추가/편집 모달 */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold mb-4">
-                {selectedEmployee ? '직원 정보 수정' : '새 직원 추가'}
-              </h3>
+            {/* 직장 정보 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{t('직장 정보')}</h3>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">이름</label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">이메일</label>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">전화번호</label>
-                    <Input
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">부서</label>
-                    <Input
-                      value={formData.department}
-                      onChange={(e) => setFormData({...formData, department: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">직책</label>
-                    <Input
-                      value={formData.position}
-                      onChange={(e) => setFormData({...formData, position: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">입사일</label>
-                    <Input
-                      type="date"
-                      value={formData.hireDate}
-                      onChange={(e) => setFormData({...formData, hireDate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">급여</label>
-                    <Input
-                      type="number"
-                      value={formData.salary}
-                      onChange={(e) => setFormData({...formData, salary: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">상태</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value="ACTIVE">재직</option>
-                      <option value="INACTIVE">휴직</option>
-                      <option value="TERMINATED">퇴사</option>
-                    </select>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('부서')} *</label>
+                <Select onValueChange={(value) => setFormData({ ...formData, department: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('부서 선택')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="개발팀">{t('개발팀')}</SelectItem>
+                    <SelectItem value="영업팀">{t('영업팀')}</SelectItem>
+                    <SelectItem value="마케팅팀">{t('마케팅팀')}</SelectItem>
+                    <SelectItem value="인사팀">{t('인사팀')}</SelectItem>
+                    <SelectItem value="재무팀">{t('재무팀')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setSelectedEmployee(null);
-                      setFormData({
-                        name: "",
-                        email: "",
-                        phone: "",
-                        department: "",
-                        position: "",
-                        hireDate: "",
-                        salary: "",
-                        status: "ACTIVE"
-                      });
-                    }}
-                  >
-                    취소
-                  </Button>
-                  <Button type="submit">
-                    {selectedEmployee ? '수정' : '추가'}
-                  </Button>
-                </div>
-              </form>
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('직책')} *</label>
+                <Input
+                  value={formData.position}
+                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('고용형태')} *</label>
+                <Select onValueChange={(value) => setFormData({ ...formData, employmentType: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('고용형태 선택')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FULL_TIME">{t('정규직')}</SelectItem>
+                    <SelectItem value="CONTRACT">{t('계약직')}</SelectItem>
+                    <SelectItem value="INTERN">{t('인턴')}</SelectItem>
+                    <SelectItem value="FREELANCER">{t('프리랜서')}</SelectItem>
+                    <SelectItem value="PART_TIME">{t('파트타임')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('근무상태')} *</label>
+                <Select onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('근무상태 선택')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">{t('재직중')}</SelectItem>
+                    <SelectItem value="ON_LEAVE">{t('휴직중')}</SelectItem>
+                    <SelectItem value="TERMINATED">{t('퇴사')}</SelectItem>
+                    <SelectItem value="PENDING">{t('대기중')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('입사일')} *</label>
+                <Input
+                  type="date"
+                  value={formData.hireDate}
+                  onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('기본급')}</label>
+                <Input
+                  type="number"
+                  value={formData.baseSalary}
+                  onChange={(e) => setFormData({ ...formData, baseSalary: e.target.value })}
+                />
+              </div>
             </div>
           </div>
-        )}
-      </div>
-    </DashboardLayout>
+
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {t('취소')}
+            </Button>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              {employee ? t('수정') : t('등록')}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
