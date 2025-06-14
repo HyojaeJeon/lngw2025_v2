@@ -1,105 +1,110 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
+// 고객 목록 조회 쿼리
 export const GET_CUSTOMERS = gql`
-  query GetCustomers($limit: Int, $offset: Int, $filter: CustomerFilter) {
-    customers(limit: $limit, offset: $offset, filter: $filter) {
+  query GetCustomers($filter: CustomerFilterInput) {
+    customers(filter: $filter) {
       id
       name
       contactName
       email
       phone
-      industry
-      companyType
       grade
-      address
-      assignedUserId
-      assignedUser {
-        id
-        name
-        email
-        department
-        position
-      }
-      status
       profileImage
-      facebook
-      tiktok
-      instagram
-      contacts {
+      address
+      business
+      taxId
+      status
+      createdAt
+      updatedAt
+      contactPersons {
         id
         name
-        department
         position
         phone
         email
-        birthDate
-        facebook
-        tiktok
-        instagram
-        profileImage
       }
-      facilityImages {
+      customerImages {
         id
         imageUrl
-        description
-        sortOrder
+        imageType
       }
-      createdAt
-      updatedAt
     }
   }
 `;
 
+// 사용자 목록 조회 쿼리
 export const GET_USERS = gql`
-  query GetUsers($limit: Int, $offset: Int, $search: String) {
-    users(limit: $limit, offset: $offset, search: $search) {
+  query GetUsers($filter: UserFilterInput) {
+    users(filter: $filter) {
       id
       name
       email
-      phoneNumber
+      role
       department
       position
+      avatar
     }
   }
 `;
 
-export const USERS_QUERY = gql`
-  query Users($limit: Int, $offset: Int, $search: String) {
-    users(limit: $limit, offset: $offset, search: $search) {
-      id
-      name
-      email
-      phoneNumber
-      department
-      position
-    }
-  }
-`;
-
+// 고객 생성 뮤테이션
 export const CREATE_CUSTOMER = gql`
-  mutation CreateCustomer($input: CustomerInput!) {
+  mutation CreateCustomer($input: CreateCustomerInput!) {
     createCustomer(input: $input) {
-      id
-      name
-      contactName
-      email
-      phone
-      industry
-      companyType
-      grade
-      address
-      status
-      assignedUserId
-      assignedUser {
+      success
+      message
+      customer {
         id
         name
+        contactName
+        email
+        phone
+        grade
+        profileImage
+        address
+        business
+        taxId
+        status
       }
-      createdAt
-      updatedAt
     }
   }
 `;
 
+// 고객 업데이트 뮤테이션
+export const UPDATE_CUSTOMER = gql`
+  mutation UpdateCustomer($id: ID!, $input: UpdateCustomerInput!) {
+    updateCustomer(id: $id, input: $input) {
+      success
+      message
+      customer {
+        id
+        name
+        contactName
+        email
+        phone
+        grade
+        profileImage
+        address
+        business
+        taxId
+        status
+      }
+    }
+  }
+`;
+
+// 고객 삭제 뮤테이션
+export const DELETE_CUSTOMER = gql`
+  mutation DeleteCustomer($id: ID!) {
+    deleteCustomer(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+// 고객 상세 조회 쿼리
 export const GET_CUSTOMER_DETAIL = gql`
   query GetCustomerDetail($id: ID!) {
     customer(id: $id) {
@@ -108,130 +113,37 @@ export const GET_CUSTOMER_DETAIL = gql`
       contactName
       email
       phone
-      industry
-      companyType
       grade
-      address
-      status
       profileImage
-      facebook
-      instagram
-      assignedUserId
-      assignedUser {
+      address
+      business
+      taxId
+      status
+      createdAt
+      updatedAt
+      contactPersons {
         id
         name
-        email
-      }
-      contacts {
-        id
-        name
-        department
         position
         phone
         email
-        birthDate
-        facebook
-        instagram
-        profileImage
+        department
       }
-      opportunities {
-        id
-        title
-        description
-        expectedAmount
-        stage
-        probability
-        priority
-        expectedCloseDate
-        source
-      }
-      images {
+      customerImages {
         id
         imageUrl
         imageType
         description
       }
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-export const GET_CUSTOMER_VOCS = gql`
-  query GetCustomerVocs($filter: VocFilter!) {
-    vocs(filter: $filter) {
-      id
-      title
-      type
-      content
-      priority
-      status
-      createdAt
-      updatedAt
-      resolvedAt
-      assignedTo {
+      salesItems {
         id
-        name
+        salesDate
+        totalPrice
+        paymentStatus
+        product {
+          name
+        }
       }
-    }
-  }
-`;
-
-export const CREATE_CUSTOMER_MUTATION = gql`
-  mutation CreateCustomer($input: CustomerInput!) {
-    createCustomer(input: $input) {
-      id
-      name
-      contactName
-      email
-      phone
-      industry
-      companyType
-      grade
-      address
-      assignedUserId
-      assignedUser {
-        id
-        name
-        email
-        department
-        position
-      }
-      status
-      profileImage
-      facebook
-      tiktok
-      instagram
-      contacts {
-        id
-        name
-        department
-        position
-        phone
-        email
-        birthDate
-        facebook
-        tiktok
-        instagram
-        profileImage
-      }
-      facilityImages {
-        id
-        imageUrl
-        description
-        sortOrder
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-export const CHECK_COMPANY_NAME_QUERY = gql`
-  query CheckCompanyName($name: String!) {
-    checkCompanyName(name: $name) {
-      exists
-      message
     }
   }
 `;

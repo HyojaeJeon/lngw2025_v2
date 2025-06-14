@@ -890,6 +890,16 @@ const types = gql`
     ASC
     DESC
   }
+
+  enum SortOrder {
+    ASC
+    DESC
+  }
+
+  type DeleteResult {
+    success: Boolean!
+    message: String
+  }
 `;
 
 module.exports = types;
