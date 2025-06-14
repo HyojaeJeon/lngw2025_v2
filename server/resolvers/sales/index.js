@@ -2,7 +2,8 @@ const models = require("../../models");
 const { 
   createError, 
   requireAuth, 
-  handleDatabaseError 
+  handleDatabaseError,
+  ERROR_CODES
 } = require("../../lib/errors");
 const { Op } = require('sequelize');
 
@@ -296,7 +297,94 @@ const salesResolvers = {
   },
 
   Mutation: {
-    
+    createSalesItem: async (_, { input }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const salesItem = await models.SalesItem.create(input);
+
+        return {
+          success: true,
+          message: "매출이 성공적으로 등록되었습니다.",
+          salesItem
+        };
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '매출 등록 실패', error);
+      }
+    },
+
+    updateSalesItem: async (_, { id, input }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const [updatedRowsCount] = await models.SalesItem.update(input, {
+          where: { id, isActive: true }
+        });
+
+        if (updatedRowsCount === 0) {
+          throw createError(ERROR_CODES.NOT_FOUND, '매출 항목을 찾을 수 없습니다');
+        }
+
+        const salesItem = await models.SalesItem.findByPk(id);
+
+        return {
+          success: true,
+          message: "매출이 성공적으로 수정되었습니다.",
+          salesItem
+        };
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '매출 수정 실패', error);
+      }
+    },
+
+    deleteSalesItem: async (_, { id }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const [updatedRowsCount] = await models.SalesItem.update(
+          { isActive: false },
+          { where: { id, isActive: true } }
+        );
+
+        if (updatedRowsCount === 0) {
+          throw createError(ERROR_CODES.NOT_FOUND, '매출 항목을 찾을 수 없습니다');
+        }
+
+        return {
+          success: true,
+          message: "매출이 성공적으로 삭제되었습니다."
+        };
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '매출 삭제 실패', error);
+      }
+    },
+
+    bulkUpdateSalesItems: async (_, { updates }, { user }) => {
+      try {
+        requireAuth(user);
+
+        const updatedSalesItems = [];
+
+        for (const update of updates) {
+          const [updatedRowsCount] = await models.SalesItem.update(update.input, {
+            where: { id: update.id, isActive: true }
+          });
+
+          if (updatedRowsCount > 0) {
+            const salesItem = await models.SalesItem.findByPk(update.id);
+            updatedSalesItems.push(salesItem);
+          }
+        }
+
+        return {
+          success: true,
+          message: "일괄 수정이 완료되었습니다.",
+          salesItems: updatedSalesItems
+        };
+      } catch (error) {
+        throw createError(ERROR_CODES.DATABASE_ERROR, '일괄 수정 실패', error);
+      }
+    },
 
     createIncentivePayout: async (_, { input }, { user, lang }) => {
       requireAuth(user, lang);

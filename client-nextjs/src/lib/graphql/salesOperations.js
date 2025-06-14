@@ -1,3 +1,4 @@
+
 import { gql } from '@apollo/client';
 
 // 매출 목록 조회
@@ -144,15 +145,6 @@ export const GET_SALES_CATEGORIES = gql`
     }
   }
 `;
-        totalCount
-        hasNextPage
-        hasPreviousPage
-        currentPage
-        totalPages
-      }
-    }
-  }
-`;
 
 // 매출 생성
 export const CREATE_SALES_ITEM = gql`
@@ -228,16 +220,6 @@ export const DELETE_SALES_ITEM = gql`
       }
     }
   }
-`;($id: Int!) {
-    deleteSalesItem(id: $id) {
-      success
-      message
-      errors {
-        field
-        message
-      }
-    }
-  }
 `;
 
 // 매출 카테고리 생성
@@ -292,23 +274,13 @@ export const BULK_UPDATE_SALES_ITEMS = gql`
       message
       salesItems {
         id
-        totalPrice
-        margin
-        marginRate
-      }
-      errors {
-        field
-        message
-      }
-    }
-  }
-`;tems {
-        id
         salesDate
         quantity
         unitPrice
         salesPrice
         totalPrice
+        margin
+        marginRate
       }
       errors {
         field
