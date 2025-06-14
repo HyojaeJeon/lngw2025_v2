@@ -243,42 +243,7 @@ const salesResolvers = {
       }
     },
 
-    salesCategories: async (_, { search, page = 1, limit = 20 }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const offset = (page - 1) * limit;
-        const where = { isActive: true };
-
-        if (search) {
-          where[Op.or] = [
-            { name: { [Op.like]: `%${search}%` } },
-            { code: { [Op.like]: `%${search}%` } }
-          ];
-        }
-
-        const { rows: salesCategories, count } = await models.SalesCategory.findAndCountAll({
-          where,
-          order: [['sortOrder', 'ASC'], ['name', 'ASC']],
-          limit,
-          offset
-        });
-
-        return {
-          success: true,
-          salesCategories,
-          pagination: {
-            totalCount: count,
-            hasNextPage: offset + salesCategories.length < count,
-            hasPreviousPage: page > 1,
-            currentPage: page,
-            totalPages: Math.ceil(count / limit)
-          }
-        };
-      } catch (error) {
-        handleDatabaseError(error, lang, "SALES_CATEGORIES_FETCH_FAILED");
-      }
-    },
+    
 
     incentivePayouts: async (_, { salesItemId, type }, { user, lang }) => {
       requireAuth(user, lang);
@@ -328,44 +293,7 @@ const salesResolvers = {
   },
 
   Mutation: {
-    createSalesCategory: async (_, { input }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const salesCategory = await models.SalesCategory.create(input);
-        return {
-          success: true,
-          salesCategory,
-          message: "매출 카테고리가 성공적으로 생성되었습니다."
-        };
-      } catch (error) {
-        handleDatabaseError(error, lang, "SALES_CATEGORY_CREATE_FAILED");
-      }
-    },
-
-    updateSalesCategory: async (_, { id, input }, { user, lang }) => {
-      requireAuth(user, lang);
-
-      try {
-        const salesCategory = await models.SalesCategory.findByPk(id);
-        if (!salesCategory) {
-          throw createError("SALES_CATEGORY_NOT_FOUND", lang);
-        }
-
-        await salesCategory.update(input);
-
-        return {
-          success: true,
-          salesCategory,
-          message: "매출 카테고리가 성공적으로 수정되었습니다."
-        };
-      } catch (error) {
-        if (error.extensions?.errorKey) {
-          throw error;
-        }
-        handleDatabaseError(error, lang, "SALES_CATEGORY_UPDATE_FAILED");
-      }
-    },
+    
 
     createIncentivePayout: async (_, { input }, { user, lang }) => {
       requireAuth(user, lang);

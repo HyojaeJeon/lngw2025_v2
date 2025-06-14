@@ -123,10 +123,9 @@ export const GET_PRODUCT_MODELS_FOR_SALES = gql`
 // 매출 카테고리 목록 조회
 export const GET_SALES_CATEGORIES = gql`
   query GetSalesCategories($search: String, $page: Int, $limit: Int) {
-    salesCategories(search: $search, page: $page, limit: $limit) {
+    categories(search: $search, page: $page, limit: $limit) {
       success
-      message
-      salesCategories {
+      categories {
         id
         name
         code

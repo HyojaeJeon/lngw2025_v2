@@ -56,17 +56,7 @@ const salesTypeDefs = gql`
     updatedAt: String!
   }
 
-  # SalesCategory 타입 정의
-  type SalesCategory {
-    id: ID!
-    name: String!
-    code: String!
-    description: String
-    sortOrder: Int!
-    isActive: Boolean!
-    createdAt: String!
-    updatedAt: String!
-  }
+  
 
   # SalesItemHistory 타입 정의
   type SalesItemHistory {
@@ -182,20 +172,7 @@ const salesTypeDefs = gql`
     receiptImageUrl: String
   }
 
-  input SalesCategoryInput {
-    name: String!
-    code: String!
-    description: String
-    sortOrder: Int
-  }
-
-  input SalesCategoryUpdateInput {
-    name: String
-    code: String
-    description: String
-    sortOrder: Int
-    isActive: Boolean
-  }
+  
 
   input IncentivePayoutInput {
     salesItemId: Int!
@@ -289,20 +266,7 @@ const salesTypeDefs = gql`
     averageMarginRate: Float!
   }
 
-  type SalesCategoryResponse {
-    success: Boolean!
-    message: String
-    salesCategory: SalesCategory
-    errors: [FieldError]
-  }
-
-  type SalesCategoryListResponse {
-    success: Boolean!
-    message: String
-    salesCategories: [SalesCategory]
-    pagination: PaginationInfo
-    errors: [FieldError]
-  }
+  
 
   type IncentivePayoutResponse {
     success: Boolean!
@@ -357,8 +321,8 @@ const salesTypeDefs = gql`
     # 모델 목록 (제품별, 검색 지원)
     productModelsForSales(productId: Int!, search: String, limit: Int): [ProductModel!]!
 
-    # 매출 카테고리 관련 쿼리
-    salesCategories(search: String, page: Int, limit: Int): SalesCategoryListResponse!
+    # 매출 카테고리 관련 쿼리 (기존 categories 사용)
+    # salesCategories(search: String, page: Int, limit: Int): SalesCategoryListResponse!
     salesCategory(id: Int!): SalesCategoryResponse!
 
     # 인센티브 지급 내역 쿼리
@@ -388,10 +352,7 @@ const salesTypeDefs = gql`
     # 대량 처리
     bulkUpdateSalesItems(updates: [SalesItemBulkUpdate!]!): SalesItemListResponse!
 
-    # 매출 카테고리 관리
-    createSalesCategory(input: SalesCategoryInput!): SalesCategoryResponse!
-    updateSalesCategory(id: Int!, input: SalesCategoryUpdateInput!): SalesCategoryResponse!
-    deleteSalesCategory(id: Int!): SalesCategoryResponse!
+    
 
     # 인센티브 지급 내역 관리
     createIncentivePayout(input: IncentivePayoutInput!): IncentivePayoutResponse!
