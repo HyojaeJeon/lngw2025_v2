@@ -108,6 +108,16 @@ export const apolloClient = new ApolloClient({
               return incoming;
             },
           },
+          salesItems: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
+          salesReps: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
         },
       },
     },
