@@ -140,3 +140,94 @@ export default function UserProfile() {
     </div>
   )
 }
+"use client";
+
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../store/slices/authSlice.js";
+import Link from "next/link";
+import { User, Settings, LogOut } from "lucide-react";
+import { useTranslation } from "../../hooks/useLanguage.js";
+
+export default function UserProfile() {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    window.location.href = "/login";
+  };
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowDropdown(!showDropdown)}
+        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      >
+        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+          {user.name?.charAt(0).toUpperCase() || "U"}
+        </div>
+        <div className="hidden md:block text-left">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {user.name}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {user.department} {user.position && `• ${user.position}`}
+          </div>
+        </div>
+      </button>
+
+      {showDropdown && (
+        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-lg">
+                {user.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {user.name}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {user.email}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="py-2">
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setShowDropdown(false)}
+            >
+              <User className="w-4 h-4 mr-3" />
+              프로필 관리
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setShowDropdown(false)}
+            >
+              <Settings className="w-4 h-4 mr-3" />
+              {t("navigation.settings")}
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              <LogOut className="w-4 h-4 mr-3" />
+              로그아웃
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

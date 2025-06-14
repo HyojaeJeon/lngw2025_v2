@@ -48,7 +48,7 @@ export default function CustomersPage() {
     }
   }, [router]);
 
-  const { data: customersData, loading: customersLoading, error: customersError } = useQuery(GET_CUSTOMERS, {
+  const { data: customersData, loading: customersLoading, error: customersError, refetch: refetchCustomers } = useQuery(GET_CUSTOMERS, {
     variables: { 
       limit: 50,
       offset: 0

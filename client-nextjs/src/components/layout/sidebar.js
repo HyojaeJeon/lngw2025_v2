@@ -587,10 +587,9 @@ const getMenuItems = (t) => [
   },
 ];
 
-// 간단한 리사이즈 가능한 사이바
+// 간단한 리사이즈 가능한 사이드바
 export function ResizableSidebar({ children }) {
-```python
-    const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const pathname = usePathname();
@@ -796,7 +795,13 @@ export function ResizableSidebar({ children }) {
 
 
       </div>
-    </aside>
+
+        {/* 리사이즈 핸들 */}
+        <div
+          className="absolute top-0 right-0 w-1 h-full bg-gray-300 dark:bg-gray-600 hover:bg-blue-500 cursor-col-resize transition-colors duration-200"
+          onMouseDown={startResizing}
+        />
+      </aside>
 
       {/* 메인 콘텐츠 */}
       <main className="flex-1">

@@ -13,7 +13,7 @@ export function DashboardLayout({ children }) {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // 모바일일 때는 토글 가능한 사이드바, 데스크톱일 때는 리사이즈 가능한 사이드바 사용 //
+  // 모바일일 때는 토글 가능한 사이드바, 데스크톱일 때는 리사이즈 가능한 사이드바 사용
   if (isMobile) {
     return (
       <div className="flex flex-col w-screen h-screen overflow-hidden transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
@@ -45,21 +45,6 @@ export function DashboardLayout({ children }) {
     </div>
   );
 }
-"use client";
 
-import { ResizableSidebar } from "./sidebar";
-import Header from "./header";
-
-export default function DashboardLayout({ children }) {
-  return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <ResizableSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
+// 기본 export로도 내보내기
+export default DashboardLayout;
