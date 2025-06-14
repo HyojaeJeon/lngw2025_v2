@@ -1,446 +1,375 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.js";
-import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input.js";
-import { useTranslation } from "@/hooks/useLanguage.js";
-import { useToast } from "@/hooks/useToast.js";
-import { GET_CUSTOMERS, GET_USERS } from '@/lib/graphql/queries.js';
-import { DELETE_CUSTOMER } from '@/lib/graphql/customerOperations.js';
-import Link from "next/link";
-import {
-  Edit,
-  Trash2,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Upload,
-  Eye,
-  User,
-  Building,
-  Mail,
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/hooks/useLanguage';
+import { 
+  GET_CUSTOMERS, 
+  GET_USERS, 
+  CREATE_CUSTOMER 
+} from '@/lib/graphql/customerOperations';
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  Filter, 
+  Building2,
   Phone,
+  Mail,
   MapPin,
   Star,
-  Calendar
-} from "lucide-react";
-
-// 고객 등급별 색상
-const getGradeColor = (grade) => {
-  switch (grade?.toLowerCase()) {
-    case 'vip':
-    case 'a':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'b':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'c':
-      return 'bg-green-100 text-green-800 border-green-200';
-    default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-};
-
-// 상태별 색상
-const getStatusColor = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return 'bg-green-100 text-green-800';
-    case 'prospect':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'inactive':
-      return 'bg-red-100 text-red-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
+  Calendar,
+  TrendingUp,
+  AlertCircle,
+  Loader2,
+  UserPlus,
+  Eye
+} from 'lucide-react';
 
 export default function CustomersPage() {
-  const { t } = useTranslation();
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterGrade, setFilterGrade] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const { t } = useLanguage();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // GraphQL 쿼리
-  const { data: customersData, loading: customersLoading, error: customersError, refetch } = useQuery(GET_CUSTOMERS, {
-    variables: {
-      limit: pageSize,
-      offset: (currentPage - 1) * pageSize,
-      search: searchTerm || undefined,
-      filter: {
-        grade: filterGrade || undefined,
-        status: filterStatus || undefined,
+  // 인증 상태 확인
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
+
+  const { 
+    data: customersData, 
+    loading: customersLoading, 
+    error: customersError,
+    refetch: refetchCustomers 
+  } = useQuery(GET_CUSTOMERS, {
+    variables: { limit: 50, offset: 0 },
+    errorPolicy: 'all',
+    onError: (error) => {
+      console.log('Customers query error:', error);
+      if (error.graphQLErrors?.some(e => e.extensions?.code === 'AUTHENTICATION_ERROR')) {
+        localStorage.removeItem('token');
+        router.push('/login');
       }
-    },
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+    }
   });
 
-  const { data: usersData } = useQuery(GET_USERS, {
-    errorPolicy: 'all'
+  const { 
+    data: usersData, 
+    loading: usersLoading 
+  } = useQuery(GET_USERS, {
+    errorPolicy: 'all',
+    onError: (error) => {
+      console.log('Users query error:', error);
+    }
   });
 
-  const [deleteCustomer] = useMutation(DELETE_CUSTOMER, {
+  const [createCustomer, { loading: createLoading }] = useMutation(CREATE_CUSTOMER, {
     onCompleted: () => {
-      toast.success(t('customers.messages.deleteSuccess'));
-      refetch();
+      setShowCreateModal(false);
+      refetchCustomers();
     },
     onError: (error) => {
-      console.error('Delete customer error:', error);
-      toast.error(t('customers.messages.deleteError'));
+      console.error('Create customer error:', error);
     }
   });
 
-  const customers = customersData?.customers || [];
-  const users = usersData?.users || [];
-
-  // 검색 디바운스
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      refetch();
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, filterGrade, filterStatus, refetch]);
-
-  // 고객 삭제 처리
-  const handleDeleteCustomer = async (customerId) => {
-    if (window.confirm(t('customers.messages.confirmDelete'))) {
-      try {
-        await deleteCustomer({
-          variables: { id: customerId }
-        });
-      } catch (error) {
-        console.error('Delete error:', error);
-      }
-    }
-  };
-
-  // 담당자명 가져오기
-  const getAssignedUserName = (userId) => {
-    const user = users.find(u => u.id === userId);
-    return user?.name || '-';
-  };
-
   // 로딩 상태
-  if (customersLoading && !customersData) {
+  if (customersLoading || usersLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">{t('common.loading')}</div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
+          <p className="text-gray-600 dark:text-gray-400">고객 데이터를 불러오는 중...</p>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   // 에러 상태
   if (customersError && !customersData) {
-    console.error('Customers query error:', customersError);
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-red-600">
-            {t('common.error')}: {customersError.message}
-          </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            데이터 로딩 오류
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            고객 데이터를 불러오는 중 오류가 발생했습니다.
+          </p>
+          <Button onClick={() => refetchCustomers()} className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4" />
+            다시 시도
+          </Button>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
+  const customers = customersData?.customers || [];
+  const users = usersData?.users || [];
+
+  // 필터링된 고객 목록
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = !searchTerm || 
+      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.contactName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesGrade = !selectedGrade || customer.grade === selectedGrade;
+
+    return matchesSearch && matchesGrade;
+  });
+
+  // 고객 등급별 색상
+  const getGradeBadgeColor = (grade) => {
+    switch (grade) {
+      case 'VIP': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'A': return 'bg-green-100 text-green-800 border-green-200';
+      case 'B': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'C': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  // 새 고객 생성 핸들러
+  const handleCreateCustomer = async (customerData) => {
+    try {
+      await createCustomer({
+        variables: {
+          input: customerData
+        }
+      });
+    } catch (error) {
+      console.error('Failed to create customer:', error);
+    }
+  };
+
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* 헤더 */}
-        <div className="flex justify-between items-center">
+    <div className="space-y-8 animate-fadeIn">
+      {/* 헤더 */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 
+                      rounded-xl p-6 transform transition-all duration-500 hover:scale-105">
+        <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold">{t('customers.title')}</h1>
-            <p className="text-gray-600 mt-1">
-              {t('customers.description')}
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                           bg-clip-text text-transparent">
+              고객 관리
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              고객 정보를 체계적으로 관리하고 관계를 강화하세요
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              {t('common.export')}
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+                         text-white shadow-lg transform transition-all duration-200 hover:scale-105"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              신규 고객 등록
             </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              {t('common.import')}
-            </Button>
-            <Link href="/dashboard/customers/add">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('customers.addCustomer')}
-              </Button>
-            </Link>
           </div>
         </div>
+      </div>
 
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('customers.totalCustomers')}
-              </CardTitle>
-              <Building className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{customers.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('customers.activeCustomers')}
-              </CardTitle>
-              <User className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {customers.filter(c => c.status === 'active').length}
+      {/* 통계 카드들 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 고객</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {customers.length}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('customers.vipCustomers')}
-              </CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {customers.filter(c => c.grade === 'VIP' || c.grade === 'A').length}
+              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('customers.newThisMonth')}
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {customers.filter(c => {
-                  const createdDate = new Date(c.createdAt);
-                  const now = new Date();
-                  return createdDate.getMonth() === now.getMonth() && 
-                         createdDate.getFullYear() === now.getFullYear();
-                }).length}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 필터 및 검색 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t('customers.customerList')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder={t('customers.searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <select
-                value={filterGrade}
-                onChange={(e) => setFilterGrade(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="">{t('customers.allGrades')}</option>
-                <option value="VIP">VIP</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-              </select>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="">{t('customers.allStatuses')}</option>
-                <option value="active">{t('customers.status.active')}</option>
-                <option value="prospect">{t('customers.status.prospect')}</option>
-                <option value="inactive">{t('customers.status.inactive')}</option>
-              </select>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                {t('common.filter')}
-              </Button>
             </div>
-
-            {/* 고객 목록 */}
-            <div className="space-y-4">
-              {customers.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  {t('customers.noCustomers')}
-                </div>
-              ) : (
-                customers.map((customer) => (
-                  <div key={customer.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg">{customer.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getGradeColor(customer.grade)}`}>
-                            {customer.grade || 'N/A'}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(customer.status)}`}>
-                            {t(`customers.status.${customer.status}`) || customer.status}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>{customer.contactName || '-'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            <span>{customer.email || '-'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <span>{customer.phone || '-'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Building className="h-4 w-4" />
-                            <span>{customer.industry || '-'}</span>
-                          </div>
-                        </div>
-
-                        <div className="mt-2 text-sm text-gray-500">
-                          <span>{t('customers.assignedUser')}: {getAssignedUserName(customer.assignedUserId)}</span>
-                          <span className="mx-2">•</span>
-                          <span>{t('customers.createdAt')}: {new Date(customer.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 ml-4">
-                        <Link href={`/dashboard/customers/${customer.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Link href={`/dashboard/customers/${customer.id}/edit`}>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDeleteCustomer(customer.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* 페이지네이션 */}
-            {customers.length > 0 && (
-              <div className="flex justify-center mt-6">
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    {t('common.previous')}
-                  </Button>
-                  <span className="px-3 py-2 text-sm">
-                    {t('common.page')} {currentPage}
-                  </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={customers.length < pageSize}
-                  >
-                    {t('common.next')}
-                  </Button>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* 빠른 액션 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Link href="/dashboard/customers/add">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5" />
-                  {t('customers.addCustomer')}
-                </CardTitle>
-                <CardDescription>
-                  {t('customers.addDescription')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">VIP 고객</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {customers.filter(c => c.grade === 'VIP').length}
+                </p>
+              </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+                <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Link href="/dashboard/customers/grades">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  {t('customers.customerGrades')}
-                </CardTitle>
-                <CardDescription>
-                  {t('customers.gradesDescription')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">A등급 고객</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {customers.filter(c => c.grade === 'A').length}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Link href="/dashboard/customers/history">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  {t('customers.customerHistory')}
-                </CardTitle>
-                <CardDescription>
-                  {t('customers.historyDescription')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-        </div>
+        <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">이번 달 신규</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {customers.filter(c => {
+                    const createdDate = new Date(c.createdAt);
+                    const now = new Date();
+                    return createdDate.getMonth() === now.getMonth() && 
+                           createdDate.getFullYear() === now.getFullYear();
+                  }).length}
+                </p>
+              </div>
+              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                <UserPlus className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </DashboardLayout>
+
+      {/* 검색 및 필터 */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="고객명 또는 담당자명으로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <select
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">전체 등급</option>
+              <option value="VIP">VIP</option>
+              <option value="A">A등급</option>
+              <option value="B">B등급</option>
+              <option value="C">C등급</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 고객 목록 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCustomers.map((customer) => (
+          <Card key={customer.id} className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {customer.name}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {customer.industry || '업종 미분류'}
+                  </p>
+                </div>
+                <Badge className={`${getGradeBadgeColor(customer.grade)} text-xs`}>
+                  {customer.grade || 'N/A'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {customer.contactName && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <UserPlus className="w-4 h-4" />
+                  <span>{customer.contactName}</span>
+                </div>
+              )}
+
+              {customer.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Phone className="w-4 h-4" />
+                  <span>{customer.phone}</span>
+                </div>
+              )}
+
+              {customer.email && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Mail className="w-4 h-4" />
+                  <span className="truncate">{customer.email}</span>
+                </div>
+              )}
+
+              {customer.address && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <MapPin className="w-4 h-4" />
+                  <span className="truncate">{customer.address}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+                <Calendar className="w-3 h-3" />
+                <span>등록: {new Date(customer.createdAt).toLocaleDateString('ko-KR')}</span>
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <Link href={`/dashboard/customers/${customer.id}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="w-4 h-4 mr-1" />
+                    상세보기
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* 결과가 없는 경우 */}
+      {filteredCustomers.length === 0 && (
+        <div className="text-center py-12">
+          <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            고객이 없습니다
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {searchTerm || selectedGrade 
+              ? '검색 조건에 맞는 고객이 없습니다.' 
+              : '아직 등록된 고객이 없습니다.'}
+          </p>
+          {!searchTerm && !selectedGrade && (
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              첫 번째 고객 등록하기
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

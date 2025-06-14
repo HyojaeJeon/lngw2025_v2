@@ -1,13 +1,15 @@
 
 "use client";
 
-import { ApolloProvider as ApolloClientProvider } from '@apollo/client';
-import apolloClient from '@/lib/apolloClient.js';
+import { ApolloProvider } from '@apollo/client';
+import { apolloClient } from '@/lib/apolloClient';
 
-export default function ApolloProvider({ children }) {
+export function ApolloProviderWrapper({ children }) {
   return (
-    <ApolloClientProvider client={apolloClient}>
+    <ApolloProvider client={apolloClient}>
       {children}
-    </ApolloClientProvider>
+    </ApolloProvider>
   );
 }
+
+export default ApolloProviderWrapper;

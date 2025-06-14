@@ -1,7 +1,7 @@
 "use client";
 
 import { ReduxProvider } from "@/providers/reduxProvider";
-import { ApolloProviderWrapper } from "@/providers/apolloProvider";
+import ApolloProviderWrapper from '@/providers/apolloProvider';
 import { ThemeProvider } from "@/contexts/themeContext";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { Toaster } from "@/components/ui/toaster.js";

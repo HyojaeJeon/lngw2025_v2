@@ -1,41 +1,58 @@
+
 import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 
+// 환경별 GraphQL 엔드포인트 설정
+const getGraphQLUri = () => {
+  if (typeof window === 'undefined') {
+    // 서버 사이드에서는 내부 URL 사용
+    return process.env.REPLIT === 'true' 
+      ? 'http://0.0.0.0:5000/graphql'
+      : 'http://localhost:5000/graphql';
+  }
+  
+  // 클라이언트 사이드에서는 현재 호스트 기반으로 URL 생성
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = process.env.NODE_ENV === 'production' ? '' : ':5000';
+  
+  return `${protocol}//${hostname}${port}/graphql`;
+};
+
 // HTTP 링크 생성
 const httpLink = createHttpLink({
-  uri: process.env.NODE_ENV === 'production' 
-    ? 'https://1af219cc-4238-4cc1-b774-03457e5a48ad-00-1dqbl6swyb0bu.kirk.replit.dev:5000/graphql'
-    : 'http://0.0.0.0:5000/graphql',
+  uri: getGraphQLUri(),
+  credentials: 'include',
 });
 
-// 인증 링크 생성
+// 인증 링크
 const authLink = setContext((_, { headers }) => {
-  // 로컬 스토리지에서 토큰 가져오기
   let token = null;
+  
   if (typeof window !== 'undefined') {
-    token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    token = localStorage.getItem('token');
   }
 
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
+      authorization: token ? `Bearer ${token}` : "",
+      'Content-Type': 'application/json',
     }
   };
 });
 
-// 에러 링크 생성
+// 에러 링크
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path, extensions }) => {
       console.log('GraphQL error:', { message, locations, path, extensions });
-
+      
       // 인증 에러 처리
       if (extensions?.code === 'AUTHENTICATION_ERROR') {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
           window.location.href = '/login';
         }
       }
@@ -48,27 +65,26 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 });
 
 // Apollo Client 생성
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   link: from([errorLink, authLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
-      Customer: {
+      Query: {
         fields: {
-          contacts: {
-            merge: false,
+          customers: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
           },
-          images: {
-            merge: false,
+          users: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
           },
-        },
-      },
-      CustomerActivity: {
-        fields: {
-          participants: {
-            merge: false,
-          },
-          attachments: {
-            merge: false,
+          vocs: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
           },
         },
       },
