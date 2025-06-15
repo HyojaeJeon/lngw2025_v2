@@ -6,6 +6,7 @@ const employeeSchema = gql`
     employeeNumber: String!
     name: String!
     email: String!
+    user: User
     department: String!
     position: String!
     hireDate: String!
@@ -16,7 +17,9 @@ const employeeSchema = gql`
     emergencyPhone: String
     salary: Float
     benefits: String
-    skills: [String]
+    skills: [Skill]
+    experiences: [Experience]
+    emergencyContacts: [EmergencyContact]
     avatar: String
     createdAt: String!
     updatedAt: String!

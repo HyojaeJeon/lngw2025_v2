@@ -242,7 +242,7 @@ const employeeResolvers = {
       }
     },
 
-    recordAttendance: async (_, { input }, { user }) => {
+    createAttendanceRecord: async (_, { input }, { user }) => {
       if (!user) throw new AuthenticationError('인증이 필요합니다');
 
       try {
