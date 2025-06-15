@@ -71,7 +71,7 @@ export default function EmployeesPage() {
     refetchQueries: [{ query: GET_EMPLOYEES }]
   });
 
-  const employees = data?.employees || [];
+  const employees = data?.employeeList || [];
 
   // 통계 계산
   const stats = {

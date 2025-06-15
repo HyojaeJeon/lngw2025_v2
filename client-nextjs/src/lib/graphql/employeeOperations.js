@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 export const GET_EMPLOYEES = gql`
   query GetEmployees($filter: EmployeeFilterInput, $limit: Int, $offset: Int) {
-    employees(filter: $filter, limit: $limit, offset: $offset) {
+    employeeList(filter: $filter, limit: $limit, offset: $offset) {
       id
       employeeNumber
       firstName

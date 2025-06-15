@@ -3,6 +3,7 @@
 import { ApolloProvider } from "@apollo/client";
 import { ReduxProvider } from "@/providers/reduxProvider";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { ThemeProvider } from "@/contexts/themeContext";
 import apolloClient from "@/lib/apolloClient";
 import DashboardLayout from "@/components/layout/dashboardLayout";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,19 +18,21 @@ export default function ClientLayout({ children }) {
   return (
     <ReduxProvider>
       <LanguageProvider>
-        <ApolloProvider client={apolloClient}>
-          {isAuthPage ? (
-            <>
-              {children}
-              <Toaster />
-            </>
-          ) : (
-            <DashboardLayout>
-              {children}
-              <Toaster />
-            </DashboardLayout>
-          )}
-        </ApolloProvider>
+        <ThemeProvider>
+          <ApolloProvider client={apolloClient}>
+            {isAuthPage ? (
+              <>
+                {children}
+                <Toaster />
+              </>
+            ) : (
+              <DashboardLayout>
+                {children}
+                <Toaster />
+              </DashboardLayout>
+            )}
+          </ApolloProvider>
+        </ThemeProvider>
       </LanguageProvider>
     </ReduxProvider>
   );
