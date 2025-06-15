@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import DashboardLayout from "@/components/layout/dashboardLayout.js";
 import {
   Card,
   CardContent,

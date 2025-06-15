@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import DashboardLayout from "@/components/layout/dashboardLayout.js";
 import {
   Card,
   CardContent,

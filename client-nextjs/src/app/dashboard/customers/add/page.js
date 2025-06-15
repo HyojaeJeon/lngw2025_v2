@@ -43,7 +43,7 @@ import {
   Save,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useLanguage.js";
-import { DashboardLayout } from "@/components/layout/dashboardLayout.js";
+import DashboardLayout from "@/components/layout/dashboardLayout.js";
 import { CustomSelect } from "@/components/common/CustomSelect.js";
 import CustomCategorySelect from "@/components/common/CustomCategorySelect.js";
 import { ImageUploader } from "@/components/common/ImageUploader.js";
