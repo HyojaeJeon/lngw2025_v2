@@ -23,7 +23,9 @@ export default function DashboardLayout({ children }) {
           <Header onMenuToggle={toggleSidebar} />
           {/* 스크롤 가능한 메인 컨텐츠 */}
           <main className="flex-1 p-4 lg:p-6 overflow-auto animate-fadeIn">
-            <div className="w-full max-w-none">{children}</div>
+            <div key="dashboard-content">
+              {children}
+            </div>
           </main>
         </div>
       </div>
@@ -38,7 +40,9 @@ export default function DashboardLayout({ children }) {
           <Header onMenuToggle={toggleSidebar} />
           {/* 스크롤 가능한 메인 컨텐츠 */}
           <main className="flex-1 p-4 lg:p-6 overflow-auto animate-fadeIn">
-            <div className="w-full max-w-none">{children}</div>
+            <div key="dashboard-content">
+              {children}
+            </div>
           </main>
         </div>
       </ResizableSidebar>

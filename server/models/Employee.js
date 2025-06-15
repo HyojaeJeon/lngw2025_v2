@@ -112,44 +112,58 @@ module.exports = (sequelize) => {
       as: 'subordinates',
     });
 
-    // 다대다 관계
-    Employee.belongsToMany(models.Skill, {
-      through: 'employee_skills',
-      foreignKey: 'employeeId',
-      otherKey: 'skillId',
-      as: 'skills',
-    });
+    // 기존 모델들과의 관계만 유지
+    if (models.Skill) {
+      Employee.belongsToMany(models.Skill, {
+        through: 'employee_skills',
+        foreignKey: 'employeeId',
+        otherKey: 'skillId',
+        as: 'skills',
+      });
+    }
 
-    // 일대다 관계
-    Employee.hasMany(models.EmergencyContact, {
-      foreignKey: 'employeeId',
-      as: 'emergencyContacts',
-    });
+    if (models.EmergencyContact) {
+      Employee.hasMany(models.EmergencyContact, {
+        foreignKey: 'employeeId',
+        as: 'emergencyContacts',
+      });
+    }
 
-    Employee.hasMany(models.Experience, {
-      foreignKey: 'employeeId',
-      as: 'experiences',
-    });
+    if (models.Experience) {
+      Employee.hasMany(models.Experience, {
+        foreignKey: 'employeeId',
+        as: 'experiences',
+      });
+    }
 
-    Employee.hasMany(models.AttendanceRecord, {
-      foreignKey: 'employeeId',
-      as: 'attendanceRecords',
-    });
+    // 새로 생성한 모델들과의 관계
+    if (models.Attendance) {
+      Employee.hasMany(models.Attendance, {
+        foreignKey: 'employeeId',
+        as: 'attendances',
+      });
+    }
 
-    Employee.hasMany(models.LeaveRequest, {
-      foreignKey: 'employeeId',
-      as: 'leaveRequests',
-    });
+    if (models.Leave) {
+      Employee.hasMany(models.Leave, {
+        foreignKey: 'employeeId',
+        as: 'leaves',
+      });
+    }
 
-    Employee.hasMany(models.PerformanceEvaluation, {
-      foreignKey: 'employeeId',
-      as: 'evaluations',
-    });
+    if (models.Evaluation) {
+      Employee.hasMany(models.Evaluation, {
+        foreignKey: 'employeeId',
+        as: 'evaluations',
+      });
+    }
 
-    Employee.hasMany(models.SalaryRecord, {
-      foreignKey: 'employeeId',
-      as: 'salaryRecords',
-    });
+    if (models.Salary) {
+      Employee.hasMany(models.Salary, {
+        foreignKey: 'employeeId',
+        as: 'salaries',
+      });
+    }
   };
 
   return Employee;
